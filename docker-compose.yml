@@ -1,0 +1,59 @@
+services:
+  starfeet-db:
+    image: postgres:16-alpine
+    container_name: starfeet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - starfeet_db_data:/var/lib/postgresql/data
+    networks:
+      - starfeet-internal
+
+  starfeet-web:
+    image: node:22-alpine
+    container_name: starfeet-web
+    restart: unless-stopped
+    working_dir: /app
+    # Al ser un entorno DEV estricto, instalamos dependencias y corremos el servidor
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_URL=https://${DOMAIN}
+    volumes:
+      # Mapeo completo del directorio local al contenedor para garantizar el HMR (Hot Reload)
+      - .:/app
+      # Evitamos sobrescribir los módulos de node internos con los del host (en caso de que existan)
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      starfeet-db:
+        condition: service_healthy
+    networks:
+      - starfeet-internal
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      # Enrutamiento dinámico HTTP / HTTPS controlado íntegramente por variables
+      - "traefik.http.routers.starfeet-web.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.starfeet-web.entrypoints=websecure"
+      - "traefik.http.routers.starfeet-web.tls=true"
+      - "traefik.http.services.starfeet-web.loadbalancer.server.port=3000"
+
+volumes:
+  starfeet_db_data:
+
+networks:
+  starfeet-internal:
+    driver: bridge
+  traefik-public:
+    external: true
