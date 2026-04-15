@@ -201,3 +201,11 @@
 - removido link/botón de `Registro`
 - botón de `Login` cambiado a ícono sin texto (con `aria-label`)
 - botón `Compra` visible solo para usuarios no autenticados (se oculta cuando hay sesión activa)
+- [X] Redirección post-login por rol implementada:
+- nueva ruta servidor `POST-AUTH` en `/post-login` que resuelve sesión y redirige por rol (`ADMIN`→`/admin`, `KINESIOLOGO`→`/kinesio`, `CLIENTE`→`/cliente`)
+- `LoginForm` actualizado para usar `callbackUrl` común `/post-login` en credenciales y Google
+- `RegisterForm` alineado al mismo callback para evitar desvío fijo a `/cliente`
+- `/login` ahora redirige automáticamente al dashboard correspondiente si el usuario ya está autenticado
+- [X] Refuerzo UX global de elementos clickeables:
+- regla global en `app/globals.css` para `cursor: pointer` en links, botones y menuitems interactivos
+- regla explícita `cursor: not-allowed` en controles deshabilitados

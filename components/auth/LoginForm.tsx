@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
+  const roleCallbackUrl = "/post-login";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export function LoginForm() {
       email: email.toLowerCase().trim(),
       password,
       redirect: false,
-      callbackUrl: "/cliente",
+      callbackUrl: roleCallbackUrl,
     });
 
     setLoading(false);
@@ -31,7 +32,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push(result?.url ?? "/cliente");
+    router.push(result?.url ?? roleCallbackUrl);
     router.refresh();
   }
 
@@ -39,7 +40,7 @@ export function LoginForm() {
     setGoogleLoading(true);
     setError(null);
     try {
-      await signIn("google", { callbackUrl: "/cliente" });
+      await signIn("google", { callbackUrl: roleCallbackUrl });
     } catch {
       setGoogleLoading(false);
       setError("No se pudo iniciar con Google en este momento.");

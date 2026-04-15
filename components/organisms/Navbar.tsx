@@ -5,13 +5,12 @@ import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "../atoms/BrandLogo";
 import { Button } from "../atoms/Button";
+import { getDashboardRouteForRole } from "@/lib/role-redirect";
 
 export const Navbar = () => {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const role = session?.user?.role;
-  const panelHref =
-    role === "ADMIN" ? "/admin" : role === "KINESIOLOGO" ? "/kinesio" : "/cliente";
+  const panelHref = getDashboardRouteForRole(session?.user?.role);
   const isBackoffice = pathname.startsWith("/admin") || pathname.startsWith("/kinesio");
 
   if (isBackoffice) {

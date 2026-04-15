@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
   const router = useRouter();
+  const roleCallbackUrl = "/post-login";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +38,7 @@ export function RegisterForm() {
         email: normalizedEmail,
         password,
         redirect: false,
+        callbackUrl: roleCallbackUrl,
       });
 
       const linked = payload?.linkedGoogleAccount === true;
@@ -45,7 +47,7 @@ export function RegisterForm() {
           ? "Cuenta Google existente integrada con contraseña correctamente."
           : "Cuenta creada correctamente."
       );
-      router.push("/cliente");
+      router.push(roleCallbackUrl);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -58,7 +60,7 @@ export function RegisterForm() {
     setGoogleLoading(true);
     setError(null);
     try {
-      await signIn("google", { callbackUrl: "/cliente" });
+      await signIn("google", { callbackUrl: roleCallbackUrl });
     } catch {
       setGoogleLoading(false);
       setError("No se pudo iniciar con Google en este momento.");
