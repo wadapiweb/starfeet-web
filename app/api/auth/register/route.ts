@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
+import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
+import { auditSecurityEvent } from "@/lib/security/audit";
 
 type Body = {
   email: string;
@@ -12,12 +14,34 @@ type Body = {
 
 export async function POST(request: Request) {
   try {
+    const ip = readClientIp(request);
+    const rateLimit = consumeRateLimit(`auth:register:${ip}`, { windowMs: 15 * 60 * 1000, max: 12 });
+    if (!rateLimit.allowed) {
+      auditSecurityEvent({
+        action: "AUTH_RATE_LIMIT_BLOCKED",
+        ip,
+        route: "/api/auth/register",
+        reason: "too_many_register_attempts",
+      });
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta nuevamente más tarde." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+      );
+    }
+
     const body = await parseJson<Body>(request);
     const email = body.email?.toLowerCase().trim();
     const password = body.password?.trim();
     const name = body.name?.trim() || null;
 
     if (!email || !password || password.length < 6) {
+      auditSecurityEvent({
+        action: "REGISTER_REJECTED",
+        email,
+        ip,
+        route: "/api/auth/register",
+        reason: "invalid_payload",
+      });
       throw new ApiError(400, "Datos inválidos. La contraseña debe tener al menos 6 caracteres.");
     }
 
@@ -34,14 +58,34 @@ export async function POST(request: Request) {
           isActive: true,
         },
       });
+      auditSecurityEvent({
+        action: "REGISTER_SUCCEEDED",
+        email,
+        ip,
+        route: "/api/auth/register",
+      });
       return NextResponse.json({ userId: user.id }, { status: 201 });
     }
 
     if (!existing.isActive) {
+      auditSecurityEvent({
+        action: "REGISTER_REJECTED",
+        email,
+        ip,
+        route: "/api/auth/register",
+        reason: "inactive_user",
+      });
       throw new ApiError(403, "Usuario inactivo");
     }
 
     if (existing.password) {
+      auditSecurityEvent({
+        action: "REGISTER_REJECTED",
+        email,
+        ip,
+        route: "/api/auth/register",
+        reason: "email_already_registered",
+      });
       throw new ApiError(409, "Ese email ya tiene una cuenta con contraseña.");
     }
 
@@ -51,6 +95,13 @@ export async function POST(request: Request) {
         password: hashed,
         ...(name ? { name } : {}),
       },
+    });
+
+    auditSecurityEvent({
+      action: "REGISTER_LINKED_GOOGLE",
+      email,
+      ip,
+      route: "/api/auth/register",
     });
 
     return NextResponse.json({ userId: user.id, linkedGoogleAccount: true });

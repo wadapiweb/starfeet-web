@@ -30,3 +30,6 @@
 - [X] Integrar cuentas Google + credenciales sobre mismo email (linking controlado).
 - [ ] Endurecer seguridad Auth: rate limiting en endpoints de códigos y auditoría de intentos.
 - [ ] Implementar verificación formal de email y políticas de contraseña fuerte.
+- [X] Hardening auth v1: rate limit + auditoría de intentos en auth/códigos.
+- [ ] Hardening auth v2: storage distribuido de rate limit (Redis) + lockout progresivo.
+- [ ] Persistir auditoría en tabla dedicada con dashboard admin de seguridad.

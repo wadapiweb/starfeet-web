@@ -4,15 +4,36 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { generateCode, getAccessCodeExpiry, hashAccessCode } from "@/lib/access-codes";
 import { sendMail } from "@/lib/mailer";
+import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
+import { auditSecurityEvent } from "@/lib/security/audit";
 
 type Body = { email: string };
 
 export async function POST(request: Request) {
   try {
+    const ip = readClientIp(request);
     const { email } = await parseJson<Body>(request);
     const normalizedEmail = email?.toLowerCase().trim();
     if (!normalizedEmail) {
       throw new ApiError(400, "Email inválido");
+    }
+
+    const rateLimit = consumeRateLimit(`auth:forgot-password:${ip}:${normalizedEmail}`, {
+      windowMs: 15 * 60 * 1000,
+      max: 6,
+    });
+    if (!rateLimit.allowed) {
+      auditSecurityEvent({
+        action: "AUTH_RATE_LIMIT_BLOCKED",
+        email: normalizedEmail,
+        ip,
+        route: "/api/auth/forgot-password",
+        reason: "too_many_reset_code_requests",
+      });
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta nuevamente más tarde." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+      );
     }
 
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -32,6 +53,13 @@ export async function POST(request: Request) {
         codeHash,
         expiresAt,
       },
+    });
+
+    auditSecurityEvent({
+      action: "PASSWORD_RESET_CODE_REQUESTED",
+      email: normalizedEmail,
+      ip,
+      route: "/api/auth/forgot-password",
     });
 
     const sent = await sendMail({

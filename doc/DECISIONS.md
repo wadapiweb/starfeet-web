@@ -225,3 +225,18 @@ Implementar acceso de invitado con código temporal por email y sesión efímera
 ### Consecuencia
 - Nuevo modelo `AccessCode` reutilizable por tipo (`PASSWORD_RESET`, `GUEST_ACCESS`).
 - Flujo en dos pasos: solicitud de código + verificación + consulta de órdenes.
+
+---
+
+## 2026-04-15 — Hardening Auth v1 con rate limiting y auditoría estructurada
+
+### Decisión
+Aplicar rate limiting server-side en login de credenciales y flujos de códigos (recupero/invitado), junto con auditoría estructurada de eventos de seguridad en servidor.
+
+### Motivo
+- Reducir superficie de brute-force y abuso de endpoints de verificación.
+- Tener trazabilidad inicial para investigación operativa de incidentes.
+
+### Consecuencia
+- Se limita por ventana temporal en memoria de proceso (válido para instancia única actual).
+- En siguiente etapa se migrará a almacenamiento distribuido para escalado horizontal.

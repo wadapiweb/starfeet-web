@@ -148,3 +148,7 @@
 - acceso invitado por email con código temporal (`AccessCode` tipo `GUEST_ACCESS`) y cookie firmada HTTP-only
 - endpoint de consulta de compras invitado: `/api/v1/guest/orders`
 - integración de cuentas por mismo email (Google + password) en Auth.js
+- [X] Hardening Auth v1 aplicado:
+- rate limiting in-memory por IP/email en endpoints sensibles de auth
+- middleware de límite para callback de credenciales (`/api/auth/callback/credentials`)
+- auditoría estructurada de eventos de seguridad (login success/fail, bloqueos, códigos reset/invitado)

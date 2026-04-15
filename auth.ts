@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import prisma from "./lib/prisma"
+import { auditSecurityEvent } from "./lib/security/audit"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -35,11 +36,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const user = await prisma.user.findUnique({
                     where: { email },
                 });
-                if (!user || !user.password || !user.isActive) return null;
+                if (!user || !user.password || !user.isActive) {
+                    auditSecurityEvent({
+                        action: "AUTH_LOGIN_FAILED",
+                        email,
+                        provider: "credentials",
+                        route: "/api/auth/callback/credentials",
+                        reason: "user_not_found_or_inactive_or_no_password",
+                    });
+                    return null;
+                }
 
                 const isValid = await bcrypt.compare(password, user.password);
-                if (!isValid) return null;
+                if (!isValid) {
+                    auditSecurityEvent({
+                        action: "AUTH_LOGIN_FAILED",
+                        email,
+                        provider: "credentials",
+                        route: "/api/auth/callback/credentials",
+                        reason: "invalid_password",
+                    });
+                    return null;
+                }
 
+                auditSecurityEvent({
+                    action: "AUTH_LOGIN_SUCCESS",
+                    email,
+                    provider: "credentials",
+                    route: "/api/auth/callback/credentials",
+                });
                 return {
                     id: user.id,
                     email: user.email,
@@ -51,14 +76,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
     ],
     callbacks: {
-        async signIn({ user }) {
+        async signIn({ user, account }) {
             if (!user?.email) return false
             const dbUser = await prisma.user.findUnique({
                 where: { email: user.email.toLowerCase() },
                 select: { isActive: true },
             })
-            if (!dbUser) return true
-            return dbUser.isActive
+            if (!dbUser) {
+                auditSecurityEvent({
+                    action: "AUTH_LOGIN_SUCCESS",
+                    email: user.email,
+                    provider: account?.provider,
+                    route: "/api/auth/callback",
+                    reason: "new_user_allowed",
+                });
+                return true
+            }
+            if (!dbUser.isActive) {
+                auditSecurityEvent({
+                    action: "AUTH_LOGIN_FAILED",
+                    email: user.email,
+                    provider: account?.provider,
+                    route: "/api/auth/callback",
+                    reason: "inactive_user",
+                });
+                return false
+            }
+            auditSecurityEvent({
+                action: "AUTH_LOGIN_SUCCESS",
+                email: user.email,
+                provider: account?.provider,
+                route: "/api/auth/callback",
+            });
+            return true
         },
         async jwt({ token }) {
             if (token.email) {

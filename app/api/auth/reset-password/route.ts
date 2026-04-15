@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { hashAccessCode } from "@/lib/access-codes";
+import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
+import { auditSecurityEvent } from "@/lib/security/audit";
 
 type Body = {
   email: string;
@@ -13,6 +15,7 @@ type Body = {
 
 export async function POST(request: Request) {
   try {
+    const ip = readClientIp(request);
     const body = await parseJson<Body>(request);
     const email = body.email?.toLowerCase().trim();
     const code = body.code?.trim();
@@ -20,6 +23,24 @@ export async function POST(request: Request) {
 
     if (!email || !code || !password || password.length < 6) {
       throw new ApiError(400, "Datos inválidos.");
+    }
+
+    const rateLimit = consumeRateLimit(`auth:reset-password:${ip}:${email}`, {
+      windowMs: 15 * 60 * 1000,
+      max: 10,
+    });
+    if (!rateLimit.allowed) {
+      auditSecurityEvent({
+        action: "AUTH_RATE_LIMIT_BLOCKED",
+        email,
+        ip,
+        route: "/api/auth/reset-password",
+        reason: "too_many_reset_attempts",
+      });
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta nuevamente más tarde." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+      );
     }
 
     const codeHash = hashAccessCode(email, code, "PASSWORD_RESET");
@@ -35,6 +56,13 @@ export async function POST(request: Request) {
     });
 
     if (!accessCode) {
+      auditSecurityEvent({
+        action: "PASSWORD_RESET_CODE_REJECTED",
+        email,
+        ip,
+        route: "/api/auth/reset-password",
+        reason: "invalid_or_expired_code",
+      });
       throw new ApiError(400, "Código inválido o expirado.");
     }
 
@@ -55,6 +83,13 @@ export async function POST(request: Request) {
         data: { consumedAt: new Date() },
       }),
     ]);
+
+    auditSecurityEvent({
+      action: "PASSWORD_RESET_SUCCEEDED",
+      email,
+      ip,
+      route: "/api/auth/reset-password",
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
