@@ -23,16 +23,15 @@ services:
     container_name: starfeet-web
     restart: unless-stopped
     working_dir: /app
-    # Al ser un entorno DEV estricto, instalamos dependencias y corremos el servidor
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm install && npx prisma generate && npm run dev"
     environment:
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=${DATABASE_URL}
-      - NEXTAUTH_URL=https://${DOMAIN}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+      - NEXT_TELEMETRY_DISABLED=1
     volumes:
-      # Mapeo completo del directorio local al contenedor para garantizar el HMR (Hot Reload)
       - .:/app
-      # Evitamos sobrescribir los módulos de node internos con los del host (en caso de que existan)
       - /app/node_modules
       - /app/.next
     depends_on:
@@ -40,13 +39,18 @@ services:
         condition: service_healthy
     networks:
       - starfeet-internal
-      - traefik-public
+      - proxy-net
     labels:
       - "traefik.enable=true"
-      # Enrutamiento dinámico HTTP / HTTPS controlado íntegramente por variables
-      - "traefik.http.routers.starfeet-web.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.starfeet-web.entrypoints=websecure"
-      - "traefik.http.routers.starfeet-web.tls=true"
+      
+      # Routers para HTTPS con Let's Encrypt (HTTP es manejado globalmente por Traefik)
+      - "traefik.http.routers.starfeet-web-https.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.starfeet-web-https.entrypoints=websecure"
+      - "traefik.http.routers.starfeet-web-https.tls=true"
+      - "traefik.http.routers.starfeet-web-https.tls.certresolver=myresolver"
+      - "traefik.http.routers.starfeet-web-https.middlewares=security-headers"
+      
+      # Puerto interno del servicio web de Next.js
       - "traefik.http.services.starfeet-web.loadbalancer.server.port=3000"
 
 volumes:
@@ -55,5 +59,5 @@ volumes:
 networks:
   starfeet-internal:
     driver: bridge
-  traefik-public:
+  proxy-net:
     external: true

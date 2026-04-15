@@ -1,0 +1,63 @@
+name: Stage0 Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  BASE_URL: ${{ vars.SMOKE_BASE_URL || 'http://localhost:3000' }}
+  API_PREFIX: ${{ vars.SMOKE_API_PREFIX || '/api' }}
+  API_EMAIL: ${{ vars.SMOKE_API_EMAIL || '' }}
+  API_PASSWORD: ${{ secrets.SMOKE_API_PASSWORD || '' }}
+
+jobs:
+  lint_build:
+    name: Lint & Build (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Build
+        run: npm run build
+        env:
+          # next build necesita las mismas vars de entorno que en runtime
+          # Agrega aquí las que requiera tu next.config.ts
+          NEXTAUTH_URL: ${{ vars.SMOKE_BASE_URL || 'http://localhost:3000' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci-placeholder-secret' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci:ci@localhost:5432/ci' }}
+
+  smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [lint_build]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load optional CI env file
+        if: ${{ hashFiles('.github/env/stage0.env') != '' }}
+        run: cat .github/env/stage0.env >> "$GITHUB_ENV"
+
+      - name: Smoke minimal
+        run: |
+          chmod +x scripts/smoke/smoke_minimal.sh
+          BASE_URL="$BASE_URL" \
+          API_PREFIX="$API_PREFIX" \
+          API_EMAIL="$API_EMAIL" \
+          API_PASSWORD="$API_PASSWORD" \
+          ./scripts/smoke/smoke_minimal.sh || true

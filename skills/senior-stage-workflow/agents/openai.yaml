@@ -1,0 +1,4 @@
+interface:
+  display_name: "Senior Stage Workflow"
+  short_description: "Staged delivery with quality gates and controlled release."
+  default_prompt: "Apply senior staged delivery: implement minimal diff, run quality gates, execute smoke tests, deploy to staging, merge safely, and document traceability."
