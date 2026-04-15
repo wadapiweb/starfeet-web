@@ -160,3 +160,7 @@
 - `next.config.ts` actualizado con `allowedDevOrigins` para `dev.starfeet.ar` y hosts locales.
 - verificación de login `/login` respondiendo 200 en contenedor tras restart.
 - observado warning residual de bloqueo cross-site en requests `/_next/*` tipo `no-cors` (no impacta login por credenciales).
+- [X] Warmup de auth en arranque dev implementado:
+- script `scripts/ops/dev-with-warmup.sh` (portable `sh`) que pre-carga `/login` y `/api/auth/session`
+- `npm run dev` actualizado para usar warmup automático
+- fix operativo aplicado: reemplazo de `bash` por `sh` por compatibilidad con `node:alpine`

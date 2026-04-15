@@ -255,3 +255,18 @@ Configurar `allowedDevOrigins` en `next.config.ts` incluyendo `dev.starfeet.ar` 
 ### Consecuencia
 - La configuración de dev queda explícita y versionada.
 - Persiste análisis pendiente de algunos requests `no-cors` bloqueados de origen no controlado.
+
+---
+
+## 2026-04-15 — Warmup automático de rutas auth en `npm run dev`
+
+### Decisión
+Cambiar el arranque dev a un script shell que levanta Next y pre-calienta rutas críticas (`/login`, `/api/auth/session`) para reducir timeout inicial detrás de proxy.
+
+### Motivo
+- El primer acceso en frío provocaba compilación pesada y podían aparecer errores de gateway percibidos por usuario.
+- Necesidad de mantener flujo de login estable en ambiente de desarrollo.
+
+### Consecuencia
+- `npm run dev` ahora ejecuta `scripts/ops/dev-with-warmup.sh`.
+- El script se mantiene POSIX (`sh`) para compatibilidad con imagen `node:alpine`.

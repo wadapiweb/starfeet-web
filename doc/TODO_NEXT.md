@@ -37,3 +37,5 @@
 - [ ] Evaluar elevar memoria o optimizar módulos pesados para reducir tiempo de primera compilación en dev.
 - [ ] Investigar origen de requests `no-cors` cross-site a `/_next/*` en dev (posible tráfico externo/probe o extensión) y filtrar en proxy reverse.
 - [ ] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.
+- [ ] Resolver definitivamente bloqueo cross-site `/_next/*` en dev (warning residual de Next 16).
+- [ ] Agregar endpoint `/api/health` y chequeo sintético autenticación para observabilidad del entorno dev.
