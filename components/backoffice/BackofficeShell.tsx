@@ -279,6 +279,9 @@ type IconProps = React.SVGProps<SVGSVGElement>;
 type IconComponent = (props: IconProps) => React.JSX.Element;
 
 function resolveNavIcon(href: string): IconComponent {
+  if (href.includes("/products")) {
+    return IconBox;
+  }
   if (href.includes("/coupons")) {
     return IconTicket;
   }
@@ -455,6 +458,16 @@ function IconWallet(props: IconProps) {
       <rect x="2" y="6" width="20" height="12" rx="2" />
       <path d="M16 12h4" />
       <circle cx="16" cy="12" r="1" />
+    </IconBase>
+  );
+}
+
+function IconBox(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3 7 12 3l9 4-9 4-9-4z" />
+      <path d="M3 7v10l9 4 9-4V7" />
+      <path d="M12 11v10" />
     </IconBase>
   );
 }

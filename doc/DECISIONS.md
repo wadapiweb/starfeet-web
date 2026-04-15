@@ -238,6 +238,21 @@ Aplicar rate limiting server-side en login de credenciales y flujos de códigos 
 - Tener trazabilidad inicial para investigación operativa de incidentes.
 
 ### Consecuencia
+
+---
+
+## 2026-04-15 — Política de eliminación segura en admin (fallback a desactivación)
+
+### Decisión
+En `productos` y `cupones`, intentar eliminación física y, ante restricciones relacionales, aplicar fallback automático a desactivación lógica (`isActive=false`). En `profesionales`, usar desactivación lógica por defecto.
+
+### Motivo
+- Preservar integridad histórica de ventas/comisiones cuando existen relaciones activas.
+- Mantener UX operativa de “eliminar” sin romper trazabilidad ni generar errores duros en runtime.
+
+### Consecuencia
+- Las acciones de eliminar en admin siempre responden con éxito operativo (eliminado o desactivado).
+- El frontend informa explícitamente el resultado para transparencia operativa.
 - Se limita por ventana temporal en memoria de proceso (válido para instancia única actual).
 - En siguiente etapa se migrará a almacenamiento distribuido para escalado horizontal.
 

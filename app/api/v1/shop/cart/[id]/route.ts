@@ -51,9 +51,37 @@ export async function PATCH(request: Request, context: Params) {
       throw new ApiError(400, "Acción inválida");
     }
 
-    const product = await prisma.product.findUnique({ where: { id: body.productId } });
+    const product = await prisma.product.findUnique({
+      where: { id: body.productId },
+      include: {
+        inventories: {
+          select: { id: true, stock: true },
+        },
+      },
+    });
     if (!product || !product.isActive) {
       throw new ApiError(404, "Producto no disponible");
+    }
+
+    if (body.inventoryId) {
+      const targetInventory = product.inventories.find((inv) => inv.id === body.inventoryId);
+      if (!targetInventory) {
+        throw new ApiError(400, "inventoryId inválido para el producto");
+      }
+      const reservedForSameInventory = cart.items
+        .filter((item) => item.productId === body.productId && item.inventoryId === body.inventoryId)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      if (reservedForSameInventory + body.quantity > targetInventory.stock) {
+        throw new ApiError(409, "Stock insuficiente para el talle seleccionado");
+      }
+    } else {
+      const totalStock = product.inventories.reduce((sum, inv) => sum + inv.stock, 0);
+      const reservedForProduct = cart.items
+        .filter((item) => item.productId === body.productId)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      if (reservedForProduct + body.quantity > totalStock) {
+        throw new ApiError(409, "Stock insuficiente para este producto");
+      }
     }
 
     const unitPrice = cart.currency === "USD" ? product.priceUsd : product.priceArs;

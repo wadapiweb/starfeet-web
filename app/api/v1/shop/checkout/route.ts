@@ -116,6 +116,54 @@ export async function POST(request: Request) {
         include: { orderItems: true },
       });
 
+      for (const item of cart.items) {
+        if (item.inventoryId) {
+          const updated = await tx.productInventory.updateMany({
+            where: {
+              id: item.inventoryId,
+              productId: item.productId,
+              stock: { gte: item.quantity },
+            },
+            data: {
+              stock: { decrement: item.quantity },
+            },
+          });
+          if (updated.count === 0) {
+            throw new ApiError(409, "Stock insuficiente al confirmar checkout");
+          }
+          continue;
+        }
+
+        // Fallback legacy (sin talle): descuenta de inventario disponible en orden descendente.
+        let remaining = item.quantity;
+        const inventories = await tx.productInventory.findMany({
+          where: { productId: item.productId, stock: { gt: 0 } },
+          orderBy: { stock: "desc" },
+          select: { id: true, stock: true },
+        });
+
+        for (const inventory of inventories) {
+          if (remaining <= 0) break;
+          const toDecrement = Math.min(remaining, inventory.stock);
+          const updated = await tx.productInventory.updateMany({
+            where: {
+              id: inventory.id,
+              stock: { gte: toDecrement },
+            },
+            data: {
+              stock: { decrement: toDecrement },
+            },
+          });
+          if (updated.count > 0) {
+            remaining -= toDecrement;
+          }
+        }
+
+        if (remaining > 0) {
+          throw new ApiError(409, "Stock insuficiente al confirmar checkout");
+        }
+      }
+
       await tx.order.update({
         where: { id: order.id },
         data: { slug: `orden-${order.id}` },

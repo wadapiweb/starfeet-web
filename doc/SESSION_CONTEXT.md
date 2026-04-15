@@ -230,3 +230,28 @@
 - generación automática de slug en altas nuevas de usuarios/profesionales/cupones
 - autenticación endurecida para asegurar slug en usuarios OAuth/credenciales existentes sin slug
 - script de backfill agregado: `scripts/ops/backfill_slugs.ts` + comando `npm run backfill:slugs`
+- [X] Gestión de productos en Admin implementada:
+- nuevo módulo `/admin/products` en sidebar admin
+- API admin de productos:
+  - `GET/POST /api/v1/admin/products`
+  - `PATCH /api/v1/admin/products/[id]`
+- UI `AdminProductsManager` con:
+  - alta de producto (nombre, tipo, precios, compareAt, imágenes, activo/inactivo)
+  - listado con filtros (texto/estado/tipo)
+  - edición completa de producto
+- [X] Control de stock senior en productos:
+- gestión de inventario por talle (`S/M/L`) desde Admin Productos (stock + umbral de bajo stock)
+- visualización de stock por talle en listado admin y alerta visual de bajo stock
+- validación de stock en carrito (`add_item`) para evitar sobre-reserva
+- validación y descuento real de stock en checkout (incluye fallback legacy cuando no hay `inventoryId`)
+- [X] CRUD senior unificado en admin para entidades clave:
+- `/admin/products`: listado + botón `Agregar producto` + acciones `Ver producto` (vista pública), `Editar`, `Eliminar` con confirmación y feedback visual.
+- `/admin/professionals`: listado + botón `Agregar profesional` + acciones `Ver`, `Editar`, `Eliminar` con confirmación y feedback visual.
+- `/admin/coupons`: listado + botón `Agregar cupón` + acciones `Ver`, `Editar`, `Eliminar` con confirmación y feedback visual.
+- endpoints agregados/extendidos:
+  - `DELETE /api/v1/admin/products/:id` (hard delete con fallback a desactivación por seguridad)
+  - `PATCH/DELETE /api/v1/admin/kinesios/:id` (edición completa y desactivación segura)
+  - `PATCH/DELETE /api/v1/admin/coupons/:id` (edición completa, reasignación de profesionales y eliminación con fallback seguro)
+- nuevas vistas de detalle:
+  - `app/tienda/producto/[slug]` para ver producto como cliente
+  - `app/admin/coupons/[slug]` para ver detalle operativo de cupón

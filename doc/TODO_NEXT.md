@@ -23,7 +23,7 @@
 - [X] Completar vertical Admin: edición/desactivación/revocación de cupones + filtros avanzados.
 - [X] Completar vertical Kinesio: detalle de paciente, exportables y vista de liquidaciones por período.
 - [ ] Completar vertical Shop: control de stock en checkout, selector de talle/variantes y estados de pago reales.
-- [ ] Normalizar operación de cupón: edición de caducidad y comisiones desde UI admin.
+- [X] Normalizar operación de cupón: edición de caducidad y comisiones desde UI admin.
 - [ ] Mejorar precisión de liquidación: reglas de período contable y cierre/pago con workflow explícito.
 - [X] Completar vertical Auth: login/registro/recupero con UX robusta y accesible.
 - [X] Integrar flujo invitado por email para consulta de compras sin cuenta.
@@ -51,7 +51,13 @@
 - [ ] Definir comportamiento de fallback del chevron volver cuando no hay historial (ruta por defecto por rol).
 - [ ] Agregar navegación móvil pública (menú hamburguesa) para links de home/ecommerce en resoluciones < `xl`.
 - [ ] Revisar semántica interactiva en componentes custom para que todo elemento visualmente clickeable exponga rol/teclado además del cursor pointer.
-- [ ] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.
+- [X] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.
 - [ ] Agregar filtros por rango de fechas en detalle de profesional para métricas y comisiones (hoy muestra visión global + recientes).
 - [ ] Aplicar cambios de esquema en DB (`npx prisma db push`) en cada entorno y validar creación de tablas faltantes (`coupon_assignments`, etc.).
 - [ ] Ejecutar `npm run backfill:slugs` en cada entorno para poblar slugs históricos y luego migrar rutas públicas por slug en módulos restantes.
+- [X] Extender módulo de productos con gestión de inventario por talle (S/M/L) y edición de `ProductInventory` desde admin.
+- [X] Estandarizar acciones de listado admin (`Agregar/Ver/Editar/Eliminar`) para productos, profesionales y cupones.
+- [ ] Migrar acciones destructivas a modal de confirmación atomizado reutilizable (reemplazar `window.confirm`).
+- [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
+- [ ] Migrar edición de productos por slug en endpoint (`PATCH /api/v1/admin/products/[slug]`) y quitar fallback por id.
+- [ ] Forzar selección de talle en tienda para eliminar fallback legacy sin `inventoryId` en checkout.

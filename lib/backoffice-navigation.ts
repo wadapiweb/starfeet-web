@@ -24,6 +24,12 @@ export const adminNavItems: BackofficeNavItem[] = [
     matchPrefix: "/admin/professionals",
   },
   {
+    href: "/admin/products",
+    label: "Productos",
+    description: "Alta y edición de catálogo",
+    matchPrefix: "/admin/products",
+  },
+  {
     href: "/admin/sales",
     label: "Ventas",
     description: "Órdenes, pagos y envíos",
