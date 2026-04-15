@@ -52,3 +52,4 @@
 - [ ] Agregar navegación móvil pública (menú hamburguesa) para links de home/ecommerce en resoluciones < `xl`.
 - [ ] Revisar semántica interactiva en componentes custom para que todo elemento visualmente clickeable exponga rol/teclado además del cursor pointer.
 - [ ] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.
+- [ ] Agregar filtros por rango de fechas en detalle de profesional para métricas y comisiones (hoy muestra visión global + recientes).

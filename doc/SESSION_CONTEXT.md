@@ -215,3 +215,11 @@
 - endpoint `POST /api/v1/admin/kinesios` agregado para alta de profesionales (email + contraseña inicial + datos base)
 - `GET /api/v1/admin/kinesios` ahora expone alias semántico `professionals` (manteniendo `kinesios` para compatibilidad)
 - textos de Admin Cupones alineados a `profesionales` en filtros/asignaciones
+- [X] Vista single por profesional implementada:
+- nueva ruta dinámica `/admin/professionals/[id]` con dashboard individual del profesional
+- acceso desde listado de profesionales mediante acción `Ver detalle`
+- detalle incluye:
+  - datos de perfil (nombre, email, teléfono, estado, fecha de alta)
+  - métricas agregadas (cupones asignados, pacientes vinculados, comisiones acumuladas, ventas atribuidas por moneda)
+  - estado de liquidación (pendiente/validado vs pagado)
+  - cupones recientes y tabla de comisiones recientes

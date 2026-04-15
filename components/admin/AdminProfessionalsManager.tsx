@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Professional = {
@@ -148,12 +149,13 @@ export function AdminProfessionalsManager() {
                 <th className="px-3 py-2">Nombre</th>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Alta</th>
+                <th className="px-3 py-2 text-right">Detalle</th>
               </tr>
             </thead>
             <tbody>
               {professionals.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-3 py-4 text-sm text-gray-500">
+                  <td colSpan={4} className="px-3 py-4 text-sm text-gray-500">
                     No hay profesionales cargados.
                   </td>
                 </tr>
@@ -166,6 +168,14 @@ export function AdminProfessionalsManager() {
                       {professional.createdAt
                         ? professional.createdAt.slice(0, 10)
                         : "-"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <Link
+                        href={`/admin/professionals/${professional.id}`}
+                        className="inline-flex rounded-lg border border-starfeet-blue/30 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-starfeet-blue hover:bg-starfeet-blue/5"
+                      >
+                        Ver detalle
+                      </Link>
                     </td>
                   </tr>
                 ))
