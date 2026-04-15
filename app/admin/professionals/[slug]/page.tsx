@@ -1,10 +1,11 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type AdminProfessionalDetailPageProps = {
   params: {
-    id: string;
+    slug: string;
   };
 };
 
@@ -14,15 +15,16 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
 });
 
 export default async function AdminProfessionalDetailPage({ params }: AdminProfessionalDetailPageProps) {
-  const { id } = params;
+  const { slug } = params;
 
   const professional = await prisma.user.findFirst({
     where: {
-      id,
       role: "KINESIOLOGO",
+      OR: [{ slug }, { id: slug }],
     },
     select: {
       id: true,
+      slug: true,
       name: true,
       email: true,
       phone: true,
@@ -35,6 +37,7 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
     notFound();
   }
 
+  const professionalId = professional.id;
   const now = new Date();
 
   const [
@@ -48,88 +51,124 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
     recentCommissions,
     salesByCurrency,
   ] = await Promise.all([
-    prisma.couponAssignment.count({
-      where: { kinesioUserId: id },
-    }),
-    prisma.couponAssignment.count({
-      where: {
-        kinesioUserId: id,
-        coupon: {
-          isActive: true,
-          expiresAt: { gt: now },
-        },
-      },
-    }),
-    prisma.patientKinesioLink.count({
-      where: { kinesioUserId: id },
-    }),
-    prisma.commissionEntry.aggregate({
-      where: { kinesioUserId: id },
-      _sum: { amount: true },
-      _count: { _all: true },
-    }),
-    prisma.commissionEntry.aggregate({
-      where: { kinesioUserId: id, status: { in: ["PENDING", "VALIDATED"] } },
-      _sum: { amount: true },
-      _count: { _all: true },
-    }),
-    prisma.commissionEntry.aggregate({
-      where: { kinesioUserId: id, status: "PAID" },
-      _sum: { amount: true },
-      _count: { _all: true },
-    }),
-    prisma.couponAssignment.findMany({
-      where: { kinesioUserId: id },
-      orderBy: { assignedAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        assignedAt: true,
-        coupon: {
+    safeTableQuery(
+      () =>
+        prisma.couponAssignment.count({
+          where: { kinesioUserId: professionalId },
+        }),
+      0,
+    ),
+    safeTableQuery(
+      () =>
+        prisma.couponAssignment.count({
+          where: {
+            kinesioUserId: professionalId,
+            coupon: {
+              isActive: true,
+              expiresAt: { gt: now },
+            },
+          },
+        }),
+      0,
+    ),
+    safeTableQuery(
+      () =>
+        prisma.patientKinesioLink.count({
+          where: { kinesioUserId: professionalId },
+        }),
+      0,
+    ),
+    safeTableQuery(
+      () =>
+        prisma.commissionEntry.aggregate({
+          where: { kinesioUserId: professionalId },
+          _sum: { amount: true },
+          _count: { _all: true },
+        }),
+      { _sum: { amount: new Prisma.Decimal(0) }, _count: { _all: 0 } },
+    ),
+    safeTableQuery(
+      () =>
+        prisma.commissionEntry.aggregate({
+          where: { kinesioUserId: professionalId, status: { in: ["PENDING", "VALIDATED"] } },
+          _sum: { amount: true },
+          _count: { _all: true },
+        }),
+      { _sum: { amount: new Prisma.Decimal(0) }, _count: { _all: 0 } },
+    ),
+    safeTableQuery(
+      () =>
+        prisma.commissionEntry.aggregate({
+          where: { kinesioUserId: professionalId, status: "PAID" },
+          _sum: { amount: true },
+          _count: { _all: true },
+        }),
+      { _sum: { amount: new Prisma.Decimal(0) }, _count: { _all: 0 } },
+    ),
+    safeTableQuery(
+      () =>
+        prisma.couponAssignment.findMany({
+          where: { kinesioUserId: professionalId },
+          orderBy: { assignedAt: "desc" },
+          take: 6,
           select: {
             id: true,
-            code: true,
-            isActive: true,
-            expiresAt: true,
-            usageCount: true,
-            maxUses: true,
+            assignedAt: true,
+            coupon: {
+              select: {
+                id: true,
+                code: true,
+                isActive: true,
+                expiresAt: true,
+                usageCount: true,
+                maxUses: true,
+              },
+            },
           },
-        },
-      },
-    }),
-    prisma.commissionEntry.findMany({
-      where: { kinesioUserId: id },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      select: {
-        id: true,
-        amount: true,
-        status: true,
-        createdAt: true,
-        order: {
+        }),
+      [],
+    ),
+    safeTableQuery(
+      () =>
+        prisma.commissionEntry.findMany({
+          where: { kinesioUserId: professionalId },
+          orderBy: { createdAt: "desc" },
+          take: 8,
           select: {
             id: true,
-            currency: true,
-            totalAmount: true,
+            amount: true,
+            status: true,
+            createdAt: true,
+            order: {
+              select: {
+                id: true,
+                currency: true,
+                totalAmount: true,
+              },
+            },
+            coupon: {
+              select: {
+                code: true,
+              },
+            },
           },
-        },
-        coupon: {
-          select: {
-            code: true,
+        }),
+      [],
+    ),
+    safeTableQuery(
+      () =>
+        prisma.order.groupBy({
+          by: ["currency"],
+          where: {
+            commissionEntries: {
+              some: { kinesioUserId: professionalId },
+            },
           },
-        },
-      },
-    }),
-    prisma.order.groupBy({
-      by: ["currency"],
-      where: {
-        commissionEntries: {
-          some: { kinesioUserId: id },
-        },
-      },
-      _sum: { totalAmount: true },
-      _count: { _all: true },
-    }),
+          _sum: { totalAmount: true },
+          _count: { _all: true },
+        }),
+      [],
+    ),
   ]);
 
   const salesCount = salesByCurrency.reduce((sum, item) => sum + item._count._all, 0);
@@ -156,6 +195,9 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
           <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
             Alta {professional.createdAt.toISOString().slice(0, 10)}
           </span>
+          {professional.slug ? (
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-starfeet-blue">/{professional.slug}</span>
+          ) : null}
           <Link href="/admin/professionals" className="rounded-full border border-starfeet-blue/30 px-3 py-1 text-xs font-bold text-starfeet-blue hover:bg-starfeet-blue/5">
             Volver a profesionales
           </Link>
@@ -243,6 +285,21 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
       </article>
     </section>
   );
+}
+
+async function safeTableQuery<T>(query: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await query();
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      return fallback;
+    }
+    throw error;
+  }
+}
+
+function isMissingTableError(error: unknown): error is Prisma.PrismaClientKnownRequestError {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021";
 }
 
 function MetricCard({ label, value, hint }: { label: string; value: string; hint: string }) {

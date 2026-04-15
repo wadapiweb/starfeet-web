@@ -5,6 +5,7 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/audit";
+import { generateUniqueUserSlug } from "@/lib/slug";
 
 type Body = {
   email: string;
@@ -49,8 +50,10 @@ export async function POST(request: Request) {
     const existing = await prisma.user.findUnique({ where: { email } });
 
     if (!existing) {
+      const slug = await generateUniqueUserSlug(name, email);
       const user = await prisma.user.create({
         data: {
+          slug,
           email,
           password: hashed,
           name,
@@ -96,6 +99,14 @@ export async function POST(request: Request) {
         ...(name ? { name } : {}),
       },
     });
+
+    if (!existing.slug) {
+      const slug = await generateUniqueUserSlug(name ?? existing.name, email, existing.id);
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: { slug },
+      });
+    }
 
     auditSecurityEvent({
       action: "REGISTER_LINKED_GOOGLE",

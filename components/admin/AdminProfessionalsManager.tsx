@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Professional = {
   id: string;
+  slug?: string | null;
   name: string | null;
   email: string;
   createdAt?: string;
@@ -171,7 +172,7 @@ export function AdminProfessionalsManager() {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Link
-                        href={`/admin/professionals/${professional.id}`}
+                        href={`/admin/professionals/${professional.slug ?? professional.id}`}
                         className="inline-flex rounded-lg border border-starfeet-blue/30 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-starfeet-blue hover:bg-starfeet-blue/5"
                       >
                         Ver detalle

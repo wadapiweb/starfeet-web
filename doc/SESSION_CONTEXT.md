@@ -216,10 +216,17 @@
 - `GET /api/v1/admin/kinesios` ahora expone alias semántico `professionals` (manteniendo `kinesios` para compatibilidad)
 - textos de Admin Cupones alineados a `profesionales` en filtros/asignaciones
 - [X] Vista single por profesional implementada:
-- nueva ruta dinámica `/admin/professionals/[id]` con dashboard individual del profesional
+- nueva ruta dinámica `/admin/professionals/[slug]` con dashboard individual del profesional
 - acceso desde listado de profesionales mediante acción `Ver detalle`
 - detalle incluye:
   - datos de perfil (nombre, email, teléfono, estado, fecha de alta)
   - métricas agregadas (cupones asignados, pacientes vinculados, comisiones acumuladas, ventas atribuidas por moneda)
   - estado de liquidación (pendiente/validado vs pagado)
   - cupones recientes y tabla de comisiones recientes
+- [X] Robustez ante esquema parcial en entorno runtime:
+- el detalle de profesional ya no rompe cuando faltan tablas nuevas (ej. `coupon_assignments`); aplica fallback controlado por consulta para error Prisma `P2021`
+- [X] Estrategia de slugs iniciada a nivel entidad:
+- `schema.prisma` actualizado con campo `slug` (`@unique`) en entidades core: `User`, `Product`, `Coupon`, `PatientProfile`, `Order`
+- generación automática de slug en altas nuevas de usuarios/profesionales/cupones
+- autenticación endurecida para asegurar slug en usuarios OAuth/credenciales existentes sin slug
+- script de backfill agregado: `scripts/ops/backfill_slugs.ts` + comando `npm run backfill:slugs`

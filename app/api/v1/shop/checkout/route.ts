@@ -4,6 +4,7 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { isCartExpired } from "@/lib/cart";
 import { auth } from "@/auth";
+import { generateUniquePatientSlug } from "@/lib/slug";
 
 type CheckoutBody = {
   cartId: string;
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
     }
 
     const total = subtotal - discountAmount;
+    const patientSlug = await generateUniquePatientSlug(body.clientName, cart.customerEmail);
 
     const result = await prisma.$transaction(async (tx) => {
       const now = new Date();
@@ -76,6 +78,7 @@ export async function POST(request: Request) {
           ...(body.clientPhone ? { phone: body.clientPhone } : {}),
         },
         create: {
+          slug: patientSlug,
           email: cart.customerEmail,
           name: body.clientName,
           phone: body.clientPhone,
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
 
       const order = await tx.order.create({
         data: {
+          slug: null,
           status: "INITIATED",
           currency: cart.currency,
           totalAmount: total,
@@ -110,6 +114,11 @@ export async function POST(request: Request) {
           },
         },
         include: { orderItems: true },
+      });
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: { slug: `orden-${order.id}` },
       });
 
       if (cart.coupon) {

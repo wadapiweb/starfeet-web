@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { jsonError } from "@/lib/api";
 import { ApiError, requireRole } from "@/lib/authz";
 import bcrypt from "bcryptjs";
+import { generateUniqueUserSlug } from "@/lib/slug";
 
 export async function GET() {
   try {
@@ -10,7 +11,7 @@ export async function GET() {
 
     const kinesios = await prisma.user.findMany({
       where: { role: "KINESIOLOGO", isActive: true },
-      select: { id: true, name: true, email: true },
+      select: { id: true, slug: true, name: true, email: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -50,8 +51,10 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const slug = await generateUniqueUserSlug(name, email);
     const professional = await prisma.user.create({
       data: {
+        slug,
         name,
         email,
         phone,
@@ -61,6 +64,7 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        slug: true,
         name: true,
         email: true,
         isActive: true,

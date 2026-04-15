@@ -315,3 +315,20 @@ Adoptar para `admin` y `kinesio` un layout inmersivo de plataforma: sidebar fijo
 ### Consecuencia
 - Las rutas de plataforma quedan desacopladas de la navbar pública del sitio.
 - Se habilita evolución modular de utilidades globales de backoffice (buscador unificado, notificaciones, quick actions).
+
+---
+
+## 2026-04-15 — Slugs canónicos para URLs de dominio
+
+### Decisión
+Incorporar campo `slug` único en entidades core (`User`, `Product`, `Coupon`, `PatientProfile`, `Order`) y comenzar migración de rutas a slug con fallback temporal por `id`.
+
+### Motivo
+- Evitar URLs opacas basadas en IDs técnicos.
+- Mejorar legibilidad, trazabilidad funcional y SEO en superficies públicas.
+- Permitir enlaces estables entre panel admin, ecommerce y futuras integraciones.
+
+### Consecuencia
+- Las altas nuevas generan slug automáticamente.
+- Se requiere `backfill` de datos históricos y sincronización de esquema por entorno (`prisma db push` en el estado actual sin migraciones versionadas).
+- Durante transición, algunas rutas aceptan `slug` e `id` para compatibilidad retroactiva.

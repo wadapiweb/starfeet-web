@@ -33,6 +33,7 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
+      slug: "admin",
       email: "admin@starfeet.ar",
       name: "Admin",
       password: hashedPassword,
@@ -42,6 +43,7 @@ async function main() {
 
   const kinesioA = await prisma.user.create({
     data: {
+      slug: "kinesiologo-uno",
       email: "kinesio1@starfeet.ar",
       name: "Kinesiólogo Uno",
       password: hashedPassword,
@@ -51,6 +53,7 @@ async function main() {
 
   const kinesioB = await prisma.user.create({
     data: {
+      slug: "kinesiologo-dos",
       email: "kinesio2@starfeet.ar",
       name: "Kinesiólogo Dos",
       password: hashedPassword,
@@ -60,6 +63,7 @@ async function main() {
 
   const coupon = await prisma.coupon.create({
     data: {
+      slug: "kinesio-10",
       code: "KINESIO-10",
       discountValue: 10,
       discountType: "PERCENTAGE",
@@ -80,6 +84,7 @@ async function main() {
 
   const starfeet = await prisma.product.create({
     data: {
+      slug: "starfeet-corrector",
       name: "Starfeet Corrector",
       type: "STARFEET",
       priceArs: 45000,
@@ -90,6 +95,7 @@ async function main() {
 
   const slipper = await prisma.product.create({
     data: {
+      slug: "pantuflas-relax",
       name: "Pantuflas Relax",
       type: "SLIPPER",
       priceArs: 25000,

@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { parseJson, jsonError } from "@/lib/api";
 import { requireRole, ApiError } from "@/lib/authz";
 import { DiscountType } from "@prisma/client";
+import { generateUniqueCouponSlug } from "@/lib/slug";
 
 type CreateCouponBody = {
   code: string;
@@ -77,9 +78,13 @@ export async function POST(request: Request) {
       }
     }
 
+    const code = body.code.trim().toUpperCase();
+    const slug = await generateUniqueCouponSlug(code);
+
     const coupon = await prisma.coupon.create({
       data: {
-        code: body.code.trim().toUpperCase(),
+        slug,
+        code,
         discountValue: body.discountValue,
         discountType: body.discountType,
         maxUses: body.maxUses,

@@ -5,6 +5,7 @@ import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import prisma from "./lib/prisma"
 import { auditSecurityEvent } from "./lib/security/audit"
+import { ensureUserSlug } from "./lib/slug"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -80,7 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (!user?.email) return false
             const dbUser = await prisma.user.findUnique({
                 where: { email: user.email.toLowerCase() },
-                select: { isActive: true },
+                select: { id: true, isActive: true, name: true, slug: true },
             })
             if (!dbUser) {
                 auditSecurityEvent({
@@ -102,6 +103,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 });
                 return false
             }
+            if (!dbUser.slug) {
+                await ensureUserSlug(dbUser.id, dbUser.name ?? user.name, user.email)
+            }
             auditSecurityEvent({
                 action: "AUTH_LOGIN_SUCCESS",
                 email: user.email,
@@ -114,9 +118,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token.email) {
                 const dbUser = await prisma.user.findUnique({
                     where: { email: token.email },
-                    select: { role: true, isActive: true }
+                    select: { id: true, name: true, role: true, isActive: true, slug: true }
                 })
                 if (dbUser) {
+                    if (!dbUser.slug) {
+                        await ensureUserSlug(dbUser.id, dbUser.name, token.email)
+                    }
                     token.role = dbUser.role
                     token.isActive = dbUser.isActive
                 }

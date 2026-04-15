@@ -53,3 +53,5 @@
 - [ ] Revisar semántica interactiva en componentes custom para que todo elemento visualmente clickeable exponga rol/teclado además del cursor pointer.
 - [ ] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.
 - [ ] Agregar filtros por rango de fechas en detalle de profesional para métricas y comisiones (hoy muestra visión global + recientes).
+- [ ] Aplicar cambios de esquema en DB (`npx prisma db push`) en cada entorno y validar creación de tablas faltantes (`coupon_assignments`, etc.).
+- [ ] Ejecutar `npm run backfill:slugs` en cada entorno para poblar slugs históricos y luego migrar rutas públicas por slug en módulos restantes.
