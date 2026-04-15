@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { OrderStatus, Currency } from "@prisma/client";
 
@@ -130,7 +131,12 @@ export function AdminSalesManager() {
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{new Date(order.createdAt).toLocaleDateString()}</p>
-                    <p className="font-mono text-xs text-gray-400">{order.id.slice(0, 10)}</p>
+                    <Link
+                      href={`/admin/sales/${order.id}`}
+                      className="font-mono text-xs text-starfeet-blue hover:underline"
+                    >
+                      {order.id.slice(0, 10)}
+                    </Link>
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{order.snapshotClientName || order.user?.name || "Sin nombre"}</p>

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
@@ -44,6 +46,10 @@ type ProductForm = {
   stockL: string;
   lowStockThreshold: string;
 };
+
+type ProductFormErrors = Partial<
+  Record<"name" | "priceArs" | "priceUsd" | "stockS" | "stockM" | "stockL" | "lowStockThreshold", string>
+>;
 
 const initialForm: ProductForm = {
   name: "",
@@ -105,7 +111,20 @@ function toPayload(form: ProductForm) {
   };
 }
 
-export function AdminProductsManager() {
+function validateProductForm(form: ProductForm): ProductFormErrors {
+  const errors: ProductFormErrors = {};
+  if (!form.name.trim()) errors.name = "El nombre es obligatorio.";
+  if (!(Number(form.priceArs) > 0)) errors.priceArs = "Precio ARS debe ser mayor a 0.";
+  if (!(Number(form.priceUsd) > 0)) errors.priceUsd = "Precio USD debe ser mayor a 0.";
+  if (Number(form.stockS) < 0) errors.stockS = "No puede ser negativo.";
+  if (Number(form.stockM) < 0) errors.stockM = "No puede ser negativo.";
+  if (Number(form.stockL) < 0) errors.stockL = "No puede ser negativo.";
+  if (Number(form.lowStockThreshold) < 0) errors.lowStockThreshold = "No puede ser negativo.";
+  return errors;
+}
+
+export function AdminProductsManager({ initialEdit = null }: { initialEdit?: string | null }) {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [createForm, setCreateForm] = useState<ProductForm>(initialForm);
   const [editForm, setEditForm] = useState<ProductForm>(initialForm);
@@ -118,6 +137,9 @@ export function AdminProductsManager() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | ProductTypeValue>("all");
+  const [initialEditHandled, setInitialEditHandled] = useState(false);
+  const [createErrors, setCreateErrors] = useState<ProductFormErrors>({});
+  const [editErrors, setEditErrors] = useState<ProductFormErrors>({});
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? null,
@@ -149,21 +171,28 @@ export function AdminProductsManager() {
     loadProducts().catch((e) => setError(e instanceof Error ? e.message : "Error inesperado"));
   }, [loadProducts]);
 
+  useEffect(() => {
+    if (!initialEdit || initialEditHandled || products.length === 0) return;
+    const target = products.find((product) => product.slug === initialEdit || product.id === initialEdit);
+    if (!target) {
+      setInitialEditHandled(true);
+      return;
+    }
+    openEditModal(target);
+    setInitialEditHandled(true);
+  }, [initialEdit, initialEditHandled, products]);
+
   function openCreateModal() {
     setCreateForm(initialForm);
+    setCreateErrors({});
     setSelectedProductId(null);
     setModalMode("create");
-  }
-
-  function openViewModal(product: Product) {
-    setSelectedProductId(product.id);
-    setEditForm(fromProductToForm(product));
-    setModalMode("view");
   }
 
   function openEditModal(product: Product) {
     setSelectedProductId(product.id);
     setEditForm(fromProductToForm(product));
+    setEditErrors({});
     setModalMode("edit");
   }
 
@@ -173,7 +202,9 @@ export function AdminProductsManager() {
   }
 
   async function onCreate() {
-    if (!canCreate) return;
+    const validationErrors = validateProductForm(createForm);
+    setCreateErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0 || !canCreate) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -198,7 +229,9 @@ export function AdminProductsManager() {
   }
 
   async function onSaveEdit() {
-    if (!selectedProduct || !canEdit) return;
+    const validationErrors = validateProductForm(editForm);
+    setEditErrors(validationErrors);
+    if (!selectedProduct || Object.keys(validationErrors).length > 0 || !canEdit) return;
 
     setLoading(true);
     setError(null);
@@ -259,7 +292,7 @@ export function AdminProductsManager() {
   const modalActions =
     selectedProduct && modalMode ? (
       <EntityActionsMenu
-        onView={() => openViewModal(selectedProduct)}
+        onView={() => router.push(`/admin/products/${selectedProduct.slug ?? selectedProduct.id}`)}
         onEdit={() => openEditModal(selectedProduct)}
         onDelete={() => requestDeleteProduct(selectedProduct)}
         viewAsUserHref={`/tienda/producto/${selectedProduct.slug ?? selectedProduct.id}`}
@@ -337,13 +370,12 @@ export function AdminProductsManager() {
                 products.map((product) => (
                   <tr key={product.id} className="border-t border-gray-200">
                     <td className="px-3 py-2 text-gray-800">
-                      <button
-                        type="button"
-                        onClick={() => openViewModal(product)}
-                        className="cursor-pointer text-left font-semibold text-starfeet-blue hover:underline"
+                      <Link
+                        href={`/admin/products/${product.slug ?? product.id}`}
+                        className="cursor-pointer font-semibold text-starfeet-blue hover:underline"
                       >
                         {product.name}
-                      </button>
+                      </Link>
                     </td>
                     <td className="px-3 py-2 text-gray-600">{product.slug ?? "-"}</td>
                     <td className="px-3 py-2">{product.type}</td>
@@ -362,9 +394,9 @@ export function AdminProductsManager() {
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <div className="inline-flex">
+                      <div className="inline-flex items-center gap-2">
                         <EntityActionsMenu
-                          onView={() => openViewModal(product)}
+                          onView={() => router.push(`/admin/products/${product.slug ?? product.id}`)}
                           onEdit={() => openEditModal(product)}
                           onDelete={() => requestDeleteProduct(product)}
                           viewAsUserHref={`/tienda/producto/${product.slug ?? product.id}`}
@@ -392,6 +424,7 @@ export function AdminProductsManager() {
         <ProductFormFields
           form={modalMode === "create" ? createForm : editForm}
           onChange={modalMode === "create" ? setCreateForm : setEditForm}
+          fieldErrors={modalMode === "create" ? createErrors : editErrors}
         />
       </EntityFormModal>
 
@@ -415,20 +448,23 @@ export function AdminProductsManager() {
 function ProductFormFields({
   form,
   onChange,
+  fieldErrors,
 }: {
   form: ProductForm;
   onChange: Dispatch<SetStateAction<ProductForm>>;
+  fieldErrors: ProductFormErrors;
 }) {
+  const fieldClass = (name: keyof ProductFormErrors) =>
+    `mt-1 w-full rounded-xl border px-3 py-2 text-sm ${
+      fieldErrors[name] ? "border-red-500 bg-red-50" : "border-gray-300"
+    }`;
+
   return (
     <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Nombre</span>
-        <input
-          className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-          value={form.name}
-          onChange={(e) => onChange((prev) => ({ ...prev, name: e.target.value }))}
-          required
-        />
+        <input className={fieldClass("name")} value={form.name} onChange={(e) => onChange((prev) => ({ ...prev, name: e.target.value }))} required />
+        {fieldErrors.name ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.name}</span> : null}
       </label>
 
       <label className="block">
@@ -456,27 +492,13 @@ function ProductFormFields({
         </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio ARS</span>
-          <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            type="number"
-            min={0}
-            step="0.01"
-            value={form.priceArs}
-            onChange={(e) => onChange((prev) => ({ ...prev, priceArs: e.target.value }))}
-            required
-          />
+          <input className={fieldClass("priceArs")} type="number" min={0} step="0.01" value={form.priceArs} onChange={(e) => onChange((prev) => ({ ...prev, priceArs: e.target.value }))} required />
+          {fieldErrors.priceArs ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceArs}</span> : null}
         </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio USD</span>
-          <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            type="number"
-            min={0}
-            step="0.01"
-            value={form.priceUsd}
-            onChange={(e) => onChange((prev) => ({ ...prev, priceUsd: e.target.value }))}
-            required
-          />
+          <input className={fieldClass("priceUsd")} type="number" min={0} step="0.01" value={form.priceUsd} onChange={(e) => onChange((prev) => ({ ...prev, priceUsd: e.target.value }))} required />
+          {fieldErrors.priceUsd ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceUsd}</span> : null}
         </label>
       </div>
 
@@ -529,43 +551,23 @@ function ProductFormFields({
         <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
           <label className="block">
             <span className="text-[11px] font-bold uppercase text-gray-500">Stock S</span>
-            <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-              type="number"
-              min={0}
-              value={form.stockS}
-              onChange={(e) => onChange((prev) => ({ ...prev, stockS: e.target.value }))}
-            />
+            <input className={fieldClass("stockS")} type="number" min={0} value={form.stockS} onChange={(e) => onChange((prev) => ({ ...prev, stockS: e.target.value }))} />
+            {fieldErrors.stockS ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.stockS}</span> : null}
           </label>
           <label className="block">
             <span className="text-[11px] font-bold uppercase text-gray-500">Stock M</span>
-            <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-              type="number"
-              min={0}
-              value={form.stockM}
-              onChange={(e) => onChange((prev) => ({ ...prev, stockM: e.target.value }))}
-            />
+            <input className={fieldClass("stockM")} type="number" min={0} value={form.stockM} onChange={(e) => onChange((prev) => ({ ...prev, stockM: e.target.value }))} />
+            {fieldErrors.stockM ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.stockM}</span> : null}
           </label>
           <label className="block">
             <span className="text-[11px] font-bold uppercase text-gray-500">Stock L</span>
-            <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-              type="number"
-              min={0}
-              value={form.stockL}
-              onChange={(e) => onChange((prev) => ({ ...prev, stockL: e.target.value }))}
-            />
+            <input className={fieldClass("stockL")} type="number" min={0} value={form.stockL} onChange={(e) => onChange((prev) => ({ ...prev, stockL: e.target.value }))} />
+            {fieldErrors.stockL ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.stockL}</span> : null}
           </label>
           <label className="block">
             <span className="text-[11px] font-bold uppercase text-gray-500">Umbral bajo stock</span>
-            <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-              type="number"
-              min={0}
-              value={form.lowStockThreshold}
-              onChange={(e) => onChange((prev) => ({ ...prev, lowStockThreshold: e.target.value }))}
-            />
+            <input className={fieldClass("lowStockThreshold")} type="number" min={0} value={form.lowStockThreshold} onChange={(e) => onChange((prev) => ({ ...prev, lowStockThreshold: e.target.value }))} />
+            {fieldErrors.lowStockThreshold ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.lowStockThreshold}</span> : null}
           </label>
         </div>
       </div>

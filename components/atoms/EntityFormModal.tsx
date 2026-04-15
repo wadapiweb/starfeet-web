@@ -50,19 +50,19 @@ export function EntityFormModal({
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={onSubmit}
-              disabled={!canSubmit || loading}
-              className="cursor-pointer col-span-2 rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? "Guardando..." : label}
-            </button>
-            <button
-              type="button"
               onClick={onClose}
               disabled={loading}
               className="cursor-pointer col-span-1 rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={!canSubmit || loading}
+              className="cursor-pointer col-span-2 rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? "Guardando..." : label}
             </button>
           </div>
         )}

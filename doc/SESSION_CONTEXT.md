@@ -271,3 +271,30 @@
   - vista en modo solo lectura al hacer click en el título de la fila
   - menú de opciones (`Ver`, `Editar`, `Eliminar` y `Ver como usuario` para productos) tanto en tabla como en header del modal
   - layout de acciones en edición: botón primario 66% + cancelar 33%
+- [X] Navegación a páginas single desde listados admin:
+- agregado `app/admin/products/[slug]/page.tsx`
+- en `/admin/products`, `/admin/professionals`, `/admin/coupons`:
+  - click en título abre la página single
+  - botón `Ver` abre la página single
+  - opción `Ver` del menú 3 puntos abre la página single
+- menú 3 puntos actualizado con iconos por acción y opción `Ver como usuario` como ítem directo (sin submenú)
+- [X] Validación visual por campo en formularios admin (bloqueo de envío):
+- productos, profesionales y cupones (listado + single) ahora validan campos requeridos en cliente antes de enviar.
+- cuando hay error: borde rojo (`border-red-500`), fondo de error suave y mensaje inline por campo.
+- envío bloqueado hasta corregir errores, evitando requests inválidos al backend.
+- cobertura aplicada en:
+  - `components/admin/AdminProductsManager.tsx`
+  - `components/admin/ProductSingleActions.tsx`
+  - `components/admin/AdminProfessionalsManager.tsx`
+  - `components/admin/ProfessionalSingleActions.tsx`
+  - `components/admin/AdminCouponsManager.tsx`
+  - `components/admin/CouponSingleActions.tsx`
+- [X] Ventas demo + single de compra en Admin:
+- creadas 3 ventas de prueba en DB (idempotente por `transactionId`):
+  - `trx-demo-pending-001` → `PENDING_PAYMENT`
+  - `trx-demo-paid-001` → `PAID`
+  - `trx-demo-delivered-001` → `DELIVERED`
+- nuevo script operativo: `scripts/ops/create_demo_sales.ts`
+- nueva vista detalle por compra: `app/admin/sales/[id]/page.tsx`
+- listado de ventas enlazado a single por ID desde `AdminSalesManager`.
+- API admin de ventas extendida con `GET /api/v1/admin/sales/:id` para detalle.

@@ -63,3 +63,6 @@
 - [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
 - [ ] Migrar edición de productos por slug en endpoint (`PATCH /api/v1/admin/products/[slug]`) y quitar fallback por id.
 - [ ] Forzar selección de talle en tienda para eliminar fallback legacy sin `inventoryId` en checkout.
+- [X] Validación de formularios admin por campo: borde rojo + mensaje inline + bloqueo de submit en errores (productos/profesionales/cupones en listado y single).
+- [X] Implementar single de compra en admin (`/admin/sales/[id]`) y navegación desde listado de ventas.
+- [X] Crear script de datos demo de ventas con 3 estados (`PENDING_PAYMENT`, `PAID`, `DELIVERED`) para pruebas funcionales.

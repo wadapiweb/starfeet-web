@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProfessionalSingleActions } from "@/components/admin/ProfessionalSingleActions";
 
 type AdminProfessionalDetailPageProps = {
   params: Promise<{
@@ -182,10 +183,23 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
   return (
     <section className="space-y-6">
       <header className="rounded-2xl border border-gray-200 bg-white p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">Profesional</p>
-        <h2 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">
-          {professional.name ?? "Sin nombre"}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">Profesional</p>
+            <h2 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">
+              {professional.name ?? "Sin nombre"}
+            </h2>
+          </div>
+          <ProfessionalSingleActions
+            professional={{
+              id: professional.id,
+              name: professional.name,
+              email: professional.email,
+              phone: professional.phone,
+              isActive: professional.isActive,
+            }}
+          />
+        </div>
         <p className="mt-2 text-sm text-gray-700">{professional.email}</p>
         <p className="text-sm text-gray-700">{professional.phone ?? "Sin teléfono"}</p>
         <div className="mt-4 flex flex-wrap gap-2">

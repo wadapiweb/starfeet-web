@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
@@ -26,6 +27,8 @@ type ProfessionalForm = {
   isActive: boolean;
 };
 
+type ProfessionalFormErrors = Partial<Record<"email" | "password", string>>;
+
 const initialForm: ProfessionalForm = {
   name: "",
   email: "",
@@ -34,7 +37,29 @@ const initialForm: ProfessionalForm = {
   isActive: true,
 };
 
-export function AdminProfessionalsManager() {
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function validateCreateForm(form: ProfessionalForm): ProfessionalFormErrors {
+  const errors: ProfessionalFormErrors = {};
+  if (!form.email.trim()) errors.email = "El email es obligatorio.";
+  else if (!isValidEmail(form.email)) errors.email = "Formato de email inválido.";
+  if (!form.password.trim()) errors.password = "La contraseña es obligatoria.";
+  else if (form.password.trim().length < 8) errors.password = "Debe tener al menos 8 caracteres.";
+  return errors;
+}
+
+function validateEditForm(form: ProfessionalForm): ProfessionalFormErrors {
+  const errors: ProfessionalFormErrors = {};
+  if (!form.email.trim()) errors.email = "El email es obligatorio.";
+  else if (!isValidEmail(form.email)) errors.email = "Formato de email inválido.";
+  if (form.password.trim() && form.password.trim().length < 8) errors.password = "Debe tener al menos 8 caracteres.";
+  return errors;
+}
+
+export function AdminProfessionalsManager({ initialEdit = null }: { initialEdit?: string | null }) {
+  const router = useRouter();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [createForm, setCreateForm] = useState<ProfessionalForm>(initialForm);
   const [editForm, setEditForm] = useState<ProfessionalForm>(initialForm);
@@ -44,6 +69,9 @@ export function AdminProfessionalsManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [initialEditHandled, setInitialEditHandled] = useState(false);
+  const [createErrors, setCreateErrors] = useState<ProfessionalFormErrors>({});
+  const [editErrors, setEditErrors] = useState<ProfessionalFormErrors>({});
 
   const selected = useMemo(
     () => professionals.find((professional) => professional.id === selectedId) ?? null,
@@ -72,11 +100,12 @@ export function AdminProfessionalsManager() {
 
   function openCreateModal() {
     setCreateForm(initialForm);
+    setCreateErrors({});
     setSelectedId(null);
     setModalMode("create");
   }
 
-  function openViewModal(professional: Professional) {
+  const openViewModal = useCallback((professional: Professional) => {
     setSelectedId(professional.id);
     setEditForm({
       name: professional.name ?? "",
@@ -86,12 +115,24 @@ export function AdminProfessionalsManager() {
       isActive: professional.isActive ?? true,
     });
     setModalMode("view");
-  }
+  }, []);
 
-  function openEditModal(professional: Professional) {
+  const openEditModal = useCallback((professional: Professional) => {
     openViewModal(professional);
+    setEditErrors({});
     setModalMode("edit");
-  }
+  }, [openViewModal]);
+
+  useEffect(() => {
+    if (!initialEdit || initialEditHandled || professionals.length === 0) return;
+    const target = professionals.find((professional) => professional.slug === initialEdit || professional.id === initialEdit);
+    if (!target) {
+      setInitialEditHandled(true);
+      return;
+    }
+    openEditModal(target);
+    setInitialEditHandled(true);
+  }, [initialEdit, initialEditHandled, openEditModal, professionals]);
 
   function closeModal() {
     setModalMode(null);
@@ -100,7 +141,9 @@ export function AdminProfessionalsManager() {
 
   async function onCreate(event?: FormEvent) {
     event?.preventDefault();
-    if (!canCreate) return;
+    const validationErrors = validateCreateForm(createForm);
+    setCreateErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0 || !canCreate) return;
 
     setLoading(true);
     setError(null);
@@ -131,7 +174,9 @@ export function AdminProfessionalsManager() {
 
   async function onSaveEdit(event?: FormEvent) {
     event?.preventDefault();
-    if (!selected || !canEdit) return;
+    const validationErrors = validateEditForm(editForm);
+    setEditErrors(validationErrors);
+    if (!selected || Object.keys(validationErrors).length > 0 || !canEdit) return;
 
     setLoading(true);
     setError(null);
@@ -197,7 +242,7 @@ export function AdminProfessionalsManager() {
   const headerActions =
     selected && modalMode ? (
       <EntityActionsMenu
-        onView={() => openViewModal(selected)}
+        onView={() => router.push(`/admin/professionals/${selected.slug ?? selected.id}`)}
         onEdit={() => openEditModal(selected)}
         onDelete={() => requestDelete(selected)}
       />
@@ -231,42 +276,32 @@ export function AdminProfessionalsManager() {
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Slug</th>
                 <th className="px-3 py-2">Alta</th>
-                <th className="px-3 py-2">Detalle</th>
                 <th className="px-3 py-2 text-right">Opciones</th>
               </tr>
             </thead>
             <tbody>
               {professionals.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-sm text-gray-500">No hay profesionales cargados.</td>
+                  <td colSpan={5} className="px-3 py-4 text-sm text-gray-500">No hay profesionales cargados.</td>
                 </tr>
               ) : (
                 professionals.map((professional) => (
                   <tr key={professional.id} className="border-t border-gray-200">
                     <td className="px-3 py-2 text-gray-800">
-                      <button
-                        type="button"
-                        onClick={() => openViewModal(professional)}
-                        className="cursor-pointer text-left font-semibold text-starfeet-blue hover:underline"
+                      <Link
+                        href={`/admin/professionals/${professional.slug ?? professional.id}`}
+                        className="cursor-pointer font-semibold text-starfeet-blue hover:underline"
                       >
                         {professional.name ?? "Sin nombre"}
-                      </button>
+                      </Link>
                     </td>
                     <td className="px-3 py-2 text-gray-700">{professional.email}</td>
                     <td className="px-3 py-2 text-gray-600">{professional.slug ?? "-"}</td>
                     <td className="px-3 py-2 text-gray-600">{professional.createdAt ? professional.createdAt.slice(0, 10) : "-"}</td>
-                    <td className="px-3 py-2">
-                      <Link
-                        href={`/admin/professionals/${professional.slug ?? professional.id}`}
-                        className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 hover:bg-gray-100"
-                      >
-                        Ver métricas
-                      </Link>
-                    </td>
                     <td className="px-3 py-2 text-right">
                       <div className="inline-flex">
                         <EntityActionsMenu
-                          onView={() => openViewModal(professional)}
+                          onView={() => router.push(`/admin/professionals/${professional.slug ?? professional.id}`)}
                           onEdit={() => openEditModal(professional)}
                           onDelete={() => requestDelete(professional)}
                         />
@@ -308,7 +343,9 @@ export function AdminProfessionalsManager() {
           <label className="block">
             <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Email</span>
             <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${
+                (modalMode === "create" ? createErrors.email : editErrors.email) ? "border-red-500 bg-red-50" : "border-gray-300"
+              }`}
               type="email"
               value={modalMode === "create" ? createForm.email : editForm.email}
               onChange={(e) =>
@@ -319,6 +356,11 @@ export function AdminProfessionalsManager() {
               placeholder="profesional@email.com"
               required
             />
+            {(modalMode === "create" ? createErrors.email : editErrors.email) ? (
+              <span className="mt-1 block text-xs font-semibold text-red-700">
+                {modalMode === "create" ? createErrors.email : editErrors.email}
+              </span>
+            ) : null}
           </label>
 
           <label className="block">
@@ -340,7 +382,9 @@ export function AdminProfessionalsManager() {
               {modalMode === "create" ? "Contraseña inicial" : "Nueva contraseña (opcional)"}
             </span>
             <input
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${
+                (modalMode === "create" ? createErrors.password : editErrors.password) ? "border-red-500 bg-red-50" : "border-gray-300"
+              }`}
               type="password"
               minLength={8}
               value={modalMode === "create" ? createForm.password : editForm.password}
@@ -351,6 +395,11 @@ export function AdminProfessionalsManager() {
               }
               placeholder={modalMode === "create" ? "Mínimo 8 caracteres" : "Dejar vacío para no cambiar"}
             />
+            {(modalMode === "create" ? createErrors.password : editErrors.password) ? (
+              <span className="mt-1 block text-xs font-semibold text-red-700">
+                {modalMode === "create" ? createErrors.password : editErrors.password}
+              </span>
+            ) : null}
           </label>
 
           {modalMode !== "create" ? (

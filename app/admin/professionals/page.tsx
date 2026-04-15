@@ -1,5 +1,10 @@
 import { AdminProfessionalsManager } from "@/components/admin/AdminProfessionalsManager";
 
-export default function AdminProfessionalsPage() {
-  return <AdminProfessionalsManager />;
+type AdminProfessionalsPageProps = {
+  searchParams: Promise<{ edit?: string }>;
+};
+
+export default async function AdminProfessionalsPage({ searchParams }: AdminProfessionalsPageProps) {
+  const query = await searchParams;
+  return <AdminProfessionalsManager initialEdit={query.edit ?? null} />;
 }

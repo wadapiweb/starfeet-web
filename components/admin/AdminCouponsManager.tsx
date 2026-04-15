@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
@@ -48,6 +50,8 @@ type CouponForm = {
   kinesioUserIds: string[];
 };
 
+type CouponFormErrors = Partial<Record<"code" | "discountValue" | "commissionValue" | "maxUses" | "expiresAt", string>>;
+
 const initialForm: CouponForm = {
   code: "",
   discountType: "PERCENTAGE",
@@ -85,7 +89,19 @@ function toForm(coupon: Coupon): CouponForm {
   };
 }
 
-export function AdminCouponsManager() {
+function validateCouponForm(form: CouponForm): CouponFormErrors {
+  const errors: CouponFormErrors = {};
+  if (!form.code.trim()) errors.code = "El código es obligatorio.";
+  else if (form.code.trim().length < 3) errors.code = "Debe tener al menos 3 caracteres.";
+  if (!(form.discountValue > 0)) errors.discountValue = "Debe ser mayor a 0.";
+  if (!(form.maxUses > 0)) errors.maxUses = "Debe ser mayor a 0.";
+  if (form.commissionValue < 0) errors.commissionValue = "No puede ser negativo.";
+  if (!form.expiresAt) errors.expiresAt = "La fecha de caducidad es obligatoria.";
+  return errors;
+}
+
+export function AdminCouponsManager({ initialEdit = null }: { initialEdit?: string | null }) {
+  const router = useRouter();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [kinesios, setKinesios] = useState<Kinesio[]>([]);
   const [createForm, setCreateForm] = useState<CouponForm>(initialForm);
@@ -98,6 +114,9 @@ export function AdminCouponsManager() {
   const [success, setSuccess] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [codeFilter, setCodeFilter] = useState("");
+  const [initialEditHandled, setInitialEditHandled] = useState(false);
+  const [createErrors, setCreateErrors] = useState<CouponFormErrors>({});
+  const [editErrors, setEditErrors] = useState<CouponFormErrors>({});
 
   const selected = useMemo(() => coupons.find((coupon) => coupon.id === selectedId) ?? null, [coupons, selectedId]);
 
@@ -156,20 +175,33 @@ export function AdminCouponsManager() {
 
   function openCreateModal() {
     setCreateForm(initialForm);
+    setCreateErrors({});
     setSelectedId(null);
     setModalMode("create");
   }
 
-  function openViewModal(coupon: Coupon) {
+  const openViewModal = useCallback((coupon: Coupon) => {
     setSelectedId(coupon.id);
     setEditForm(toForm(coupon));
     setModalMode("view");
-  }
+  }, []);
 
-  function openEditModal(coupon: Coupon) {
+  const openEditModal = useCallback((coupon: Coupon) => {
     openViewModal(coupon);
+    setEditErrors({});
     setModalMode("edit");
-  }
+  }, [openViewModal]);
+
+  useEffect(() => {
+    if (!initialEdit || initialEditHandled || coupons.length === 0) return;
+    const target = coupons.find((coupon) => coupon.slug === initialEdit || coupon.id === initialEdit);
+    if (!target) {
+      setInitialEditHandled(true);
+      return;
+    }
+    openEditModal(target);
+    setInitialEditHandled(true);
+  }, [coupons, initialEdit, initialEditHandled, openEditModal]);
 
   function closeModal() {
     setModalMode(null);
@@ -178,7 +210,9 @@ export function AdminCouponsManager() {
 
   async function onCreate(event?: FormEvent) {
     event?.preventDefault();
-    if (!canCreate) return;
+    const validationErrors = validateCouponForm(createForm);
+    setCreateErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0 || !canCreate) return;
 
     setLoading(true);
     setError(null);
@@ -209,7 +243,9 @@ export function AdminCouponsManager() {
 
   async function onSaveEdit(event?: FormEvent) {
     event?.preventDefault();
-    if (!selected || !canEdit) return;
+    const validationErrors = validateCouponForm(editForm);
+    setEditErrors(validationErrors);
+    if (!selected || Object.keys(validationErrors).length > 0 || !canEdit) return;
 
     setLoading(true);
     setError(null);
@@ -268,7 +304,7 @@ export function AdminCouponsManager() {
   const headerActions =
     selected && modalMode ? (
       <EntityActionsMenu
-        onView={() => openViewModal(selected)}
+        onView={() => router.push(`/admin/coupons/${selected.slug ?? selected.id}`)}
         onEdit={() => openEditModal(selected)}
         onDelete={() => requestDelete(selected)}
       />
@@ -335,13 +371,12 @@ export function AdminCouponsManager() {
                 coupons.map((coupon) => (
                   <tr key={coupon.id} className="border-t border-gray-200">
                     <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => openViewModal(coupon)}
-                        className="cursor-pointer text-left font-bold text-starfeet-blue hover:underline"
+                      <Link
+                        href={`/admin/coupons/${coupon.slug ?? coupon.id}`}
+                        className="cursor-pointer font-bold text-starfeet-blue hover:underline"
                       >
                         {coupon.code}
-                      </button>
+                      </Link>
                     </td>
                     <td className="px-3 py-2">
                       {coupon.discountType === "PERCENTAGE" ? `${coupon.discountValue}%` : `${coupon.discountValue} fijo`}
@@ -362,9 +397,9 @@ export function AdminCouponsManager() {
                         : coupon.assignments.map((assignment) => assignment.kinesioUser.name ?? assignment.kinesioUser.email).join(", ")}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <div className="inline-flex">
+                      <div className="inline-flex items-center gap-2">
                         <EntityActionsMenu
-                          onView={() => openViewModal(coupon)}
+                          onView={() => router.push(`/admin/coupons/${coupon.slug ?? coupon.id}`)}
                           onEdit={() => openEditModal(coupon)}
                           onDelete={() => requestDelete(coupon)}
                         />
@@ -393,6 +428,7 @@ export function AdminCouponsManager() {
           kinesios={kinesios}
           onChange={modalMode === "create" ? setCreateForm : setEditForm}
           onToggleKinesio={(id) => toggleKinesio(modalMode === "create" ? setCreateForm : setEditForm, id)}
+          fieldErrors={modalMode === "create" ? createErrors : editErrors}
         />
       </EntityFormModal>
 
@@ -418,23 +454,31 @@ function CouponFormFields({
   kinesios,
   onChange,
   onToggleKinesio,
+  fieldErrors,
 }: {
   form: CouponForm;
   kinesios: Kinesio[];
   onChange: Dispatch<SetStateAction<CouponForm>>;
   onToggleKinesio: (id: string) => void;
+  fieldErrors: CouponFormErrors;
 }) {
+  const fieldClass = (name: keyof CouponFormErrors) =>
+    `mt-1 w-full rounded-xl border px-3 py-2 text-sm ${
+      fieldErrors[name] ? "border-red-500 bg-red-50" : "border-gray-300"
+    }`;
+
   return (
     <form className="space-y-4" onSubmit={(event) => event.preventDefault()}>
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Código</span>
         <input
-          className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          className={fieldClass("code")}
           value={form.code}
           onChange={(e) => onChange((prev) => ({ ...prev, code: e.target.value }))}
           placeholder="KINESIO-10"
           required
         />
+        {fieldErrors.code ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.code}</span> : null}
       </label>
 
       <div className="grid grid-cols-2 gap-3">
@@ -453,13 +497,14 @@ function CouponFormFields({
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Valor descuento</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            className={fieldClass("discountValue")}
             type="number"
             min={1}
             value={form.discountValue}
             onChange={(e) => onChange((prev) => ({ ...prev, discountValue: Number(e.target.value) }))}
             required
           />
+          {fieldErrors.discountValue ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.discountValue}</span> : null}
         </label>
       </div>
 
@@ -479,12 +524,13 @@ function CouponFormFields({
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Valor comisión</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            className={fieldClass("commissionValue")}
             type="number"
             min={0}
             value={form.commissionValue}
             onChange={(e) => onChange((prev) => ({ ...prev, commissionValue: Number(e.target.value) }))}
           />
+          {fieldErrors.commissionValue ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.commissionValue}</span> : null}
         </label>
       </div>
 
@@ -492,24 +538,26 @@ function CouponFormFields({
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Usos máximos</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            className={fieldClass("maxUses")}
             type="number"
             min={1}
             value={form.maxUses}
             onChange={(e) => onChange((prev) => ({ ...prev, maxUses: Number(e.target.value) }))}
             required
           />
+          {fieldErrors.maxUses ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.maxUses}</span> : null}
         </label>
 
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Caducidad</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            className={fieldClass("expiresAt")}
             type="date"
             value={form.expiresAt}
             onChange={(e) => onChange((prev) => ({ ...prev, expiresAt: e.target.value }))}
             required
           />
+          {fieldErrors.expiresAt ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.expiresAt}</span> : null}
         </label>
       </div>
 

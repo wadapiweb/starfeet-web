@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CouponSingleActions } from "@/components/admin/CouponSingleActions";
 
 type AdminCouponDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -31,13 +32,46 @@ export default async function AdminCouponDetailPage({ params }: AdminCouponDetai
     notFound();
   }
 
+  const kinesios = await prisma.user.findMany({
+    where: { role: "KINESIOLOGO", isActive: true },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <section className="space-y-6">
       <header className="rounded-2xl border border-gray-200 bg-white p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">Cupón</p>
-        <h2 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">
-          {coupon.code}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">Cupón</p>
+            <h2 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">
+              {coupon.code}
+            </h2>
+          </div>
+          <CouponSingleActions
+            coupon={{
+              id: coupon.id,
+              code: coupon.code,
+              discountType: coupon.discountType,
+              discountValue: coupon.discountValue,
+              commissionType: coupon.commissionType,
+              commissionValue: coupon.commissionValue,
+              maxUses: coupon.maxUses,
+              usageCount: coupon.usageCount,
+              isStackable: coupon.isStackable,
+              isActive: coupon.isActive,
+              expiresAt: coupon.expiresAt?.toISOString() ?? null,
+              assignments: coupon.assignments.map((assignment) => ({
+                kinesioUser: {
+                  id: assignment.kinesioUser.id,
+                  name: assignment.kinesioUser.name,
+                  email: assignment.kinesioUser.email,
+                },
+              })),
+            }}
+            kinesios={kinesios}
+          />
+        </div>
         <p className="mt-2 text-sm text-gray-700">
           Descuento: {coupon.discountType === "PERCENTAGE" ? `${coupon.discountValue}%` : `${coupon.discountValue} fijo`} ·
           Comisión: {coupon.commissionType === "PERCENTAGE" ? ` ${coupon.commissionValue}%` : ` ${coupon.commissionValue} fijo`}
