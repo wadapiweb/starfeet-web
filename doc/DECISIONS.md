@@ -240,3 +240,18 @@ Aplicar rate limiting server-side en login de credenciales y flujos de códigos 
 ### Consecuencia
 - Se limita por ventana temporal en memoria de proceso (válido para instancia única actual).
 - En siguiente etapa se migrará a almacenamiento distribuido para escalado horizontal.
+
+---
+
+## 2026-04-15 — Habilitación explícita de `allowedDevOrigins` para entorno dev
+
+### Decisión
+Configurar `allowedDevOrigins` en `next.config.ts` incluyendo `dev.starfeet.ar` y orígenes locales para compatibilidad con controles CSRF/cross-site de Next 16 en desarrollo.
+
+### Motivo
+- Evitar bloqueos por chequeos cross-origin en recursos `/_next/*` bajo dominio de desarrollo.
+- Reducir falsos positivos operativos durante pruebas de login/sesión.
+
+### Consecuencia
+- La configuración de dev queda explícita y versionada.
+- Persiste análisis pendiente de algunos requests `no-cors` bloqueados de origen no controlado.

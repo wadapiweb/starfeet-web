@@ -35,3 +35,5 @@
 - [ ] Persistir auditoría en tabla dedicada con dashboard admin de seguridad.
 - [ ] Configurar `allowedDevOrigins` en `next.config.*` para eliminar warning cross-origin en entorno dev.
 - [ ] Evaluar elevar memoria o optimizar módulos pesados para reducir tiempo de primera compilación en dev.
+- [ ] Investigar origen de requests `no-cors` cross-site a `/_next/*` en dev (posible tráfico externo/probe o extensión) y filtrar en proxy reverse.
+- [ ] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.

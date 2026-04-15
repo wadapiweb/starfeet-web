@@ -156,3 +156,7 @@
 - ajuste `NODE_OPTIONS` a 1024MB para `dev` y `build` en `package.json` (evita reinicios por OOM en dev)
 - estilos globales para `input/textarea/select` con texto oscuro y fondo blanco (mejora contraste en auth forms)
 - reinicio de contenedor `starfeet-web` para aplicar cambios de runtime
+- [X] Ajuste de Next dev origins:
+- `next.config.ts` actualizado con `allowedDevOrigins` para `dev.starfeet.ar` y hosts locales.
+- verificación de login `/login` respondiendo 200 en contenedor tras restart.
+- observado warning residual de bloqueo cross-site en requests `/_next/*` tipo `no-cors` (no impacta login por credenciales).
