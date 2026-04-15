@@ -2,14 +2,21 @@
 import React from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { BrandLogo } from "../atoms/BrandLogo";
 import { Button } from "../atoms/Button";
 
 export const Navbar = () => {
     const { data: session } = useSession();
+    const pathname = usePathname();
     const role = session?.user?.role;
     const panelHref =
         role === "ADMIN" ? "/admin" : role === "KINESIOLOGO" ? "/kinesio" : "/cliente";
+    const isBackoffice = pathname.startsWith("/admin") || pathname.startsWith("/kinesio");
+
+    if (isBackoffice) {
+        return null;
+    }
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-lg border-b border-gray-100 h-24 flex items-center">

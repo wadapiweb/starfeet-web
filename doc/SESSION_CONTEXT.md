@@ -173,3 +173,7 @@
 - admin con módulos: `/admin`, `/admin/coupons`, `/admin/sales`, `/admin/crm`, `/admin/finance`
 - kinesio con módulos: `/kinesio`, `/kinesio/coupons`, `/kinesio/patients`, `/kinesio/commissions`, `/kinesio/payouts`
 - navegación sidebar actualizada a rutas reales y activación por prefijo
+- [X] Rediseño UX/UI senior para backoffice admin+kinesio:
+- sidebar fijo a la izquierda en altura completa (`inset-y-0`) para desktop + drawer móvil
+- header personalizado sticky con: nombre de usuario, buscador contextual y notificaciones
+- navbar pública ocultada en rutas `/admin*` y `/kinesio*` para evitar ruido visual y conflicto de navegación

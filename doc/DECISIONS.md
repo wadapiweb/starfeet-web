@@ -300,3 +300,18 @@ Mover la autorización de `admin` y `kinesio` desde páginas sueltas hacia `layo
 ### Consecuencia
 - Todas las subrutas de cada dominio heredan automáticamente guardas y estructura visual.
 - Se simplifica la creación de nuevos módulos en cada panel.
+
+---
+
+## 2026-04-15 — Backoffice con layout inmersivo (sidebar full-height + header operativo)
+
+### Decisión
+Adoptar para `admin` y `kinesio` un layout inmersivo de plataforma: sidebar fijo izquierda a altura completa y header operativo sticky con herramientas de productividad (search, notifications, session).
+
+### Motivo
+- Alinear experiencia con estándares de SaaS/backoffice escalable.
+- Mejorar velocidad de navegación y foco operativo en tareas frecuentes.
+
+### Consecuencia
+- Las rutas de plataforma quedan desacopladas de la navbar pública del sitio.
+- Se habilita evolución modular de utilidades globales de backoffice (buscador unificado, notificaciones, quick actions).

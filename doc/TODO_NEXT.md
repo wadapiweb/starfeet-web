@@ -43,3 +43,5 @@
 - [ ] Extraer tokens visuales de backoffice (spacing, radius, typographic scale) a capa de design system por dominio.
 - [ ] Reemplazar placeholders de módulos por implementaciones reales conectadas a API en cada subruta.
 - [ ] Agregar breadcrumbs y metadata dinámica por submódulo en el header del shell.
+- [ ] Conectar buscador de header a acciones reales por módulo (órdenes/cupones/pacientes).
+- [ ] Reemplazar badge estático de notificaciones por feed real + centro de notificaciones.
