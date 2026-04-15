@@ -37,11 +37,31 @@
 - contratos API mínimos
 - reglas de seguridad/a11y
 - plan de ejecución de Etapa 1
+- [X] Etapa 1 (bloque técnico inicial) implementada:
+- `prisma/schema.prisma` refactorizado con:
+- cupones multi-kinesiólogo (`CouponAssignment`)
+- redenciones (`CouponRedemption`)
+- paciente dedicado (`PatientProfile`, `PatientKinesioLink`)
+- carrito con TTL (`Cart`, `CartItem`)
+- comisiones/liquidación (`CommissionEntry`, `PayoutPeriod`)
+- CRM v1 (`Lead`, `LeadActivity`, `Campaign`, `CampaignRecipient`)
+- `prisma.config.ts` agregado para compatibilidad Prisma 7
+- `prisma/seed.ts` actualizado al nuevo dominio
+- helpers server-side agregados:
+- `lib/authz.ts`
+- `lib/api.ts`
+- `lib/cart.ts`
+- API v1 scaffolding inicial agregado:
+- `admin/coupons` + `admin/coupons/:id/assignments`
+- `kinesio/coupons` + `kinesio/dashboard`
+- `cliente/orders`
+- `shop/cart`, `shop/cart/:id`, `shop/cart/:id/apply-coupon`, `shop/checkout`
 
 ## Validaciones ejecutadas
-- [ ] lint
+- [X] lint (sin errores, 3 warnings previos existentes)
 - [ ] build
 - [ ] test
+- [X] prisma validate
 - [ ] smoke
 
 ## Impacto de deploy
@@ -54,3 +74,4 @@
 - [ ] Personalizar rutas del smoke test con endpoints reales de la app
 - [ ] Activar branch protection en `main` en GitHub
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
+- [ ] `npm run build` falla por dependencias faltantes en entorno (`@auth/prisma-adapter`, `framer-motion`, `lenis/react`)

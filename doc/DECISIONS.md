@@ -119,3 +119,18 @@ CRM v1 con pipeline simple, campos mínimos de lead, timeline de actividad y aut
 ### Consecuencia
 - Pipeline inicial: `NEW_LEAD`, `CONTACTED`, `QUALIFIED`, `PROPOSAL_SENT`, `WON`, `LOST`.
 - Automatizaciones iniciales: follow-up >48h sin actividad y carrito abandonado.
+
+---
+
+## 2026-04-15 — Compatibilidad Prisma 7 en tooling local
+
+### Decisión
+Agregar `prisma.config.ts` y remover `url` del bloque `datasource` en `schema.prisma`.
+
+### Motivo
+- El entorno actual usa Prisma CLI 7.x, que requiere configurar datasource en `prisma.config.ts`.
+- Sin este ajuste, `npx prisma validate` falla y rompe quality gates locales.
+
+### Consecuencia
+- `prisma validate` vuelve a funcionar.
+- La URL de conexión queda centralizada en `prisma.config.ts` usando `DATABASE_URL`.

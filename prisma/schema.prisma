@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -50,19 +49,49 @@ enum Gender {
   UNISEX
 }
 
+enum CommissionStatus {
+  PENDING
+  VALIDATED
+  PAID
+  REJECTED
+}
+
+enum CartStatus {
+  ACTIVE
+  EXPIRED
+  CONVERTED
+  ABANDONED
+}
+
+enum LeadStatus {
+  NEW_LEAD
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  WON
+  LOST
+}
+
+enum LeadSource {
+  WEB
+  CAMPAIGN
+  REFERRED
+  MANUAL
+}
+
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -104,29 +133,79 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  coupons  Coupon[]
-  orders   Order[]
+  accounts           Account[]
+  sessions           Session[]
+  orders             Order[]
+  createdCoupons     Coupon[]            @relation("CouponCreatedBy")
+  couponAssignments  CouponAssignment[]  @relation("KinesioCouponAssignments")
+  commissionEntries  CommissionEntry[]   @relation("KinesioCommissionEntries")
+  patientLinks       PatientKinesioLink[] @relation("KinesioPatientLinks")
+  patientProfile     PatientProfile?     @relation("PatientLinkedUser")
+  leadsOwned         Lead[]              @relation("LeadOwner")
+  couponRedemptions  CouponRedemption[]  @relation("CouponRedemptionUser")
 
   @@map("users")
 }
 
 model Coupon {
-  id            String       @id @default(cuid())
-  code          String       @unique
-  discountValue Float
-  discountType  DiscountType
-  usageCount    Int          @default(0)
-  isActive      Boolean      @default(true)
-  userId        String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  code            String       @unique
+  discountValue   Float
+  discountType    DiscountType
+  maxUses         Int          @default(1)
+  usageCount      Int          @default(0)
+  isStackable     Boolean      @default(false)
+  isActive        Boolean      @default(true)
+  expiresAt       DateTime
+  commissionType  DiscountType
+  commissionValue Float
+  createdById     String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
+  createdBy   User               @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  assignments       CouponAssignment[]
+  orders            Order[]             @relation("OrderCoupon")
+  redemptions       CouponRedemption[]  @relation("CouponRedemptions")
+  carts             Cart[]              @relation("CartCoupon")
+  commissionEntries CommissionEntry[]   @relation("CommissionCoupon")
+  firstPatientLinks PatientKinesioLink[] @relation("FirstCouponLink")
 
   @@map("coupons")
+}
+
+model CouponAssignment {
+  id            String   @id @default(cuid())
+  couponId      String
+  kinesioUserId String
+  assignedById  String?
+  assignedAt    DateTime @default(now())
+
+  coupon      Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  kinesioUser User   @relation("KinesioCouponAssignments", fields: [kinesioUserId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, kinesioUserId])
+  @@index([kinesioUserId])
+  @@map("coupon_assignments")
+}
+
+model CouponRedemption {
+  id               String   @id @default(cuid())
+  couponId         String
+  orderId          String
+  redeemedByUserId String?
+  usedByEmail      String
+  discountSnapshot Decimal
+  commissionSnapshot Decimal
+  redeemedAt       DateTime @default(now())
+
+  coupon         Coupon         @relation("CouponRedemptions", fields: [couponId], references: [id], onDelete: Cascade)
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  redeemedByUser User?          @relation("CouponRedemptionUser", fields: [redeemedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([couponId, orderId])
+  @@index([usedByEmail])
+  @@map("coupon_redemptions")
 }
 
 model Product {
@@ -145,6 +224,7 @@ model Product {
 
   inventories ProductInventory[]
   orderItems  OrderItem[]
+  cartItems   CartItem[]
 
   @@map("products")
 }
@@ -161,8 +241,82 @@ model ProductInventory {
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
+  cartItems  CartItem[]
 
   @@map("product_inventories")
+}
+
+model PatientProfile {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  phone        String?
+  source       LeadSource @default(WEB)
+  linkedUserId String?  @unique
+  firstOrderAt DateTime?
+  lastOrderAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  linkedUser   User?                @relation("PatientLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  orders       Order[]
+  kinesioLinks PatientKinesioLink[]
+
+  @@map("patient_profiles")
+}
+
+model PatientKinesioLink {
+  id            String   @id @default(cuid())
+  patientId     String
+  kinesioUserId String
+  firstCouponId String?
+  firstOrderId  String?
+  linkedAt      DateTime @default(now())
+
+  patient     PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  kinesioUser User           @relation("KinesioPatientLinks", fields: [kinesioUserId], references: [id], onDelete: Cascade)
+  firstCoupon Coupon?        @relation("FirstCouponLink", fields: [firstCouponId], references: [id], onDelete: SetNull)
+  firstOrder  Order?         @relation("FirstOrderLink", fields: [firstOrderId], references: [id], onDelete: SetNull)
+
+  @@unique([patientId, kinesioUserId])
+  @@map("patient_kinesio_links")
+}
+
+model Cart {
+  id             String     @id @default(cuid())
+  status         CartStatus @default(ACTIVE)
+  currency       Currency
+  customerEmail  String
+  expiresAt      DateTime
+  lastActivityAt DateTime
+  couponId       String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  coupon Coupon?    @relation("CartCoupon", fields: [couponId], references: [id], onDelete: SetNull)
+  items  CartItem[]
+
+  @@index([customerEmail])
+  @@index([status, expiresAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id          String   @id @default(cuid())
+  cartId      String
+  productId   String
+  inventoryId String?
+  quantity    Int
+  unitPrice   Decimal
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cart      Cart              @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventory ProductInventory? @relation(fields: [inventoryId], references: [id], onDelete: SetNull)
+
+  @@index([cartId])
+  @@map("cart_items")
 }
 
 model Order {
@@ -177,15 +331,21 @@ model Order {
   transactionId       String?
   shippingDetails     Json?
   recoveryEmailSent   Boolean     @default(false)
-  userId              String
+  userId              String?
+  patientId           String?
   couponId            String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Restrict)
-  coupon     Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  orderItems OrderItem[]
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  patient         PatientProfile?    @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  coupon          Coupon?            @relation("OrderCoupon", fields: [couponId], references: [id], onDelete: SetNull)
+  orderItems      OrderItem[]
+  redemptions     CouponRedemption[]
+  commissionEntry CommissionEntry?
+  firstPatientLinks PatientKinesioLink[] @relation("FirstOrderLink")
 
+  @@index([snapshotClientEmail])
   @@map("orders")
 }
 
@@ -207,4 +367,104 @@ model OrderItem {
   inventory ProductInventory? @relation(fields: [inventoryId], references: [id], onDelete: SetNull)
 
   @@map("order_items")
+}
+
+model CommissionEntry {
+  id             String           @id @default(cuid())
+  orderId        String           @unique
+  couponId       String?
+  kinesioUserId  String
+  amount         Decimal
+  status         CommissionStatus @default(PENDING)
+  earnedAt       DateTime?
+  settledAt      DateTime?
+  payoutPeriodId String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  order       Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  coupon      Coupon?       @relation("CommissionCoupon", fields: [couponId], references: [id], onDelete: SetNull)
+  kinesioUser User          @relation("KinesioCommissionEntries", fields: [kinesioUserId], references: [id], onDelete: Restrict)
+  payoutPeriod PayoutPeriod? @relation(fields: [payoutPeriodId], references: [id], onDelete: SetNull)
+
+  @@index([kinesioUserId, status])
+  @@map("commission_entries")
+}
+
+model PayoutPeriod {
+  id          String           @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  status      CommissionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  lines CommissionEntry[]
+
+  @@unique([periodStart, periodEnd])
+  @@map("payout_periods")
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  name            String
+  email           String
+  phone           String?
+  source          LeadSource @default(WEB)
+  interest        String?
+  status          LeadStatus @default(NEW_LEAD)
+  ownerId         String?
+  notes           String?
+  lastActivityAt  DateTime?
+  convertedOrderId String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  owner      User?          @relation("LeadOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities LeadActivity[]
+  campaigns  CampaignRecipient[]
+
+  @@index([status, source])
+  @@index([email])
+  @@map("leads")
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  type      String
+  note      String?
+  createdAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+  @@map("lead_activities")
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  recipients CampaignRecipient[]
+
+  @@map("campaigns")
+}
+
+model CampaignRecipient {
+  id         String   @id @default(cuid())
+  campaignId String
+  leadId     String
+  sentAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, leadId])
+  @@map("campaign_recipients")
 }
