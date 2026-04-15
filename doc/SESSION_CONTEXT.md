@@ -61,6 +61,10 @@
 - limpieza de warnings de lint heredados
 - regeneración de Prisma Client en v6.19.2
 - fallback de Home cuando DB no está disponible en build/prerender
+- [X] Scaffolding de dominios UI implementado:
+- rutas base con guardas de rol: `/admin`, `/kinesio`, `/cliente`
+- rutas públicas institucionales: `/tienda`, `/tecnologia`, `/nosotros`
+- catálogo de `/tienda` conectado con fallback sin DB en build
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)
@@ -80,3 +84,4 @@
 - [ ] Activar branch protection en `main` en GitHub
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
 - [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque
+- [ ] dashboards y módulos aún en modo scaffold (sin funcionalidad completa de negocio)

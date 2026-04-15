@@ -16,6 +16,7 @@
 - [X] Etapa 1: Definir contratos API v1 para Admin, Kinesio, Cliente y E-commerce.
 - [ ] Etapa 1: Definir arquitectura de design systems separados + tokens compartidos.
 - [X] Etapa 1: Definir guardas RBAC server-side por módulo.
-- [ ] Etapa 1: Definir plan de implementación incremental por vertical funcional (cupones, órdenes, dashboard).
+- [X] Etapa 1: Definir plan de implementación incremental por vertical funcional (cupones, órdenes, dashboard).
 - [X] Resolver build local corrigiendo dependencias faltantes del entorno.
 - [ ] Normalizar warnings de deprecación de Prisma config.
+- [ ] Implementar UI funcional de cada vertical: Admin (cupones), Kinesio (dashboard), Cliente (órdenes), Shop (checkout real).
