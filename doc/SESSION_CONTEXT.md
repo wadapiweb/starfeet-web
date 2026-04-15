@@ -152,3 +152,7 @@
 - rate limiting in-memory por IP/email en endpoints sensibles de auth
 - middleware de límite para callback de credenciales (`/api/auth/callback/credentials`)
 - auditoría estructurada de eventos de seguridad (login success/fail, bloqueos, códigos reset/invitado)
+- [X] Fix runtime/login + UI auth inputs:
+- ajuste `NODE_OPTIONS` a 1024MB para `dev` y `build` en `package.json` (evita reinicios por OOM en dev)
+- estilos globales para `input/textarea/select` con texto oscuro y fondo blanco (mejora contraste en auth forms)
+- reinicio de contenedor `starfeet-web` para aplicar cambios de runtime
