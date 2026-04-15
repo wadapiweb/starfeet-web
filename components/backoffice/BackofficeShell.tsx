@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { BackofficeNavItem } from "@/lib/backoffice-navigation";
-import { BackofficeSignOutButton } from "@/components/backoffice/BackofficeSignOutButton";
+import { BrandLogo } from "@/components/atoms/BrandLogo";
 
 type BackofficeShellProps = {
   area: "ADMIN" | "KINESIO";
@@ -64,25 +65,16 @@ export function BackofficeShell({
 
       <div className="lg:pl-72">
         <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:px-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(true)}
-                className="mt-1 rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 lg:hidden"
-              >
-                Menú
-              </button>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-starfeet-blue/70">{area}</p>
-                <h1 className="font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue md:text-4xl">
-                  {title}
-                </h1>
-                <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 lg:hidden"
+            >
+              Menú
+            </button>
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
+            <div className="ml-auto flex items-center gap-2">
               <label className="relative block md:w-80">
                 <span className="sr-only">Buscar en el panel</span>
                 <input
@@ -103,34 +95,32 @@ export function BackofficeShell({
                 </svg>
               </label>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Notificaciones"
-                  className="relative rounded-xl border border-gray-300 bg-white p-2 text-gray-700 transition hover:bg-gray-100"
-                >
-                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    3
-                  </span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
-                    <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
-                    <path d="M9 17a3 3 0 0 0 6 0" />
-                  </svg>
-                </button>
-
-                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">Usuario</p>
-                  <p className="max-w-44 truncate text-sm font-semibold text-starfeet-blue">{userName ?? "Sin nombre"}</p>
-                  <p className="max-w-44 truncate text-xs text-gray-500">{userEmail ?? "Sin email"}</p>
-                </div>
-
-                <BackofficeSignOutButton />
-              </div>
+              <button
+                type="button"
+                aria-label="Notificaciones"
+                className="relative rounded-xl border border-gray-300 bg-white p-2 text-gray-700 transition hover:bg-gray-100"
+              >
+                <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  3
+                </span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden="true">
+                  <path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
+                  <path d="M9 17a3 3 0 0 0 6 0" />
+                </svg>
+              </button>
             </div>
           </div>
         </header>
 
         <main className="px-4 py-4 md:px-6 md:py-6">
+          <section className="mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-starfeet-blue/70">Panel {area}</p>
+            <h1 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue md:text-4xl">
+              {title}
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
+          </section>
+
           <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">{children}</div>
         </main>
       </div>
@@ -148,14 +138,15 @@ type SidebarContentProps = {
 };
 
 function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEmail }: SidebarContentProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <>
-      <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-starfeet-blue/70">{area}</p>
-        <h2 className="mt-1 font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">Workspace</h2>
-      </div>
+      <Link href="/" className="flex items-center rounded-xl px-2 py-1 text-starfeet-blue hover:bg-gray-50" onClick={onNavigate}>
+        <BrandLogo className="h-9 w-auto" />
+      </Link>
 
-      <nav className="mt-5 flex-1 space-y-2 overflow-auto" aria-label={`Navegación ${area.toLowerCase()}`}>
+      <nav className="mt-6 flex-1 space-y-2 overflow-auto" aria-label={`Navegación ${area.toLowerCase()}`}>
         {navItems.map((item) => {
           const matchPrefix = item.matchPrefix ?? item.href;
           const active =
@@ -181,10 +172,44 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
         })}
       </nav>
 
-      <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600">
-        <p className="font-bold uppercase tracking-[0.12em] text-gray-500">Sesión activa</p>
-        <p className="mt-1 truncate text-sm font-semibold text-starfeet-blue">{userName ?? "Sin nombre"}</p>
-        <p className="truncate text-xs">{userEmail ?? "Sin email"}</p>
+      <div className="relative mt-4 border-t border-gray-200 pt-3">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((current) => !current)}
+          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+        >
+          <span className="min-w-0">
+            <span className="block truncate font-semibold text-starfeet-blue">{userName ?? "Usuario"}</span>
+            <span className="block truncate text-xs text-gray-500">{userEmail ?? "Sin email"}</span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-gray-500" aria-hidden="true">
+            <path d={menuOpen ? "m6 15 6-6 6 6" : "m6 9 6 6 6-6"} />
+          </svg>
+        </button>
+
+        {menuOpen ? (
+          <div className="mt-2 rounded-xl border border-gray-200 bg-white p-1 shadow-sm" role="menu">
+            <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+              Perfil
+            </button>
+            <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+              Configuración
+            </button>
+            <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+              Ayuda
+            </button>
+            <button
+              type="button"
+              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+              role="menuitem"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        ) : null}
       </div>
     </>
   );

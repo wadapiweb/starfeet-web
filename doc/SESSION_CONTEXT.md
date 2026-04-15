@@ -177,3 +177,7 @@
 - sidebar fijo a la izquierda en altura completa (`inset-y-0`) para desktop + drawer móvil
 - header personalizado sticky con: nombre de usuario, buscador contextual y notificaciones
 - navbar pública ocultada en rutas `/admin*` y `/kinesio*` para evitar ruido visual y conflicto de navegación
+- [X] Ajuste fino solicitado en backoffice:
+- sidebar sin título textual, con logotipo superior y link al home (`/`)
+- menú dropdown de usuario en parte inferior del sidebar (Perfil, Configuración, Ayuda, Cerrar sesión)
+- header simplificado dejando solamente buscador y campana de notificaciones (más botón menú mobile)
