@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { ClienteOrdersDashboard } from "@/components/cliente/ClienteOrdersDashboard";
 
 export default async function ClientePage() {
   const session = await auth();
@@ -21,16 +22,7 @@ export default async function ClientePage() {
           Portal cliente para historial de compras, estado de órdenes y datos de perfil.
         </p>
 
-        <section className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <article className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Mis pedidos</h2>
-            <p className="mt-2 text-sm text-gray-600">Listado y detalle de órdenes.</p>
-          </article>
-          <article className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Datos personales</h2>
-            <p className="mt-2 text-sm text-gray-600">Gestión de datos y preferencias.</p>
-          </article>
-        </section>
+        <ClienteOrdersDashboard />
       </div>
     </main>
   );
