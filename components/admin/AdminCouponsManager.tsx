@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 
 type Kinesio = {
   id: string;
@@ -78,6 +79,7 @@ export function AdminCouponsManager() {
   const [success, setSuccess] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [codeFilter, setCodeFilter] = useState("");
+  const [couponPendingDelete, setCouponPendingDelete] = useState<Coupon | null>(null);
 
   const canCreate = useMemo(() => {
     return (
@@ -212,15 +214,17 @@ export function AdminCouponsManager() {
     }
   }
 
-  async function onDelete(coupon: Coupon) {
-    const confirmed = window.confirm(`¿Seguro que querés eliminar el cupón \"${coupon.code}\"?`);
-    if (!confirmed) return;
+  function requestDeleteCoupon(coupon: Coupon) {
+    setCouponPendingDelete(coupon);
+  }
 
+  async function confirmDeleteCoupon() {
+    if (!couponPendingDelete) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/v1/admin/coupons/${coupon.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/coupons/${couponPendingDelete.id}`, { method: "DELETE" });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo eliminar el cupón");
 
@@ -230,6 +234,7 @@ export function AdminCouponsManager() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
+      setCouponPendingDelete(null);
       setLoading(false);
     }
   }
@@ -384,7 +389,7 @@ export function AdminCouponsManager() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => onDelete(coupon)}
+                          onClick={() => requestDeleteCoupon(coupon)}
                           className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-red-700 hover:bg-red-50"
                         >
                           Eliminar
@@ -398,6 +403,20 @@ export function AdminCouponsManager() {
           </table>
         </div>
       </article>
+
+      <ConfirmDialog
+        open={Boolean(couponPendingDelete)}
+        title="Eliminar cupón"
+        description={
+          couponPendingDelete
+            ? `Se eliminará el cupón "${couponPendingDelete.code}". Si tiene historial, quedará desactivado automáticamente.`
+            : ""
+        }
+        confirmLabel="Eliminar cupón"
+        onCancel={() => setCouponPendingDelete(null)}
+        onConfirm={confirmDeleteCoupon}
+        loading={loading}
+      />
     </section>
   );
 }

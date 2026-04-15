@@ -255,3 +255,9 @@
 - nuevas vistas de detalle:
   - `app/tienda/producto/[slug]` para ver producto como cliente
   - `app/admin/coupons/[slug]` para ver detalle operativo de cupón
+- [X] Confirmación de acciones destructivas atomizada:
+- nuevo componente reusable `components/atoms/ConfirmDialog.tsx`
+- reemplazo de `window.confirm` por modal accesible en:
+  - `AdminProductsManager`
+  - `AdminProfessionalsManager`
+  - `AdminCouponsManager`

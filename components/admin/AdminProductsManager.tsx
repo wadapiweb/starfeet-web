@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 
 type ProductTypeValue = "STARFEET" | "SLIPPER" | "OTHER";
 
@@ -111,6 +112,7 @@ export function AdminProductsManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [productPendingDelete, setProductPendingDelete] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | ProductTypeValue>("all");
@@ -205,16 +207,18 @@ export function AdminProductsManager() {
     }
   }
 
-  async function deleteProduct(product: Product) {
-    const confirmed = window.confirm(`¿Seguro que querés eliminar el producto \"${product.name}\"?`);
-    if (!confirmed) return;
+  function requestDeleteProduct(product: Product) {
+    setProductPendingDelete(product);
+  }
 
+  async function confirmDeleteProduct() {
+    if (!productPendingDelete) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const res = await fetch(`/api/v1/admin/products/${product.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/products/${productPendingDelete.id}`, { method: "DELETE" });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo eliminar el producto");
 
@@ -224,6 +228,7 @@ export function AdminProductsManager() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
+      setProductPendingDelete(null);
       setLoading(false);
     }
   }
@@ -389,7 +394,7 @@ export function AdminProductsManager() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => deleteProduct(product)}
+                          onClick={() => requestDeleteProduct(product)}
                           className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-red-700 hover:bg-red-50"
                         >
                           Eliminar
@@ -403,6 +408,20 @@ export function AdminProductsManager() {
           </table>
         </div>
       </article>
+
+      <ConfirmDialog
+        open={Boolean(productPendingDelete)}
+        title="Eliminar producto"
+        description={
+          productPendingDelete
+            ? `Se eliminará "${productPendingDelete.name}". Si tiene relaciones históricas, se desactivará automáticamente.`
+            : ""
+        }
+        confirmLabel="Eliminar producto"
+        onCancel={() => setProductPendingDelete(null)}
+        onConfirm={confirmDeleteProduct}
+        loading={loading}
+      />
     </section>
   );
 }

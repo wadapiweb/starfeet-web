@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 
 type Professional = {
   id: string;
@@ -38,6 +39,7 @@ export function AdminProfessionalsManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [professionalPendingDelete, setProfessionalPendingDelete] = useState<Professional | null>(null);
 
   const canCreate = useMemo(() => {
     return Boolean(createForm.email.trim() && createForm.password.trim().length >= 8);
@@ -140,17 +142,17 @@ export function AdminProfessionalsManager() {
     }
   }
 
-  async function onDelete(professional: Professional) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar el profesional \"${professional.name ?? professional.email}\"?`,
-    );
-    if (!confirmed) return;
+  function requestDeleteProfessional(professional: Professional) {
+    setProfessionalPendingDelete(professional);
+  }
 
+  async function confirmDeleteProfessional() {
+    if (!professionalPendingDelete) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/v1/admin/kinesios/${professional.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/kinesios/${professionalPendingDelete.id}`, { method: "DELETE" });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo eliminar el profesional");
 
@@ -159,6 +161,7 @@ export function AdminProfessionalsManager() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
+      setProfessionalPendingDelete(null);
       setLoading(false);
     }
   }
@@ -372,7 +375,7 @@ export function AdminProfessionalsManager() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => onDelete(professional)}
+                          onClick={() => requestDeleteProfessional(professional)}
                           className="cursor-pointer rounded-lg border border-red-300 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-red-700 hover:bg-red-50"
                         >
                           Eliminar
@@ -386,6 +389,20 @@ export function AdminProfessionalsManager() {
           </table>
         </div>
       </article>
+
+      <ConfirmDialog
+        open={Boolean(professionalPendingDelete)}
+        title="Eliminar profesional"
+        description={
+          professionalPendingDelete
+            ? `Se desactivará "${professionalPendingDelete.name ?? professionalPendingDelete.email}" y perderá acceso al sistema.`
+            : ""
+        }
+        confirmLabel="Eliminar profesional"
+        onCancel={() => setProfessionalPendingDelete(null)}
+        onConfirm={confirmDeleteProfessional}
+        loading={loading}
+      />
     </section>
   );
 }

@@ -57,7 +57,8 @@
 - [ ] Ejecutar `npm run backfill:slugs` en cada entorno para poblar slugs históricos y luego migrar rutas públicas por slug en módulos restantes.
 - [X] Extender módulo de productos con gestión de inventario por talle (S/M/L) y edición de `ProductInventory` desde admin.
 - [X] Estandarizar acciones de listado admin (`Agregar/Ver/Editar/Eliminar`) para productos, profesionales y cupones.
-- [ ] Migrar acciones destructivas a modal de confirmación atomizado reutilizable (reemplazar `window.confirm`).
+- [X] Migrar acciones destructivas a modal de confirmación atomizado reutilizable (reemplazar `window.confirm`).
+- [ ] Agregar variante de `ConfirmDialog` con input de confirmación textual para borrados críticos (ej. productos con historial).
 - [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
 - [ ] Migrar edición de productos por slug en endpoint (`PATCH /api/v1/admin/products/[slug]`) y quitar fallback por id.
 - [ ] Forzar selección de talle en tienda para eliminar fallback legacy sin `inventoryId` en checkout.
