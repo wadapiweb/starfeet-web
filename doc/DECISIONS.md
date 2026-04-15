@@ -134,3 +134,18 @@ Agregar `prisma.config.ts` y remover `url` del bloque `datasource` en `schema.pr
 ### Consecuencia
 - `prisma validate` vuelve a funcionar.
 - La URL de conexión queda centralizada en `prisma.config.ts` usando `DATABASE_URL`.
+
+---
+
+## 2026-04-15 — Build sin DB obligatoria en Home
+
+### Decisión
+La home maneja fallback de catálogo vacío si la base no está disponible durante build/prerender.
+
+### Motivo
+- Evitar que `next build` falle en entornos de CI o stage sin conectividad directa a DB.
+- Mantener pipeline de calidad estable mientras se define estrategia de datos para prerender.
+
+### Consecuencia
+- El build no se bloquea por indisponibilidad temporal de base de datos.
+- Queda pendiente definir estrategia final (ISR, cache o fetch desacoplado) para producción.

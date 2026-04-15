@@ -56,10 +56,15 @@
 - `kinesio/coupons` + `kinesio/dashboard`
 - `cliente/orders`
 - `shop/cart`, `shop/cart/:id`, `shop/cart/:id/apply-coupon`, `shop/checkout`
+- [X] Ajustes de estabilidad del bloque:
+- compatibilidad de tipado `next-auth` + Prisma Adapter
+- limpieza de warnings de lint heredados
+- regeneración de Prisma Client en v6.19.2
+- fallback de Home cuando DB no está disponible en build/prerender
 
 ## Validaciones ejecutadas
-- [X] lint (sin errores, 3 warnings previos existentes)
-- [ ] build
+- [X] lint (sin errores)
+- [X] build
 - [ ] test
 - [X] prisma validate
 - [ ] smoke
@@ -74,4 +79,4 @@
 - [ ] Personalizar rutas del smoke test con endpoints reales de la app
 - [ ] Activar branch protection en `main` en GitHub
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
-- [ ] `npm run build` falla por dependencias faltantes en entorno (`@auth/prisma-adapter`, `framer-motion`, `lenis/react`)
+- [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque

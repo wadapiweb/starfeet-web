@@ -17,4 +17,5 @@
 - [ ] Etapa 1: Definir arquitectura de design systems separados + tokens compartidos.
 - [X] Etapa 1: Definir guardas RBAC server-side por módulo.
 - [ ] Etapa 1: Definir plan de implementación incremental por vertical funcional (cupones, órdenes, dashboard).
-- [ ] Resolver build local corrigiendo dependencias faltantes del entorno.
+- [X] Resolver build local corrigiendo dependencias faltantes del entorno.
+- [ ] Normalizar warnings de deprecación de Prisma config.

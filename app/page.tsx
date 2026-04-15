@@ -5,11 +5,16 @@ import { Product } from "@prisma/client";
 import { Button } from "../components/atoms/Button";
 
 export default async function Home() {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "desc" },
-    take: 8
-  });
+  const products = await prisma.product
+    .findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    })
+    .catch((error) => {
+      console.error("Home products fallback: database unavailable", error);
+      return [];
+    });
 
   return (
     <main className="min-h-screen bg-white">
