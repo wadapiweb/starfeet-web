@@ -83,6 +83,14 @@
 - cupones asignados
 - pacientes vinculados
 - comisiones recientes y estado de liquidación
+- [X] Vertical funcional inicial implementado en Shop:
+- `/tienda` con flujo end-to-end de carrito y checkout
+- soporte comprador invitado por email
+- creación/actualización de carrito
+- aplicación de cupón
+- checkout con creación de orden
+- generación de redención de cupón
+- generación de comisiones por cupón con reparto entre kinesiólogos asignados
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)
@@ -103,5 +111,5 @@
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
 - [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque
 - [ ] falta conectar flujo checkout -> comisiones con lógica de negocio completa (devengo/liquidación real)
-- [ ] dashboards y módulos restantes aún en modo scaffold parcial (cliente/shop/admin extendido)
+- [ ] dashboards y módulos restantes aún en modo scaffold parcial (cliente/admin extendido)
 - [ ] falta wiring end-to-end de checkout real con comisiones y dashboard kinesio conectado a datos reales

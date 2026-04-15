@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
-import { ProductCard } from "@/components/molecules/ProductCard";
-import { Product } from "@prisma/client";
+import { auth } from "@/auth";
+import { ShopCheckoutFlow } from "@/components/shop/ShopCheckoutFlow";
 
 export default async function TiendaPage() {
+  const session = await auth();
   const products = await prisma.product
     .findMany({
       where: { isActive: true },
@@ -14,6 +15,15 @@ export default async function TiendaPage() {
       return [];
     });
 
+  const normalizedProducts = products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    type: product.type,
+    priceArs: Number(product.priceArs),
+    priceUsd: Number(product.priceUsd),
+  }));
+
   return (
     <main className="min-h-screen bg-white pt-32 pb-16 px-6">
       <div className="max-w-7xl mx-auto">
@@ -22,15 +32,10 @@ export default async function TiendaPage() {
             Tienda Starfeet
           </h1>
           <p className="mt-3 text-sm md:text-base text-gray-600">
-            Catálogo completo de productos y accesorios.
+            Catálogo + flujo de carrito/checkout para comprador registrado o invitado.
           </p>
         </header>
-
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-10">
-          {products.map((product: Product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </section>
+        <ShopCheckoutFlow products={normalizedProducts} prefillEmail={session?.user?.email ?? ""} />
       </div>
     </main>
   );

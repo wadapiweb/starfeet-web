@@ -164,3 +164,18 @@ Ejecutar `next dev --webpack` en el script `dev` para entorno Docker de desarrol
 ### Consecuencia
 - Mayor estabilidad de desarrollo local en VPS/contenedor.
 - Se mantiene deuda técnica de revisar retorno a Turbopack cuando el bug esté resuelto.
+
+---
+
+## 2026-04-15 — Comisión en cupones con múltiples kinesiólogos
+
+### Decisión
+En checkout, cuando un cupón tiene múltiples kinesiólogos asignados, la comisión total del cupón se reparte en partes iguales entre los kinesiólogos asignados.
+
+### Motivo
+- El cupón puede tener múltiples profesionales.
+- Se requiere trazabilidad de comisión desde el primer MVP sin bloquear la operación.
+
+### Consecuencia
+- Se crean múltiples `CommissionEntry` por orden (una por kinesiólogo asignado).
+- Queda pendiente una estrategia de atribución más sofisticada (ej. código/ref de profesional específico) en etapas futuras.

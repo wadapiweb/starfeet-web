@@ -343,7 +343,7 @@ model Order {
   coupon          Coupon?            @relation("OrderCoupon", fields: [couponId], references: [id], onDelete: SetNull)
   orderItems      OrderItem[]
   redemptions     CouponRedemption[]
-  commissionEntry CommissionEntry?
+  commissionEntries CommissionEntry[]
   firstPatientLinks PatientKinesioLink[] @relation("FirstOrderLink")
 
   @@index([snapshotClientEmail])
@@ -372,7 +372,7 @@ model OrderItem {
 
 model CommissionEntry {
   id             String           @id @default(cuid())
-  orderId        String           @unique
+  orderId        String
   couponId       String?
   kinesioUserId  String
   amount         Decimal
@@ -388,6 +388,7 @@ model CommissionEntry {
   kinesioUser User          @relation("KinesioCommissionEntries", fields: [kinesioUserId], references: [id], onDelete: Restrict)
   payoutPeriod PayoutPeriod? @relation(fields: [payoutPeriodId], references: [id], onDelete: SetNull)
 
+  @@index([orderId])
   @@index([kinesioUserId, status])
   @@map("commission_entries")
 }

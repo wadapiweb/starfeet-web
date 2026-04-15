@@ -92,10 +92,25 @@ export async function POST(request: Request) {
       });
 
       if (cart.coupon) {
+        const assignments = await tx.couponAssignment.findMany({
+          where: { couponId: cart.coupon.id },
+          select: { kinesioUserId: true },
+        });
+
         await tx.coupon.update({
           where: { id: cart.coupon.id },
           data: { usageCount: { increment: 1 } },
         });
+
+        let commissionTotal = 0;
+        if (cart.coupon.commissionType === "PERCENTAGE") {
+          commissionTotal = (total * cart.coupon.commissionValue) / 100;
+        } else {
+          commissionTotal = cart.coupon.commissionValue;
+        }
+        commissionTotal = Math.max(0, commissionTotal);
+        const commissionPerKinesio =
+          assignments.length > 0 ? commissionTotal / assignments.length : 0;
 
         await tx.couponRedemption.create({
           data: {
@@ -104,9 +119,21 @@ export async function POST(request: Request) {
             redeemedByUserId: session?.user?.id ?? null,
             usedByEmail: cart.customerEmail,
             discountSnapshot: discountAmount,
-            commissionSnapshot: 0,
+            commissionSnapshot: commissionTotal,
           },
         });
+
+        if (assignments.length > 0 && commissionPerKinesio > 0) {
+          await tx.commissionEntry.createMany({
+            data: assignments.map((assignment) => ({
+              orderId: order.id,
+              couponId: cart.coupon!.id,
+              kinesioUserId: assignment.kinesioUserId,
+              amount: commissionPerKinesio,
+              status: "PENDING",
+            })),
+          });
+        }
       }
 
       await tx.cart.update({

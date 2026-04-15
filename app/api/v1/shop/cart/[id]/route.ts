@@ -94,3 +94,46 @@ export async function PATCH(request: Request, context: Params) {
     return jsonError(error);
   }
 }
+
+export async function GET(_request: Request, context: Params) {
+  try {
+    const { id } = await context.params;
+    const cart = await prisma.cart.findUnique({
+      where: { id },
+      include: {
+        coupon: {
+          select: {
+            id: true,
+            code: true,
+            discountType: true,
+            discountValue: true,
+            maxUses: true,
+            usageCount: true,
+            expiresAt: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                priceArs: true,
+                priceUsd: true,
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!cart) {
+      throw new ApiError(404, "Carrito no encontrado");
+    }
+
+    return NextResponse.json({ cart });
+  } catch (error) {
+    return jsonError(error);
+  }
+}
