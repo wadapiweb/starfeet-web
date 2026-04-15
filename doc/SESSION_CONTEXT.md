@@ -30,6 +30,13 @@
 - carrito con TTL de 2 horas y revalidación de cupón en checkout
 - unificación de historial invitado→cliente registrado por email verificado
 - alcance CRM v1 definido (pipeline, campos y automatizaciones mínimas)
+- [X] `doc/TECH_BLUEPRINT_V1.md` creado con arquitectura v1:
+- dominios/rutas
+- módulos SOLID
+- delta de modelo de datos
+- contratos API mínimos
+- reglas de seguridad/a11y
+- plan de ejecución de Etapa 1
 
 ## Validaciones ejecutadas
 - [ ] lint

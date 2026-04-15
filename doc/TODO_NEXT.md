@@ -10,7 +10,7 @@
 - [ ] Etapa 6 Cierre documental
 
 ## Backlog inmediato
-- [ ] Etapa 1: Proponer y validar blueprint técnico (módulos, carpetas, bounded contexts y ownership).
+- [X] Etapa 1: Proponer y validar blueprint técnico (módulos, carpetas, bounded contexts y ownership).
 - [ ] Etapa 1: Diseñar migración Prisma para cupones multi-kinesiólogo y entidad paciente.
 - [ ] Etapa 1: Diseñar modelo de carrito con TTL 2h + revalidación de cupón en checkout.
 - [ ] Etapa 1: Definir contratos API v1 para Admin, Kinesio, Cliente y E-commerce.
