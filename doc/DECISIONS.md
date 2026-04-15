@@ -35,3 +35,87 @@ El `docker-compose.yml` existente usa `npm run dev` (Next.js dev server) y monta
 ### Consecuencia
 - Para staging/prod se necesitará un `docker-compose.prod.yml` separado con `npm run build && npm run start`.
 - El `.env` de este servidor debe tener `NODE_ENV=development`.
+
+---
+
+## 2026-04-15 — Separación de design systems por dominio
+
+### Decisión
+Trabajar con design systems separados por contexto de uso:
+`home`, `ecommerce`, `admin`, `kinesio`, con una base mínima de tokens compartidos.
+
+### Motivo
+- Cada dominio tiene objetivos UX distintos:
+- Home: branding/storytelling.
+- E-commerce: conversión y compra.
+- Admin: productividad operativa.
+- Kinesio: trazabilidad de cupones/pacientes y lectura de métricas.
+
+### Consecuencia
+- Se evitará forzar un único sistema visual para contextos incompatibles.
+- La arquitectura de componentes será atomizada y versionable por dominio.
+- Queda pendiente definir governance de tokens compartidos y criterios de reutilización cruzada.
+
+---
+
+## 2026-04-15 — Modelado de “paciente” (recomendación técnica)
+
+### Decisión
+No usar solamente un `enum` para modelar paciente como estado de usuario. Se recomienda entidad dedicada de relación clínica/comercial (`PatientProfile` o equivalente) vinculada a ordenes y cupones.
+
+### Motivo
+- Un `enum` en `User` no cubre bien compradores invitados.
+- Un usuario puede cambiar de comportamiento en el tiempo (cliente regular, paciente por cupón, comprador sin cupón).
+- Se necesita trazabilidad fina para dashboard kinesio, ganancias y auditoría.
+- Permite historial consistente sin sobrecargar la entidad `User`.
+
+### Consecuencia
+- Mantener `User` para identidad/autenticación.
+- Crear entidad de dominio para paciente/relación con kinesiólogo-cupón-orden.
+- Soportar visitantes por email sin forzar registro previo.
+
+---
+
+## 2026-04-15 — Política de carrito y vigencia de cupón
+
+### Decisión
+- TTL del carrito: 2 horas desde la última actividad.
+- Revalidación obligatoria de cupón en checkout/pago.
+
+### Motivo
+- Evitar inconsistencias de precio y abuso por carritos inactivos.
+- Alinear vigencia de descuento con reglas de negocio.
+
+### Consecuencia
+- Si el carrito expira: recalcular totales, promociones y disponibilidad.
+- Si el cupón vence antes de confirmar pago: no aplica descuento.
+
+---
+
+## 2026-04-15 — Unificación de comprador invitado a cliente registrado
+
+### Decisión
+Al registrarse con el mismo email, se unifica historial de compras/eventos del invitado con la nueva cuenta.
+
+### Motivo
+- Mantener continuidad de experiencia del cliente.
+- Evitar pérdida de trazabilidad comercial.
+
+### Consecuencia
+- Requiere validación/confirmación de email antes de consolidar historial.
+- Los dashboards deben contemplar eventos pre y post registro.
+
+---
+
+## 2026-04-15 — Alcance CRM v1
+
+### Decisión
+CRM v1 con pipeline simple, campos mínimos de lead, timeline de actividad y automatizaciones básicas.
+
+### Motivo
+- Obtener capacidad operativa comercial temprana sin sobrediseño.
+- Permitir reporting inicial y campañas segmentadas desde fase temprana.
+
+### Consecuencia
+- Pipeline inicial: `NEW_LEAD`, `CONTACTED`, `QUALIFIED`, `PROPOSAL_SENT`, `WON`, `LOST`.
+- Automatizaciones iniciales: follow-up >48h sin actividad y carrito abandonado.
