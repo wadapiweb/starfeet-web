@@ -164,3 +164,7 @@
 - script `scripts/ops/dev-with-warmup.sh` (portable `sh`) que pre-carga `/login` y `/api/auth/session`
 - `npm run dev` actualizado para usar warmup automático
 - fix operativo aplicado: reemplazo de `bash` por `sh` por compatibilidad con `node:alpine`
+- [X] Shell escalable para backoffice implementado:
+- nuevo `BackofficeShell` reusable con sidebar + header propio + sesión + logout
+- navegación configurable por dominio (`adminNavItems`, `kinesioNavItems`)
+- integración aplicada en `/admin` y `/kinesio`

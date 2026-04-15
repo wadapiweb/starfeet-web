@@ -39,3 +39,5 @@
 - [ ] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.
 - [ ] Resolver definitivamente bloqueo cross-site `/_next/*` en dev (warning residual de Next 16).
 - [ ] Agregar endpoint `/api/health` y chequeo sintético autenticación para observabilidad del entorno dev.
+- [ ] Crear subrutas reales de admin y kinesio (`/admin/sales`, `/admin/crm`, `/kinesio/commissions`, etc.) y conectar navegación del shell.
+- [ ] Extraer tokens visuales de backoffice (spacing, radius, typographic scale) a capa de design system por dominio.

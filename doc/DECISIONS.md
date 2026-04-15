@@ -270,3 +270,18 @@ Cambiar el arranque dev a un script shell que levanta Next y pre-calienta rutas 
 ### Consecuencia
 - `npm run dev` ahora ejecuta `scripts/ops/dev-with-warmup.sh`.
 - El script se mantiene POSIX (`sh`) para compatibilidad con imagen `node:alpine`.
+
+---
+
+## 2026-04-15 — Backoffice Shell reusable para Admin y Kinesio
+
+### Decisión
+Crear un shell de backoffice reutilizable con `Sidebar + Header propio + Session Card + Logout`, parametrizable por dominio vía configuración de navegación.
+
+### Motivo
+- Evitar layouts duplicados y acoplamiento por página.
+- Escalar módulos admin/kinesio con consistencia visual y de arquitectura.
+
+### Consecuencia
+- Admin y Kinesio comparten infraestructura de layout, diferenciándose por `navItems` y metadata.
+- Próximo paso: convertir ítems de navegación en subrutas reales para aprovechar totalmente el shell.
