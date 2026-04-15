@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
+import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
+import { EntityFormModal } from "@/components/atoms/EntityFormModal";
 
 type ProductTypeValue = "STARFEET" | "SLIPPER" | "OTHER";
+type ModalMode = "create" | "view" | "edit";
 
 type Product = {
   id: string;
@@ -107,15 +109,20 @@ export function AdminProductsManager() {
   const [products, setProducts] = useState<Product[]>([]);
   const [createForm, setCreateForm] = useState<ProductForm>(initialForm);
   const [editForm, setEditForm] = useState<ProductForm>(initialForm);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [productPendingDelete, setProductPendingDelete] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [productPendingDelete, setProductPendingDelete] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | ProductTypeValue>("all");
+
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === selectedProductId) ?? null,
+    [products, selectedProductId],
+  );
 
   const canCreate = useMemo(() => {
     return Boolean(createForm.name.trim() && Number(createForm.priceArs) > 0 && Number(createForm.priceUsd) > 0);
@@ -134,10 +141,7 @@ export function AdminProductsManager() {
 
     const res = await fetch(`/api/v1/admin/products?${searchParams.toString()}`, { cache: "no-store" });
     const payload = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(payload?.error ?? "No se pudieron cargar los productos");
-    }
-
+    if (!res.ok) throw new Error(payload?.error ?? "No se pudieron cargar los productos");
     setProducts(payload.products ?? []);
   }, [search, statusFilter, typeFilter]);
 
@@ -145,9 +149,31 @@ export function AdminProductsManager() {
     loadProducts().catch((e) => setError(e instanceof Error ? e.message : "Error inesperado"));
   }, [loadProducts]);
 
+  function openCreateModal() {
+    setCreateForm(initialForm);
+    setSelectedProductId(null);
+    setModalMode("create");
+  }
+
+  function openViewModal(product: Product) {
+    setSelectedProductId(product.id);
+    setEditForm(fromProductToForm(product));
+    setModalMode("view");
+  }
+
+  function openEditModal(product: Product) {
+    setSelectedProductId(product.id);
+    setEditForm(fromProductToForm(product));
+    setModalMode("edit");
+  }
+
+  function closeModal() {
+    setModalMode(null);
+    setSelectedProductId(null);
+  }
+
   async function onCreate() {
     if (!canCreate) return;
-
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -157,12 +183,11 @@ export function AdminProductsManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(toPayload(createForm)),
       });
-
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo crear el producto");
 
+      closeModal();
       setCreateForm(initialForm);
-      setCreateOpen(false);
       setSuccess("Producto creado correctamente.");
       await loadProducts();
     } catch (e) {
@@ -172,32 +197,22 @@ export function AdminProductsManager() {
     }
   }
 
-  function startEditing(product: Product) {
-    setEditingId(product.id);
-    setEditForm(fromProductToForm(product));
-    setCreateOpen(false);
-    setError(null);
-    setSuccess(null);
-  }
-
-  async function saveEdit() {
-    if (!editingId || !canEdit) return;
+  async function onSaveEdit() {
+    if (!selectedProduct || !canEdit) return;
 
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/v1/admin/products/${editingId}`, {
+      const res = await fetch(`/api/v1/admin/products/${selectedProduct.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(toPayload(editForm)),
       });
-
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo actualizar el producto");
 
-      setEditingId(null);
-      setEditForm(initialForm);
+      closeModal();
       setSuccess("Producto actualizado correctamente.");
       await loadProducts();
     } catch (e) {
@@ -213,10 +228,10 @@ export function AdminProductsManager() {
 
   async function confirmDeleteProduct() {
     if (!productPendingDelete) return;
+
     setLoading(true);
     setError(null);
     setSuccess(null);
-
     try {
       const res = await fetch(`/api/v1/admin/products/${productPendingDelete.id}`, { method: "DELETE" });
       const payload = await res.json().catch(() => ({}));
@@ -225,6 +240,7 @@ export function AdminProductsManager() {
       const mode = payload?.mode === "deactivated" ? "desactivado por seguridad" : "eliminado";
       setSuccess(`Producto ${mode} correctamente.`);
       await loadProducts();
+      closeModal();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
@@ -233,7 +249,22 @@ export function AdminProductsManager() {
     }
   }
 
-  const editingProduct = editingId ? products.find((product) => product.id === editingId) : null;
+  const modalTitle =
+    modalMode === "create"
+      ? "Agregar producto"
+      : modalMode === "edit"
+        ? "Editar producto"
+        : "Ver producto";
+
+  const modalActions =
+    selectedProduct && modalMode ? (
+      <EntityActionsMenu
+        onView={() => openViewModal(selectedProduct)}
+        onEdit={() => openEditModal(selectedProduct)}
+        onDelete={() => requestDeleteProduct(selectedProduct)}
+        viewAsUserHref={`/tienda/producto/${selectedProduct.slug ?? selectedProduct.id}`}
+      />
+    ) : undefined;
 
   return (
     <section className="space-y-5">
@@ -244,61 +275,12 @@ export function AdminProductsManager() {
         </div>
         <button
           type="button"
-          onClick={() => {
-            setCreateOpen((prev) => !prev);
-            setEditingId(null);
-          }}
+          onClick={openCreateModal}
           className="cursor-pointer rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white"
         >
-          {createOpen ? "Cerrar" : "Agregar producto"}
+          Agregar producto
         </button>
       </header>
-
-      {createOpen ? (
-        <article className="rounded-2xl border border-gray-200 bg-white p-5">
-          <h3 className="font-condensed text-2xl font-bold uppercase text-starfeet-blue">Nuevo producto</h3>
-          <ProductFormFields form={createForm} onChange={setCreateForm} />
-          <button
-            type="button"
-            onClick={onCreate}
-            disabled={loading || !canCreate}
-            className="mt-4 cursor-pointer rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
-          >
-            {loading ? "Guardando..." : "Crear producto"}
-          </button>
-        </article>
-      ) : null}
-
-      {editingId ? (
-        <article className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="font-condensed text-2xl font-bold uppercase text-starfeet-blue">
-              Editar producto {editingProduct ? `· ${editingProduct.name}` : ""}
-            </h3>
-            <button
-              type="button"
-              className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 hover:bg-gray-100"
-              onClick={() => {
-                setEditingId(null);
-                setEditForm(initialForm);
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-
-          <ProductFormFields form={editForm} onChange={setEditForm} />
-
-          <button
-            type="button"
-            onClick={saveEdit}
-            disabled={loading || !canEdit}
-            className="mt-4 cursor-pointer rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
-          >
-            {loading ? "Guardando..." : "Guardar cambios"}
-          </button>
-        </article>
-      ) : null}
 
       {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
       {success ? <p className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p> : null}
@@ -343,7 +325,7 @@ export function AdminProductsManager() {
                 <th className="px-3 py-2">USD</th>
                 <th className="px-3 py-2">Stock</th>
                 <th className="px-3 py-2">Estado</th>
-                <th className="px-3 py-2 text-right">Acciones</th>
+                <th className="px-3 py-2 text-right">Opciones</th>
               </tr>
             </thead>
             <tbody>
@@ -354,51 +336,39 @@ export function AdminProductsManager() {
               ) : (
                 products.map((product) => (
                   <tr key={product.id} className="border-t border-gray-200">
-                    <td className="px-3 py-2 text-gray-800">{product.name}</td>
+                    <td className="px-3 py-2 text-gray-800">
+                      <button
+                        type="button"
+                        onClick={() => openViewModal(product)}
+                        className="cursor-pointer text-left font-semibold text-starfeet-blue hover:underline"
+                      >
+                        {product.name}
+                      </button>
+                    </td>
                     <td className="px-3 py-2 text-gray-600">{product.slug ?? "-"}</td>
                     <td className="px-3 py-2">{product.type}</td>
                     <td className="px-3 py-2">{Number(product.priceArs).toFixed(2)}</td>
                     <td className="px-3 py-2">{Number(product.priceUsd).toFixed(2)}</td>
                     <td className="px-3 py-2">
                       {product.inventories.map((inv) => (
-                        <p
-                          key={inv.id}
-                          className={`text-xs ${inv.stock <= inv.lowStockThreshold ? "font-bold text-amber-700" : "text-gray-700"}`}
-                        >
+                        <p key={inv.id} className={`text-xs ${inv.stock <= inv.lowStockThreshold ? "font-bold text-amber-700" : "text-gray-700"}`}>
                           {inv.physicalSize}: {inv.stock}
                         </p>
                       ))}
                     </td>
                     <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-1 text-xs font-bold ${product.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}
-                      >
+                      <span className={`rounded-full px-2 py-1 text-xs font-bold ${product.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}>
                         {product.isActive ? "Activo" : "Inactivo"}
                       </span>
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/tienda/producto/${product.slug ?? product.id}`}
-                          className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 hover:bg-gray-100"
-                          target="_blank"
-                        >
-                          Ver producto
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => startEditing(product)}
-                          className="cursor-pointer rounded-lg border border-starfeet-blue/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-starfeet-blue hover:bg-starfeet-blue/5"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => requestDeleteProduct(product)}
-                          className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-red-700 hover:bg-red-50"
-                        >
-                          Eliminar
-                        </button>
+                    <td className="px-3 py-2 text-right">
+                      <div className="inline-flex">
+                        <EntityActionsMenu
+                          onView={() => openViewModal(product)}
+                          onEdit={() => openEditModal(product)}
+                          onDelete={() => requestDeleteProduct(product)}
+                          viewAsUserHref={`/tienda/producto/${product.slug ?? product.id}`}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -408,6 +378,22 @@ export function AdminProductsManager() {
           </table>
         </div>
       </article>
+
+      <EntityFormModal
+        open={Boolean(modalMode)}
+        mode={modalMode ?? "view"}
+        title={modalTitle}
+        loading={loading}
+        headerActions={modalActions}
+        onClose={closeModal}
+        onSubmit={modalMode === "create" ? onCreate : modalMode === "edit" ? onSaveEdit : undefined}
+        submitLabel={modalMode === "create" ? "Crear producto" : "Editar producto"}
+      >
+        <ProductFormFields
+          form={modalMode === "create" ? createForm : editForm}
+          onChange={modalMode === "create" ? setCreateForm : setEditForm}
+        />
+      </EntityFormModal>
 
       <ConfirmDialog
         open={Boolean(productPendingDelete)}
@@ -434,7 +420,7 @@ function ProductFormFields({
   onChange: Dispatch<SetStateAction<ProductForm>>;
 }) {
   return (
-    <form className="mt-4 space-y-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Nombre</span>
         <input

@@ -261,3 +261,13 @@
   - `AdminProductsManager`
   - `AdminProfessionalsManager`
   - `AdminCouponsManager`
+- [X] Modal unificado para alta/edición/vista en admin:
+- nuevos componentes atómicos reutilizables:
+  - `components/atoms/AppModal.tsx`
+  - `components/atoms/EntityFormModal.tsx`
+  - `components/atoms/EntityActionsMenu.tsx` (3 puntos verticales)
+- aplicado en `productos`, `profesionales` y `cupones`:
+  - alta y edición en modal reutilizable
+  - vista en modo solo lectura al hacer click en el título de la fila
+  - menú de opciones (`Ver`, `Editar`, `Eliminar` y `Ver como usuario` para productos) tanto en tabla como en header del modal
+  - layout de acciones en edición: botón primario 66% + cancelar 33%

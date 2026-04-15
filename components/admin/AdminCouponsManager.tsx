@@ -1,8 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
+import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
+import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+
+type ModalMode = "create" | "view" | "edit";
 
 type Kinesio = {
   id: string;
@@ -67,19 +70,36 @@ function dateOnly(iso: string | null | undefined) {
   return iso.slice(0, 10);
 }
 
+function toForm(coupon: Coupon): CouponForm {
+  return {
+    code: coupon.code,
+    discountType: coupon.discountType,
+    discountValue: coupon.discountValue,
+    maxUses: coupon.maxUses,
+    isStackable: coupon.isStackable,
+    isActive: coupon.isActive,
+    expiresAt: dateOnly(coupon.expiresAt),
+    commissionType: coupon.commissionType,
+    commissionValue: coupon.commissionValue,
+    kinesioUserIds: coupon.assignments.map((assignment) => assignment.kinesioUser.id),
+  };
+}
+
 export function AdminCouponsManager() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [kinesios, setKinesios] = useState<Kinesio[]>([]);
-  const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<CouponForm>(initialForm);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<CouponForm>(initialForm);
+  const [modalMode, setModalMode] = useState<ModalMode | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [couponPendingDelete, setCouponPendingDelete] = useState<Coupon | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [codeFilter, setCodeFilter] = useState("");
-  const [couponPendingDelete, setCouponPendingDelete] = useState<Coupon | null>(null);
+
+  const selected = useMemo(() => coupons.find((coupon) => coupon.id === selectedId) ?? null, [coupons, selectedId]);
 
   const canCreate = useMemo(() => {
     return (
@@ -134,8 +154,30 @@ export function AdminCouponsManager() {
     }));
   }
 
-  async function onCreate(event: FormEvent) {
-    event.preventDefault();
+  function openCreateModal() {
+    setCreateForm(initialForm);
+    setSelectedId(null);
+    setModalMode("create");
+  }
+
+  function openViewModal(coupon: Coupon) {
+    setSelectedId(coupon.id);
+    setEditForm(toForm(coupon));
+    setModalMode("view");
+  }
+
+  function openEditModal(coupon: Coupon) {
+    openViewModal(coupon);
+    setModalMode("edit");
+  }
+
+  function closeModal() {
+    setModalMode(null);
+    setSelectedId(null);
+  }
+
+  async function onCreate(event?: FormEvent) {
+    event?.preventDefault();
     if (!canCreate) return;
 
     setLoading(true);
@@ -155,9 +197,8 @@ export function AdminCouponsManager() {
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "Error al crear cupón");
 
+      closeModal();
       setSuccess("Cupón creado correctamente.");
-      setCreateForm(initialForm);
-      setCreateOpen(false);
       await loadData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -166,32 +207,15 @@ export function AdminCouponsManager() {
     }
   }
 
-  function startEditing(coupon: Coupon) {
-    setEditingId(coupon.id);
-    setCreateOpen(false);
-    setEditForm({
-      code: coupon.code,
-      discountType: coupon.discountType,
-      discountValue: coupon.discountValue,
-      maxUses: coupon.maxUses,
-      isStackable: coupon.isStackable,
-      isActive: coupon.isActive,
-      expiresAt: dateOnly(coupon.expiresAt),
-      commissionType: coupon.commissionType,
-      commissionValue: coupon.commissionValue,
-      kinesioUserIds: coupon.assignments.map((assignment) => assignment.kinesioUser.id),
-    });
-  }
-
-  async function onSaveEdit(event: FormEvent) {
-    event.preventDefault();
-    if (!editingId || !canEdit) return;
+  async function onSaveEdit(event?: FormEvent) {
+    event?.preventDefault();
+    if (!selected || !canEdit) return;
 
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/v1/admin/coupons/${editingId}`, {
+      const res = await fetch(`/api/v1/admin/coupons/${selected.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -203,9 +227,8 @@ export function AdminCouponsManager() {
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo editar el cupón");
 
+      closeModal();
       setSuccess("Cupón actualizado correctamente.");
-      setEditingId(null);
-      setEditForm(initialForm);
       await loadData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -214,12 +237,13 @@ export function AdminCouponsManager() {
     }
   }
 
-  function requestDeleteCoupon(coupon: Coupon) {
+  function requestDelete(coupon: Coupon) {
     setCouponPendingDelete(coupon);
   }
 
-  async function confirmDeleteCoupon() {
+  async function confirmDelete() {
     if (!couponPendingDelete) return;
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -231,6 +255,7 @@ export function AdminCouponsManager() {
       const mode = payload?.mode === "deactivated" ? "desactivado por seguridad" : "eliminado";
       setSuccess(`Cupón ${mode} correctamente.`);
       await loadData();
+      closeModal();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
@@ -238,6 +263,16 @@ export function AdminCouponsManager() {
       setLoading(false);
     }
   }
+
+  const modalTitle = modalMode === "create" ? "Agregar cupón" : modalMode === "edit" ? "Editar cupón" : "Ver cupón";
+  const headerActions =
+    selected && modalMode ? (
+      <EntityActionsMenu
+        onView={() => openViewModal(selected)}
+        onEdit={() => openEditModal(selected)}
+        onDelete={() => requestDelete(selected)}
+      />
+    ) : undefined;
 
   return (
     <section className="space-y-5">
@@ -248,60 +283,12 @@ export function AdminCouponsManager() {
         </div>
         <button
           type="button"
-          onClick={() => {
-            setCreateOpen((prev) => !prev);
-            setEditingId(null);
-          }}
+          onClick={openCreateModal}
           className="cursor-pointer rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white"
         >
-          {createOpen ? "Cerrar" : "Agregar cupón"}
+          Agregar cupón
         </button>
       </header>
-
-      {createOpen ? (
-        <article className="rounded-2xl border border-gray-200 bg-white p-5">
-          <h3 className="font-condensed text-2xl font-bold uppercase text-starfeet-blue">Nuevo cupón</h3>
-          <CouponFormFields
-            form={createForm}
-            kinesios={kinesios}
-            onChange={setCreateForm}
-            onToggleKinesio={(id) => toggleKinesio(setCreateForm, id)}
-            onSubmit={onCreate}
-            loading={loading}
-            submitLabel="Crear cupón"
-            canSubmit={canCreate}
-          />
-        </article>
-      ) : null}
-
-      {editingId ? (
-        <article className="rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="font-condensed text-2xl font-bold uppercase text-starfeet-blue">Editar cupón</h3>
-            <button
-              type="button"
-              className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 hover:bg-gray-100"
-              onClick={() => {
-                setEditingId(null);
-                setEditForm(initialForm);
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-
-          <CouponFormFields
-            form={editForm}
-            kinesios={kinesios}
-            onChange={setEditForm}
-            onToggleKinesio={(id) => toggleKinesio(setEditForm, id)}
-            onSubmit={onSaveEdit}
-            loading={loading}
-            submitLabel="Guardar cambios"
-            canSubmit={canEdit}
-          />
-        </article>
-      ) : null}
 
       {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
       {success ? <p className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">{success}</p> : null}
@@ -336,7 +323,7 @@ export function AdminCouponsManager() {
                 <th className="px-3 py-2">Vence</th>
                 <th className="px-3 py-2">Estado</th>
                 <th className="px-3 py-2">Profesionales</th>
-                <th className="px-3 py-2 text-right">Acciones</th>
+                <th className="px-3 py-2 text-right">Opciones</th>
               </tr>
             </thead>
             <tbody>
@@ -347,53 +334,40 @@ export function AdminCouponsManager() {
               ) : (
                 coupons.map((coupon) => (
                   <tr key={coupon.id} className="border-t border-gray-200">
-                    <td className="px-3 py-2 font-bold text-starfeet-blue">{coupon.code}</td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => openViewModal(coupon)}
+                        className="cursor-pointer text-left font-bold text-starfeet-blue hover:underline"
+                      >
+                        {coupon.code}
+                      </button>
+                    </td>
                     <td className="px-3 py-2">
                       {coupon.discountType === "PERCENTAGE" ? `${coupon.discountValue}%` : `${coupon.discountValue} fijo`}
                     </td>
                     <td className="px-3 py-2">
                       {coupon.commissionType === "PERCENTAGE" ? `${coupon.commissionValue}%` : `${coupon.commissionValue} fijo`}
                     </td>
-                    <td className="px-3 py-2">
-                      {coupon.usageCount}/{coupon.maxUses}
-                    </td>
+                    <td className="px-3 py-2">{coupon.usageCount}/{coupon.maxUses}</td>
                     <td className="px-3 py-2">{new Date(coupon.expiresAt).toISOString().slice(0, 10)}</td>
                     <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-1 text-xs font-bold ${coupon.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}
-                      >
+                      <span className={`rounded-full px-2 py-1 text-xs font-bold ${coupon.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}>
                         {coupon.isActive ? "Activo" : "Inactivo"}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-600">
                       {coupon.assignments.length === 0
                         ? "Sin asignar"
-                        : coupon.assignments
-                            .map((assignment) => assignment.kinesioUser.name ?? assignment.kinesioUser.email)
-                            .join(", ")}
+                        : coupon.assignments.map((assignment) => assignment.kinesioUser.name ?? assignment.kinesioUser.email).join(", ")}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/admin/coupons/${coupon.slug ?? coupon.id}`}
-                          className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 hover:bg-gray-100"
-                        >
-                          Ver
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => startEditing(coupon)}
-                          className="cursor-pointer rounded-lg border border-starfeet-blue/30 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-starfeet-blue hover:bg-starfeet-blue/5"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => requestDeleteCoupon(coupon)}
-                          className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-red-700 hover:bg-red-50"
-                        >
-                          Eliminar
-                        </button>
+                    <td className="px-3 py-2 text-right">
+                      <div className="inline-flex">
+                        <EntityActionsMenu
+                          onView={() => openViewModal(coupon)}
+                          onEdit={() => openEditModal(coupon)}
+                          onDelete={() => requestDelete(coupon)}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -403,6 +377,24 @@ export function AdminCouponsManager() {
           </table>
         </div>
       </article>
+
+      <EntityFormModal
+        open={Boolean(modalMode)}
+        mode={modalMode ?? "view"}
+        title={modalTitle}
+        loading={loading}
+        headerActions={headerActions}
+        onClose={closeModal}
+        onSubmit={modalMode === "create" ? () => onCreate() : modalMode === "edit" ? () => onSaveEdit() : undefined}
+        submitLabel={modalMode === "create" ? "Crear cupón" : "Editar cupón"}
+      >
+        <CouponFormFields
+          form={modalMode === "create" ? createForm : editForm}
+          kinesios={kinesios}
+          onChange={modalMode === "create" ? setCreateForm : setEditForm}
+          onToggleKinesio={(id) => toggleKinesio(modalMode === "create" ? setCreateForm : setEditForm, id)}
+        />
+      </EntityFormModal>
 
       <ConfirmDialog
         open={Boolean(couponPendingDelete)}
@@ -414,7 +406,7 @@ export function AdminCouponsManager() {
         }
         confirmLabel="Eliminar cupón"
         onCancel={() => setCouponPendingDelete(null)}
-        onConfirm={confirmDeleteCoupon}
+        onConfirm={confirmDelete}
         loading={loading}
       />
     </section>
@@ -426,22 +418,14 @@ function CouponFormFields({
   kinesios,
   onChange,
   onToggleKinesio,
-  onSubmit,
-  loading,
-  submitLabel,
-  canSubmit,
 }: {
   form: CouponForm;
   kinesios: Kinesio[];
   onChange: Dispatch<SetStateAction<CouponForm>>;
   onToggleKinesio: (id: string) => void;
-  onSubmit: (event: FormEvent) => Promise<void> | void;
-  loading: boolean;
-  submitLabel: string;
-  canSubmit: boolean;
 }) {
   return (
-    <form className="mt-4 space-y-4" onSubmit={onSubmit}>
+    <form className="space-y-4" onSubmit={(event) => event.preventDefault()}>
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Código</span>
         <input
@@ -485,9 +469,7 @@ function CouponFormFields({
           <select
             className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
             value={form.commissionType}
-            onChange={(e) =>
-              onChange((prev) => ({ ...prev, commissionType: e.target.value as CouponForm["commissionType"] }))
-            }
+            onChange={(e) => onChange((prev) => ({ ...prev, commissionType: e.target.value as CouponForm["commissionType"] }))}
           >
             <option value="PERCENTAGE">Porcentaje</option>
             <option value="FIXED_AMOUNT">Monto fijo</option>
@@ -567,14 +549,6 @@ function CouponFormFields({
           ))}
         </div>
       </fieldset>
-
-      <button
-        type="submit"
-        disabled={loading || !canSubmit}
-        className="cursor-pointer rounded-xl bg-starfeet-blue px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
-      >
-        {loading ? "Guardando..." : submitLabel}
-      </button>
     </form>
   );
 }

@@ -59,6 +59,7 @@
 - [X] Estandarizar acciones de listado admin (`Agregar/Ver/Editar/Eliminar`) para productos, profesionales y cupones.
 - [X] Migrar acciones destructivas a modal de confirmación atomizado reutilizable (reemplazar `window.confirm`).
 - [ ] Agregar variante de `ConfirmDialog` con input de confirmación textual para borrados críticos (ej. productos con historial).
+- [ ] Extraer `EntityFormModal`/`EntityActionsMenu` a un patrón documentado de backoffice (props contract + ejemplos) para nuevos módulos admin.
 - [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
 - [ ] Migrar edición de productos por slug en endpoint (`PATCH /api/v1/admin/products/[slug]`) y quitar fallback por id.
 - [ ] Forzar selección de talle en tienda para eliminar fallback legacy sin `inventoryId` en checkout.
