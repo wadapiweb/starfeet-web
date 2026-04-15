@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { AdminCouponsManager } from "@/components/admin/AdminCouponsManager";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -22,14 +23,7 @@ export default async function AdminPage() {
           inicial para el módulo administrativo.
         </p>
 
-        <section className="mt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {["Ventas", "Cupones", "Envíos", "Leads", "Campañas", "Usuarios"].map((item) => (
-            <article key={item} className="rounded-2xl border border-gray-200 bg-white p-5">
-              <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">{item}</h2>
-              <p className="mt-2 text-sm text-gray-600">Módulo en etapa de implementación.</p>
-            </article>
-          ))}
-        </section>
+        <AdminCouponsManager />
       </div>
     </main>
   );

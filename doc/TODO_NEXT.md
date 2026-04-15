@@ -19,4 +19,4 @@
 - [X] Etapa 1: Definir plan de implementación incremental por vertical funcional (cupones, órdenes, dashboard).
 - [X] Resolver build local corrigiendo dependencias faltantes del entorno.
 - [ ] Normalizar warnings de deprecación de Prisma config.
-- [ ] Implementar UI funcional de cada vertical: Admin (cupones), Kinesio (dashboard), Cliente (órdenes), Shop (checkout real).
+- [ ] Implementar UI funcional de cada vertical: Kinesio (dashboard), Cliente (órdenes), Shop (checkout real).

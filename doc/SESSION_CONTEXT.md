@@ -65,6 +65,12 @@
 - rutas base con guardas de rol: `/admin`, `/kinesio`, `/cliente`
 - rutas públicas institucionales: `/tienda`, `/tecnologia`, `/nosotros`
 - catálogo de `/tienda` conectado con fallback sin DB en build
+- [X] Vertical funcional inicial implementado en Admin:
+- endpoint `GET /api/v1/admin/kinesios` para asignaciones
+- UI `AdminCouponsManager` en `/admin` con:
+- listado de cupones
+- formulario de creación de cupón
+- asignación múltiple de kinesiólogos
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)
@@ -85,3 +91,4 @@
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
 - [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque
 - [ ] dashboards y módulos aún en modo scaffold (sin funcionalidad completa de negocio)
+- [ ] falta wiring end-to-end de checkout real con comisiones y dashboard kinesio conectado a datos reales
