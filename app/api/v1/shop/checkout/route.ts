@@ -66,6 +66,26 @@ export async function POST(request: Request) {
     const total = subtotal - discountAmount;
 
     const result = await prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const patient = await tx.patientProfile.upsert({
+        where: { email: cart.customerEmail },
+        update: {
+          linkedUserId: session?.user?.id ?? undefined,
+          lastOrderAt: now,
+          ...(body.clientName ? { name: body.clientName } : {}),
+          ...(body.clientPhone ? { phone: body.clientPhone } : {}),
+        },
+        create: {
+          email: cart.customerEmail,
+          name: body.clientName,
+          phone: body.clientPhone,
+          linkedUserId: session?.user?.id ?? null,
+          firstOrderAt: now,
+          lastOrderAt: now,
+          source: "WEB",
+        },
+      });
+
       const order = await tx.order.create({
         data: {
           status: "INITIATED",
@@ -76,6 +96,7 @@ export async function POST(request: Request) {
           snapshotClientPhone: body.clientPhone,
           paymentProvider: body.paymentProvider,
           userId: session?.user?.id ?? null,
+          patientId: patient.id,
           couponId: cart.couponId,
           orderItems: {
             create: cart.items.map((item) => ({
@@ -96,6 +117,24 @@ export async function POST(request: Request) {
           where: { couponId: cart.coupon.id },
           select: { kinesioUserId: true },
         });
+
+        for (const assignment of assignments) {
+          await tx.patientKinesioLink.upsert({
+            where: {
+              patientId_kinesioUserId: {
+                patientId: patient.id,
+                kinesioUserId: assignment.kinesioUserId,
+              },
+            },
+            update: {},
+            create: {
+              patientId: patient.id,
+              kinesioUserId: assignment.kinesioUserId,
+              firstCouponId: cart.coupon.id,
+              firstOrderId: order.id,
+            },
+          });
+        }
 
         await tx.coupon.update({
           where: { id: cart.coupon.id },

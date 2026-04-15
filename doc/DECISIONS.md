@@ -179,3 +179,18 @@ En checkout, cuando un cupón tiene múltiples kinesiólogos asignados, la comis
 ### Consecuencia
 - Se crean múltiples `CommissionEntry` por orden (una por kinesiólogo asignado).
 - Queda pendiente una estrategia de atribución más sofisticada (ej. código/ref de profesional específico) en etapas futuras.
+
+---
+
+## 2026-04-15 — Trazabilidad de paciente en checkout
+
+### Decisión
+Cada checkout realiza upsert de `PatientProfile`, vincula la orden al paciente y crea links `PatientKinesioLink` cuando hay cupón con asignaciones.
+
+### Motivo
+- Necesidad de dashboards kinesio con detalle real de pacientes y órdenes.
+- Necesidad de exportables y reporting de liquidación con evidencia de relación paciente-profesional.
+
+### Consecuencia
+- Las órdenes quedan relacionadas a paciente incluso en flujo invitado.
+- Se habilita detalle por paciente en portal Kinesio sin depender de registro obligatorio previo.

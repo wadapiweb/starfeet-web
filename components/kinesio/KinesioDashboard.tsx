@@ -32,6 +32,20 @@ type Patient = {
   lastOrderAt: string | null;
 };
 
+type PatientDetail = {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
+  orders: Array<{
+    id: string;
+    status: string;
+    totalAmount: number;
+    currency: "ARS" | "USD";
+    createdAt: string;
+  }>;
+};
+
 type Commission = {
   id: string;
   amount: number;
@@ -39,6 +53,16 @@ type Commission = {
   createdAt: string;
   coupon: { code: string } | null;
   order: { id: string; status: string; snapshotClientEmail: string | null; createdAt: string };
+};
+
+type PayoutPeriod = {
+  period: string;
+  total: number;
+  pending: number;
+  validated: number;
+  paid: number;
+  rejected: number;
+  count: number;
 };
 
 const today = new Date();
@@ -53,7 +77,10 @@ export function KinesioDashboard() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [coupons, setCoupons] = useState<CouponAssignment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>("");
+  const [selectedPatientDetail, setSelectedPatientDetail] = useState<PatientDetail | null>(null);
   const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [periods, setPeriods] = useState<PayoutPeriod[]>([]);
 
   const query = useMemo(() => `from=${from}&to=${to}`, [from, to]);
 
@@ -61,14 +88,15 @@ export function KinesioDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [dashRes, couponsRes, patientsRes, commissionsRes] = await Promise.all([
+      const [dashRes, couponsRes, patientsRes, commissionsRes, payoutsRes] = await Promise.all([
         fetch(`/api/v1/kinesio/dashboard?${query}`, { cache: "no-store" }),
         fetch("/api/v1/kinesio/coupons", { cache: "no-store" }),
         fetch(`/api/v1/kinesio/patients?${query}`, { cache: "no-store" }),
         fetch(`/api/v1/kinesio/commissions?${query}`, { cache: "no-store" }),
+        fetch(`/api/v1/kinesio/payouts?${query}`, { cache: "no-store" }),
       ]);
 
-      if (!dashRes.ok || !couponsRes.ok || !patientsRes.ok || !commissionsRes.ok) {
+      if (!dashRes.ok || !couponsRes.ok || !patientsRes.ok || !commissionsRes.ok || !payoutsRes.ok) {
         throw new Error("No se pudieron cargar los datos del dashboard.");
       }
 
@@ -76,11 +104,15 @@ export function KinesioDashboard() {
       const couponsJson = await couponsRes.json();
       const patientsJson = await patientsRes.json();
       const commissionsJson = await commissionsRes.json();
+      const payoutsJson = await payoutsRes.json();
 
+      const patientList = patientsJson.patients ?? [];
       setDashboard(dashJson);
       setCoupons(couponsJson.assignments ?? []);
-      setPatients(patientsJson.patients ?? []);
+      setPatients(patientList);
       setCommissions(commissionsJson.commissions ?? []);
+      setPeriods(payoutsJson.periods ?? []);
+      setSelectedPatientId((current) => current || patientList[0]?.id || "");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
     } finally {
@@ -88,9 +120,29 @@ export function KinesioDashboard() {
     }
   }, [query]);
 
+  const loadPatientDetail = useCallback(async (patientId: string) => {
+    if (!patientId) {
+      setSelectedPatientDetail(null);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/kinesio/patients/${patientId}`, { cache: "no-store" });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error ?? "No se pudo cargar el detalle del paciente");
+      setSelectedPatientDetail(payload.patient ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado");
+      setSelectedPatientDetail(null);
+    }
+  }, []);
+
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    loadPatientDetail(selectedPatientId);
+  }, [selectedPatientId, loadPatientDetail]);
 
   return (
     <div className="space-y-4">
@@ -116,6 +168,12 @@ export function KinesioDashboard() {
             />
           </label>
         </div>
+        <a
+          href={`/api/v1/kinesio/commissions/export?${query}`}
+          className="mt-3 inline-block rounded-xl border border-starfeet-blue px-3 py-2 text-xs font-bold text-starfeet-blue"
+        >
+          Exportar comisiones CSV
+        </a>
       </section>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -144,6 +202,21 @@ export function KinesioDashboard() {
       </section>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-4">
+        <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Liquidaciones por período</h2>
+        <div className="mt-3 space-y-2">
+          {periods.length === 0 && <p className="text-sm text-gray-500">Sin movimientos en el período.</p>}
+          {periods.map((period) => (
+            <article key={period.period} className="rounded-xl border border-gray-200 p-3">
+              <p className="font-bold text-starfeet-blue">{period.period}</p>
+              <p className="text-xs text-gray-600">
+                Total {period.total.toLocaleString()} · Count {period.count} · Paid {period.paid.toLocaleString()}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-4">
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Cupones asignados</h2>
         <div className="mt-3 space-y-2">
           {coupons.length === 0 && <p className="text-sm text-gray-500">No hay cupones asignados.</p>}
@@ -151,7 +224,8 @@ export function KinesioDashboard() {
             <article key={assignment.id} className="rounded-xl border border-gray-200 p-3">
               <p className="font-bold text-starfeet-blue">{assignment.coupon.code}</p>
               <p className="text-xs text-gray-600">
-                Usos {assignment.coupon.usageCount}/{assignment.coupon.maxUses} · Redenciones {assignment.coupon._count.redemptions}
+                Usos {assignment.coupon.usageCount}/{assignment.coupon.maxUses} · Redenciones{" "}
+                {assignment.coupon._count.redemptions}
               </p>
             </article>
           ))}
@@ -160,14 +234,37 @@ export function KinesioDashboard() {
 
       <section className="rounded-2xl border border-gray-200 bg-white p-4">
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Pacientes</h2>
+        <div className="mt-3">
+          <select
+            className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            value={selectedPatientId}
+            onChange={(e) => setSelectedPatientId(e.target.value)}
+          >
+            <option value="">Seleccionar paciente</option>
+            {patients.map((patient) => (
+              <option key={patient.id} value={patient.id}>
+                {(patient.name ?? patient.email) + ` (${patient.email})`}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="mt-3 space-y-2">
-          {patients.length === 0 && <p className="text-sm text-gray-500">No hay pacientes vinculados.</p>}
-          {patients.map((patient) => (
-            <article key={patient.id} className="rounded-xl border border-gray-200 p-3">
-              <p className="font-bold text-starfeet-blue">{patient.name ?? "Paciente sin nombre"}</p>
-              <p className="text-xs text-gray-600">{patient.email}</p>
+          {!selectedPatientDetail && <p className="text-sm text-gray-500">No hay detalle de paciente seleccionado.</p>}
+          {selectedPatientDetail && (
+            <article className="rounded-xl border border-gray-200 p-3">
+              <p className="font-bold text-starfeet-blue">{selectedPatientDetail.name ?? "Paciente sin nombre"}</p>
+              <p className="text-xs text-gray-600">{selectedPatientDetail.email}</p>
+              <p className="mt-2 text-xs font-bold text-gray-500">Órdenes</p>
+              <div className="mt-1 space-y-1">
+                {selectedPatientDetail.orders.length === 0 && <p className="text-xs text-gray-500">Sin órdenes.</p>}
+                {selectedPatientDetail.orders.map((order) => (
+                  <p key={order.id} className="text-xs text-gray-600">
+                    {order.id.slice(0, 8)} · {order.status} · {order.currency} {Number(order.totalAmount).toLocaleString()}
+                  </p>
+                ))}
+              </div>
             </article>
-          ))}
+          )}
         </div>
       </section>
 

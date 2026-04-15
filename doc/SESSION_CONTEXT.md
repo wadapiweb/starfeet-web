@@ -106,6 +106,18 @@
 - activar/desactivar cupón
 - ampliar usos máximos
 - revocar asignaciones individuales
+- [X] Vertical Kinesio avanzado implementado:
+- endpoint `GET /api/v1/kinesio/patients/:id` con ownership-check por kinesiólogo
+- endpoint `GET /api/v1/kinesio/payouts` con resumen por período
+- endpoint `GET /api/v1/kinesio/commissions/export` (CSV)
+- dashboard actualizado con:
+- exportable CSV
+- selector + detalle de paciente
+- liquidaciones por período
+- [X] Checkout reforzado para trazabilidad clínica/comercial:
+- upsert de `PatientProfile` en checkout
+- vinculación `Order.patientId`
+- creación de `PatientKinesioLink` desde asignaciones del cupón
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)

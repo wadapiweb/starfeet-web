@@ -21,6 +21,7 @@
 - [ ] Normalizar warnings de deprecación de Prisma config.
 - [X] Implementar UI funcional de cada vertical: Cliente (órdenes).
 - [X] Completar vertical Admin: edición/desactivación/revocación de cupones + filtros avanzados.
-- [ ] Completar vertical Kinesio: detalle de paciente, exportables y vista de liquidaciones por período.
+- [X] Completar vertical Kinesio: detalle de paciente, exportables y vista de liquidaciones por período.
 - [ ] Completar vertical Shop: control de stock en checkout, selector de talle/variantes y estados de pago reales.
 - [ ] Normalizar operación de cupón: edición de caducidad y comisiones desde UI admin.
+- [ ] Mejorar precisión de liquidación: reglas de período contable y cierre/pago con workflow explícito.
