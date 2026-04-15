@@ -181,3 +181,23 @@
 - sidebar sin título textual, con logotipo superior y link al home (`/`)
 - menú dropdown de usuario en parte inferior del sidebar (Perfil, Configuración, Ayuda, Cerrar sesión)
 - header simplificado dejando solamente buscador y campana de notificaciones (más botón menú mobile)
+- [X] Ajuste de navegación y header solicitado:
+- dropdown de usuario convertido en menú flotante (overlay) sobre el botón de usuario
+- acciones conectadas a rutas reales por rol:
+  - admin: `/admin/profile`, `/admin/settings`, `/admin/help`
+  - kinesio: `/kinesio/profile`, `/kinesio/settings`, `/kinesio/help`
+- título de sección movido al header en una sola línea con truncado y botón chevron grande de volver (sin texto)
+- corregida activación del sidebar para que `Resumen`/`Dashboard` no quede activo en todas las subrutas
+- [X] Iconografía unificada en backoffice:
+- iconos agregados en navegación lateral por módulo (dashboard/cupones/ventas/crm/finanzas/pacientes/comisiones)
+- iconos agregados en dropdown de usuario (perfil/configuración/ayuda/cerrar sesión)
+- iconos del header unificados (volver, menú móvil, búsqueda, notificaciones)
+- ajuste de robustez build: removida dependencia externa de iconos para evitar errores `Module not found` entre entornos; se usan SVG inline tipados en `BackofficeShell`
+- [X] Fix hydration mismatch en tienda:
+- reemplazo de `toLocaleString()` sin locale por `Intl.NumberFormat("es-AR")` en `ShopCheckoutFlow`
+- aplicado a precios de productos y resumen de checkout (subtotal/descuento/total) para render determinista SSR/CSR
+- [X] Header público (home/ecommerce) rediseñado:
+- estilo visual modernizado (glassmorphism, contenedor flotante, espaciado responsive)
+- removido link/botón de `Registro`
+- botón de `Login` cambiado a ícono sin texto (con `aria-label`)
+- botón `Compra` visible solo para usuarios no autenticados (se oculta cuando hay sesión activa)

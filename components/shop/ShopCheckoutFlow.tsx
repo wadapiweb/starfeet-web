@@ -50,6 +50,14 @@ export function ShopCheckoutFlow({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("es-AR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }),
+    [],
+  );
 
   const subtotal = useMemo(
     () => (cart?.items ?? []).reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0),
@@ -179,8 +187,8 @@ export function ShopCheckoutFlow({
               </p>
               <p className="mt-3 text-sm font-bold text-starfeet-blue">
                 {currency === "USD"
-                  ? `USD ${Number(product.priceUsd).toLocaleString()}`
-                  : `ARS ${Number(product.priceArs).toLocaleString()}`}
+                  ? `USD ${numberFormatter.format(Number(product.priceUsd))}`
+                  : `ARS ${numberFormatter.format(Number(product.priceArs))}`}
               </p>
               <button
                 type="button"
@@ -224,9 +232,9 @@ export function ShopCheckoutFlow({
           <p className="text-xs text-gray-500">Carrito</p>
           <p className="text-xs text-gray-500 break-all">{cart?.id ?? "No creado"}</p>
           <p className="mt-2 text-sm text-gray-700">Items: {cart?.items.length ?? 0}</p>
-          <p className="text-sm text-gray-700">Subtotal: {subtotal.toLocaleString()}</p>
-          <p className="text-sm text-gray-700">Descuento: {discount.toLocaleString()}</p>
-          <p className="font-bold text-starfeet-blue">Total: {total.toLocaleString()}</p>
+          <p className="text-sm text-gray-700">Subtotal: {numberFormatter.format(subtotal)}</p>
+          <p className="text-sm text-gray-700">Descuento: {numberFormatter.format(discount)}</p>
+          <p className="font-bold text-starfeet-blue">Total: {numberFormatter.format(total)}</p>
         </div>
 
         <div className="mt-4 flex gap-2">

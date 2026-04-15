@@ -45,5 +45,8 @@
 - [ ] Agregar breadcrumbs y metadata dinámica por submódulo en el header del shell.
 - [ ] Conectar buscador de header a acciones reales por módulo (órdenes/cupones/pacientes).
 - [ ] Reemplazar badge estático de notificaciones por feed real + centro de notificaciones.
-- [ ] Conectar acciones reales para dropdown de usuario (perfil/configuración/ayuda) con rutas funcionales.
+- [X] Conectar acciones reales para dropdown de usuario (perfil/configuración/ayuda) con rutas funcionales.
 - [ ] Persistir y leer notificaciones reales para reemplazar badge estático.
+- [ ] Implementar contenido real en módulos `profile/settings/help` (actualmente placeholder) con formularios y persistencia.
+- [ ] Definir comportamiento de fallback del chevron volver cuando no hay historial (ruta por defecto por rol).
+- [ ] Agregar navegación móvil pública (menú hamburguesa) para links de home/ecommerce en resoluciones < `xl`.
