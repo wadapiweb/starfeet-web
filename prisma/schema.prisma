@@ -80,6 +80,11 @@ enum LeadSource {
   MANUAL
 }
 
+enum AccessCodeType {
+  PASSWORD_RESET
+  GUEST_ACCESS
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -144,6 +149,7 @@ model User {
   patientProfile     PatientProfile?     @relation("PatientLinkedUser")
   leadsOwned         Lead[]              @relation("LeadOwner")
   couponRedemptions  CouponRedemption[]  @relation("CouponRedemptionUser")
+  accessCodes        AccessCode[]
 
   @@map("users")
 }
@@ -469,4 +475,20 @@ model CampaignRecipient {
 
   @@unique([campaignId, leadId])
   @@map("campaign_recipients")
+}
+
+model AccessCode {
+  id         String         @id @default(cuid())
+  email      String
+  codeHash   String
+  type       AccessCodeType
+  userId     String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, type, expiresAt])
+  @@map("access_codes")
 }

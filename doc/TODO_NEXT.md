@@ -25,3 +25,8 @@
 - [ ] Completar vertical Shop: control de stock en checkout, selector de talle/variantes y estados de pago reales.
 - [ ] Normalizar operación de cupón: edición de caducidad y comisiones desde UI admin.
 - [ ] Mejorar precisión de liquidación: reglas de período contable y cierre/pago con workflow explícito.
+- [X] Completar vertical Auth: login/registro/recupero con UX robusta y accesible.
+- [X] Integrar flujo invitado por email para consulta de compras sin cuenta.
+- [X] Integrar cuentas Google + credenciales sobre mismo email (linking controlado).
+- [ ] Endurecer seguridad Auth: rate limiting en endpoints de códigos y auditoría de intentos.
+- [ ] Implementar verificación formal de email y políticas de contraseña fuerte.

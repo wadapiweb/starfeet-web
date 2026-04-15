@@ -194,3 +194,34 @@ Cada checkout realiza upsert de `PatientProfile`, vincula la orden al paciente y
 ### Consecuencia
 - Las órdenes quedan relacionadas a paciente incluso en flujo invitado.
 - Se habilita detalle por paciente en portal Kinesio sin depender de registro obligatorio previo.
+
+---
+
+## 2026-04-15 — Unificación Google + credenciales por email
+
+### Decisión
+Permitir linking automático de cuenta OAuth Google con cuenta existente por el mismo email (`allowDangerousEmailAccountLinking: true`) y completar integración desde registro cuando existe usuario Google sin password.
+
+### Motivo
+- Experiencia de usuario consistente evitando cuentas duplicadas.
+- Requisito funcional: mismo email debe operar como una sola identidad.
+- Google entrega email verificado, reduciendo riesgo en linking por email.
+
+### Consecuencia
+- Un usuario puede entrar con Google o con email/contraseña sobre la misma cuenta.
+- Se exige reforzar en próximos bloques: rate limiting, auditoría y monitoreo de intentos de auth.
+
+---
+
+## 2026-04-15 — Acceso de invitado por código temporal
+
+### Decisión
+Implementar acceso de invitado con código temporal por email y sesión efímera en cookie firmada HTTP-only para consultar compras sin registro.
+
+### Motivo
+- Requisito de negocio: comprador invitado debe poder revisar sus órdenes.
+- Evitar exposición de órdenes por email sin verificación.
+
+### Consecuencia
+- Nuevo modelo `AccessCode` reutilizable por tipo (`PASSWORD_RESET`, `GUEST_ACCESS`).
+- Flujo en dos pasos: solicitud de código + verificación + consulta de órdenes.

@@ -140,3 +140,11 @@
 - [ ] falta conectar flujo checkout -> comisiones con lógica de negocio completa (devengo/liquidación real)
 - [ ] dashboards y módulos restantes aún en modo scaffold parcial (admin extendido)
 - [ ] falta wiring end-to-end de checkout real con comisiones y dashboard kinesio conectado a datos reales
+- [X] Bloque Auth senior implementado (login/registro/recupero/invitado):
+- páginas nuevas: `/login`, `/registro`, `/recuperar`, `/invitado`
+- formularios accesibles con estados de carga/error y navegación cruzada
+- login con `credentials` (email+password) y Google
+- recuperación por código temporal (`AccessCode` tipo `PASSWORD_RESET`)
+- acceso invitado por email con código temporal (`AccessCode` tipo `GUEST_ACCESS`) y cookie firmada HTTP-only
+- endpoint de consulta de compras invitado: `/api/v1/guest/orders`
+- integración de cuentas por mismo email (Google + password) en Auth.js
