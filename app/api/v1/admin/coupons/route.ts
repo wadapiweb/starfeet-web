@@ -16,11 +16,27 @@ type CreateCouponBody = {
   kinesioUserIds?: string[];
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await requireRole(["ADMIN"]);
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const code = url.searchParams.get("code");
+    const kinesioUserId = url.searchParams.get("kinesioUserId");
 
     const coupons = await prisma.coupon.findMany({
+      where: {
+        ...(status === "active" ? { isActive: true } : {}),
+        ...(status === "inactive" ? { isActive: false } : {}),
+        ...(code ? { code: { contains: code.trim().toUpperCase() } } : {}),
+        ...(kinesioUserId
+          ? {
+              assignments: {
+                some: { kinesioUserId },
+              },
+            }
+          : {}),
+      },
       orderBy: { createdAt: "desc" },
       include: {
         assignments: {

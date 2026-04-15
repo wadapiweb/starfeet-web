@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 type Kinesio = {
   id: string;
@@ -58,6 +58,9 @@ export function AdminCouponsManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [codeFilter, setCodeFilter] = useState("");
+  const [kinesioFilter, setKinesioFilter] = useState("");
 
   const canSubmit = useMemo(() => {
     return (
@@ -69,36 +72,34 @@ export function AdminCouponsManager() {
     );
   }, [form]);
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setError(null);
+    const search = new URLSearchParams();
+    if (statusFilter !== "all") search.set("status", statusFilter);
+    if (codeFilter.trim()) search.set("code", codeFilter.trim());
+    if (kinesioFilter) search.set("kinesioUserId", kinesioFilter);
+
     const [couponRes, kinesioRes] = await Promise.all([
-      fetch("/api/v1/admin/coupons", { cache: "no-store" }),
+      fetch(`/api/v1/admin/coupons?${search.toString()}`, { cache: "no-store" }),
       fetch("/api/v1/admin/kinesios", { cache: "no-store" }),
     ]);
 
-    if (!couponRes.ok) {
-      throw new Error("No se pudieron cargar los cupones");
-    }
-    if (!kinesioRes.ok) {
-      throw new Error("No se pudieron cargar los kinesiólogos");
-    }
+    if (!couponRes.ok) throw new Error("No se pudieron cargar los cupones");
+    if (!kinesioRes.ok) throw new Error("No se pudieron cargar los kinesiólogos");
 
     const couponsJson = await couponRes.json();
     const kinesioJson = await kinesioRes.json();
     setCoupons(couponsJson.coupons ?? []);
     setKinesios(kinesioJson.kinesios ?? []);
-  }
+  }, [codeFilter, kinesioFilter, statusFilter]);
 
   useEffect(() => {
     loadData().catch((e) => setError(e instanceof Error ? e.message : "Error de carga"));
-  }, []);
+  }, [loadData]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!canSubmit) {
-      setError("Completá los campos obligatorios.");
-      return;
-    }
+    if (!canSubmit) return setError("Completá los campos obligatorios.");
 
     setLoading(true);
     setError(null);
@@ -115,9 +116,7 @@ export function AdminCouponsManager() {
       });
 
       const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(payload?.error ?? "Error al crear cupón");
-      }
+      if (!res.ok) throw new Error(payload?.error ?? "Error al crear cupón");
 
       setSuccess("Cupón creado correctamente.");
       setForm(initialForm);
@@ -129,20 +128,74 @@ export function AdminCouponsManager() {
     }
   }
 
+  async function toggleActive(coupon: Coupon) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/coupons/${coupon.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !coupon.isActive }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error ?? "No se pudo actualizar estado");
+      await loadData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateMaxUses(coupon: Coupon, nextMaxUses: number) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/coupons/${coupon.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ maxUses: nextMaxUses }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error ?? "No se pudo actualizar maxUses");
+      await loadData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function revokeAssignment(couponId: string, kinesioUserId: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/coupons/${couponId}/assignments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kinesioUserIds: [kinesioUserId] }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error ?? "No se pudo revocar asignación");
+      await loadData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function toggleKinesio(id: string) {
-    setForm((prev) => {
-      const exists = prev.kinesioUserIds.includes(id);
-      return {
-        ...prev,
-        kinesioUserIds: exists
-          ? prev.kinesioUserIds.filter((value) => value !== id)
-          : [...prev.kinesioUserIds, id],
-      };
-    });
+    setForm((prev) => ({
+      ...prev,
+      kinesioUserIds: prev.kinesioUserIds.includes(id)
+        ? prev.kinesioUserIds.filter((value) => value !== id)
+        : [...prev.kinesioUserIds, id],
+    }));
   }
 
   return (
-    <section className="mt-10 grid grid-cols-1 xl:grid-cols-[1.2fr_1.8fr] gap-6">
+    <section className="mt-10 grid grid-cols-1 xl:grid-cols-[1.1fr_1.9fr] gap-6">
       <article className="rounded-2xl border border-gray-200 bg-white p-5">
         <h2 className="font-condensed font-bold text-3xl text-starfeet-blue uppercase">Crear Cupón</h2>
         <form className="mt-4 space-y-4" onSubmit={onSubmit}>
@@ -246,7 +299,6 @@ export function AdminCouponsManager() {
           <fieldset>
             <legend className="text-xs font-bold uppercase tracking-wider text-gray-600">Asignar kinesiólogos</legend>
             <div className="mt-2 max-h-40 overflow-auto rounded-xl border border-gray-200 p-2">
-              {kinesios.length === 0 && <p className="text-xs text-gray-500">No hay kinesiólogos activos.</p>}
               {kinesios.map((kinesio) => (
                 <label key={kinesio.id} className="flex items-center gap-2 py-1 text-sm">
                   <input
@@ -254,7 +306,9 @@ export function AdminCouponsManager() {
                     checked={form.kinesioUserIds.includes(kinesio.id)}
                     onChange={() => toggleKinesio(kinesio.id)}
                   />
-                  <span>{kinesio.name ?? "Sin nombre"} ({kinesio.email})</span>
+                  <span>
+                    {kinesio.name ?? "Sin nombre"} ({kinesio.email})
+                  </span>
                 </label>
               ))}
             </div>
@@ -275,26 +329,98 @@ export function AdminCouponsManager() {
 
       <article className="rounded-2xl border border-gray-200 bg-white p-5">
         <h2 className="font-condensed font-bold text-3xl text-starfeet-blue uppercase">Cupones</h2>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            placeholder="Filtrar por código"
+            value={codeFilter}
+            onChange={(e) => setCodeFilter(e.target.value)}
+          />
+          <select
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+          >
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+          <select
+            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            value={kinesioFilter}
+            onChange={(e) => setKinesioFilter(e.target.value)}
+          >
+            <option value="">Todos los kinesiólogos</option>
+            {kinesios.map((k) => (
+              <option key={k.id} value={k.id}>
+                {k.name ?? k.email}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mt-4 space-y-3">
-          {coupons.length === 0 && <p className="text-sm text-gray-500">Todavía no hay cupones cargados.</p>}
+          {coupons.length === 0 && <p className="text-sm text-gray-500">No hay cupones para ese filtro.</p>}
           {coupons.map((coupon) => (
             <div key={coupon.id} className="rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-condensed font-bold text-xl text-starfeet-blue uppercase">{coupon.code}</h3>
-                <span className="text-xs font-bold uppercase text-gray-500">
-                  {coupon.usageCount}/{coupon.maxUses} usos
+                <span
+                  className={`text-xs font-bold uppercase ${
+                    coupon.isActive ? "text-green-700" : "text-red-600"
+                  }`}
+                >
+                  {coupon.isActive ? "Activo" : "Inactivo"}
                 </span>
               </div>
+
               <p className="mt-1 text-sm text-gray-700">
                 {coupon.discountType === "PERCENTAGE" ? `${coupon.discountValue}%` : `${coupon.discountValue} fijo`} ·{" "}
-                {coupon.isStackable ? "Acumulable" : "No acumulable"} · Vence {new Date(coupon.expiresAt).toLocaleDateString()}
+                {coupon.isStackable ? "Acumulable" : "No acumulable"} · Vence{" "}
+                {new Date(coupon.expiresAt).toLocaleDateString()}
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                Kinesiólogos:{" "}
-                {coupon.assignments.length > 0
-                  ? coupon.assignments.map((a) => a.kinesioUser.name ?? a.kinesioUser.email).join(", ")
-                  : "Sin asignación"}
+                Uso {coupon.usageCount}/{coupon.maxUses}
               </p>
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => toggleActive(coupon)}
+                  className="rounded-lg border border-starfeet-blue px-2 py-1 text-xs font-bold text-starfeet-blue"
+                  disabled={loading}
+                >
+                  {coupon.isActive ? "Desactivar" : "Activar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateMaxUses(coupon, coupon.maxUses + 10)}
+                  className="rounded-lg border border-gray-400 px-2 py-1 text-xs font-bold text-gray-700"
+                  disabled={loading}
+                >
+                  +10 usos
+                </button>
+              </div>
+
+              <div className="mt-3 space-y-1">
+                {coupon.assignments.length === 0 && <p className="text-xs text-gray-500">Sin asignaciones.</p>}
+                {coupon.assignments.map((assignment) => (
+                  <div key={assignment.kinesioUser.id} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-gray-600">
+                      {assignment.kinesioUser.name ?? assignment.kinesioUser.email}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => revokeAssignment(coupon.id, assignment.kinesioUser.id)}
+                      className="rounded-md border border-red-300 px-2 py-0.5 font-bold text-red-600"
+                      disabled={loading}
+                    >
+                      Revocar
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>

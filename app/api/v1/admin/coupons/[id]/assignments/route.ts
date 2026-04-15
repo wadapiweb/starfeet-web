@@ -55,3 +55,32 @@ export async function POST(request: Request, context: Params) {
     return jsonError(error);
   }
 }
+
+export async function DELETE(request: Request, context: Params) {
+  try {
+    await requireRole(["ADMIN"]);
+    const { id } = await context.params;
+    const body = await parseJson<AssignmentBody>(request);
+
+    if (!Array.isArray(body.kinesioUserIds) || body.kinesioUserIds.length === 0) {
+      throw new ApiError(400, "kinesioUserIds es requerido");
+    }
+
+    await prisma.couponAssignment.deleteMany({
+      where: {
+        couponId: id,
+        kinesioUserId: { in: body.kinesioUserIds },
+      },
+    });
+
+    const assignments = await prisma.couponAssignment.findMany({
+      where: { couponId: id },
+      include: { kinesioUser: { select: { id: true, name: true, email: true } } },
+      orderBy: { assignedAt: "desc" },
+    });
+
+    return NextResponse.json({ couponId: id, assignments });
+  } catch (error) {
+    return jsonError(error);
+  }
+}

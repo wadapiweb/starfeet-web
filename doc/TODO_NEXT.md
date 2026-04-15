@@ -20,6 +20,7 @@
 - [X] Resolver build local corrigiendo dependencias faltantes del entorno.
 - [ ] Normalizar warnings de deprecación de Prisma config.
 - [X] Implementar UI funcional de cada vertical: Cliente (órdenes).
-- [ ] Completar vertical Admin: edición/desactivación/revocación de cupones + filtros avanzados.
+- [X] Completar vertical Admin: edición/desactivación/revocación de cupones + filtros avanzados.
 - [ ] Completar vertical Kinesio: detalle de paciente, exportables y vista de liquidaciones por período.
 - [ ] Completar vertical Shop: control de stock en checkout, selector de talle/variantes y estados de pago reales.
+- [ ] Normalizar operación de cupón: edición de caducidad y comisiones desde UI admin.

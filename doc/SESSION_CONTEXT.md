@@ -95,6 +95,17 @@
 - portal `/cliente` con listado de órdenes reales
 - detalle por orden con endpoint ownership-safe `/api/v1/cliente/orders/:id`
 - visualización de estado, totales, cupón e items comprados
+- [X] Vertical Admin extendido implementado:
+- endpoint `PATCH /api/v1/admin/coupons/:id` (activar/desactivar + actualización controlada)
+- endpoint `DELETE /api/v1/admin/coupons/:id/assignments` (revocación)
+- filtros server-side en `GET /api/v1/admin/coupons`:
+- estado
+- código
+- kinesiólogo
+- UI admin con acciones operativas:
+- activar/desactivar cupón
+- ampliar usos máximos
+- revocar asignaciones individuales
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)
