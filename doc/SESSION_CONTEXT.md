@@ -209,3 +209,9 @@
 - [X] Refuerzo UX global de elementos clickeables:
 - regla global en `app/globals.css` para `cursor: pointer` en links, botones y menuitems interactivos
 - regla explícita `cursor: not-allowed` en controles deshabilitados
+- [X] Admin actualizado a nomenclatura de negocio `Profesionales`:
+- nuevo módulo en sidebar admin: `/admin/professionals` con label `Profesionales`
+- pantalla funcional de alta/listado (`AdminProfessionalsManager`) para crear usuarios con rol `KINESIOLOGO`
+- endpoint `POST /api/v1/admin/kinesios` agregado para alta de profesionales (email + contraseña inicial + datos base)
+- `GET /api/v1/admin/kinesios` ahora expone alias semántico `professionals` (manteniendo `kinesios` para compatibilidad)
+- textos de Admin Cupones alineados a `profesionales` en filtros/asignaciones

@@ -18,6 +18,12 @@ export const adminNavItems: BackofficeNavItem[] = [
     matchPrefix: "/admin/coupons",
   },
   {
+    href: "/admin/professionals",
+    label: "Profesionales",
+    description: "Alta y gestión de profesionales",
+    matchPrefix: "/admin/professionals",
+  },
+  {
     href: "/admin/sales",
     label: "Ventas",
     description: "Órdenes, pagos y envíos",

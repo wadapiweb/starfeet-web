@@ -51,3 +51,4 @@
 - [ ] Definir comportamiento de fallback del chevron volver cuando no hay historial (ruta por defecto por rol).
 - [ ] Agregar navegación móvil pública (menú hamburguesa) para links de home/ecommerce en resoluciones < `xl`.
 - [ ] Revisar semántica interactiva en componentes custom para que todo elemento visualmente clickeable exponga rol/teclado además del cursor pointer.
+- [ ] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.

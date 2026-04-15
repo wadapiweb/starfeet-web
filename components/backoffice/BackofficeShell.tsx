@@ -161,7 +161,7 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`block rounded-xl border px-3 py-2 transition ${
+              className={`block rounded-xl border px-3 py-3 transition ${
                 active
                   ? "border-starfeet-blue bg-starfeet-blue text-white"
                   : "border-gray-200 bg-white text-gray-700 hover:border-starfeet-blue/40"
@@ -171,7 +171,6 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 <ItemIcon className="h-4 w-4" aria-hidden="true" />
                 {item.label}
               </p>
-              <p className={`mt-1 text-xs ${active ? "text-gray-100" : "text-gray-500"}`}>{item.description}</p>
             </Link>
           );
         })}
@@ -282,6 +281,9 @@ type IconComponent = (props: IconProps) => React.JSX.Element;
 function resolveNavIcon(href: string): IconComponent {
   if (href.includes("/coupons")) {
     return IconTicket;
+  }
+  if (href.includes("/professionals")) {
+    return IconUsers;
   }
   if (href.includes("/sales")) {
     return IconShoppingCart;

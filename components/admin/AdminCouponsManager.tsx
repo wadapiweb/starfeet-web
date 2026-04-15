@@ -85,12 +85,12 @@ export function AdminCouponsManager() {
     ]);
 
     if (!couponRes.ok) throw new Error("No se pudieron cargar los cupones");
-    if (!kinesioRes.ok) throw new Error("No se pudieron cargar los kinesiólogos");
+    if (!kinesioRes.ok) throw new Error("No se pudieron cargar los profesionales");
 
     const couponsJson = await couponRes.json();
     const kinesioJson = await kinesioRes.json();
     setCoupons(couponsJson.coupons ?? []);
-    setKinesios(kinesioJson.kinesios ?? []);
+    setKinesios(kinesioJson.professionals ?? kinesioJson.kinesios ?? []);
   }, [codeFilter, kinesioFilter, statusFilter]);
 
   useEffect(() => {
@@ -297,7 +297,7 @@ export function AdminCouponsManager() {
           </label>
 
           <fieldset>
-            <legend className="text-xs font-bold uppercase tracking-wider text-gray-600">Asignar kinesiólogos</legend>
+            <legend className="text-xs font-bold uppercase tracking-wider text-gray-600">Asignar profesionales</legend>
             <div className="mt-2 max-h-40 overflow-auto rounded-xl border border-gray-200 p-2">
               {kinesios.map((kinesio) => (
                 <label key={kinesio.id} className="flex items-center gap-2 py-1 text-sm">
@@ -351,7 +351,7 @@ export function AdminCouponsManager() {
             value={kinesioFilter}
             onChange={(e) => setKinesioFilter(e.target.value)}
           >
-            <option value="">Todos los kinesiólogos</option>
+            <option value="">Todos los profesionales</option>
             {kinesios.map((k) => (
               <option key={k.id} value={k.id}>
                 {k.name ?? k.email}
