@@ -4,9 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type AdminProfessionalDetailPageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
@@ -15,7 +15,7 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
 });
 
 export default async function AdminProfessionalDetailPage({ params }: AdminProfessionalDetailPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const professional = await prisma.user.findFirst({
     where: {
