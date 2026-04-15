@@ -71,6 +71,18 @@
 - listado de cupones
 - formulario de creación de cupón
 - asignación múltiple de kinesiólogos
+- [X] Corrección de visibilidad del sitio en entorno dev:
+- mitigación de crash Turbopack en contenedor con `next dev --webpack`
+- limpieza de `.next` + reinicio de `starfeet-web`
+- validación de respuesta real por dominio `dev.starfeet.ar` (HTTP 200)
+- [X] Vertical funcional inicial implementado en Kinesio:
+- endpoint `GET /api/v1/kinesio/patients`
+- endpoint `GET /api/v1/kinesio/commissions`
+- UI mobile-first `KinesioDashboard` en `/kinesio` conectada a:
+- métricas por fecha
+- cupones asignados
+- pacientes vinculados
+- comisiones recientes y estado de liquidación
 
 ## Validaciones ejecutadas
 - [X] lint (sin errores)
@@ -90,5 +102,6 @@
 - [ ] Activar branch protection en `main` en GitHub
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
 - [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque
-- [ ] dashboards y módulos aún en modo scaffold (sin funcionalidad completa de negocio)
+- [ ] falta conectar flujo checkout -> comisiones con lógica de negocio completa (devengo/liquidación real)
+- [ ] dashboards y módulos restantes aún en modo scaffold parcial (cliente/shop/admin extendido)
 - [ ] falta wiring end-to-end de checkout real con comisiones y dashboard kinesio conectado a datos reales

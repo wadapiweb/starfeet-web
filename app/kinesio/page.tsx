@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { KinesioDashboard } from "@/components/kinesio/KinesioDashboard";
 
 export default async function KinesioPage() {
   const session = await auth();
@@ -20,19 +21,8 @@ export default async function KinesioPage() {
         <p className="mt-3 text-sm text-gray-600">
           Vista mobile-first para seguimiento de cupones, pacientes relacionados y ganancias.
         </p>
-
-        <section className="mt-6 space-y-3">
-          {[
-            "Dashboard de métricas",
-            "Cupones asignados",
-            "Pacientes relacionados",
-            "Ganancias y liquidaciones",
-          ].map((item) => (
-            <article key={item} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-              <h2 className="font-condensed font-bold text-xl text-starfeet-blue uppercase">{item}</h2>
-              <p className="mt-1 text-xs text-gray-600">En construcción.</p>
-            </article>
-          ))}
+        <section className="mt-6">
+          <KinesioDashboard />
         </section>
       </div>
     </main>

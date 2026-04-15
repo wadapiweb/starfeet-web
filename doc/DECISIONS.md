@@ -149,3 +149,18 @@ La home maneja fallback de catálogo vacío si la base no está disponible duran
 ### Consecuencia
 - El build no se bloquea por indisponibilidad temporal de base de datos.
 - Queda pendiente definir estrategia final (ISR, cache o fetch desacoplado) para producción.
+
+---
+
+## 2026-04-15 — Modo dev estable en contenedor (`--webpack`)
+
+### Decisión
+Ejecutar `next dev --webpack` en el script `dev` para entorno Docker de desarrollo.
+
+### Motivo
+- Se observaron fallos recurrentes de Turbopack en volumen persistido de `.next` dentro del contenedor.
+- El síntoma operativo fue “sitio no visible” por crash de runtime del servidor dev.
+
+### Consecuencia
+- Mayor estabilidad de desarrollo local en VPS/contenedor.
+- Se mantiene deuda técnica de revisar retorno a Turbopack cuando el bug esté resuelto.
