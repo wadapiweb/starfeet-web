@@ -168,3 +168,8 @@
 - nuevo `BackofficeShell` reusable con sidebar + header propio + sesión + logout
 - navegación configurable por dominio (`adminNavItems`, `kinesioNavItems`)
 - integración aplicada en `/admin` y `/kinesio`
+- [X] Escalado de backoffice por subrutas reales:
+- guardas de rol movidas a `app/admin/layout.tsx` y `app/kinesio/layout.tsx`
+- admin con módulos: `/admin`, `/admin/coupons`, `/admin/sales`, `/admin/crm`, `/admin/finance`
+- kinesio con módulos: `/kinesio`, `/kinesio/coupons`, `/kinesio/patients`, `/kinesio/commissions`, `/kinesio/payouts`
+- navegación sidebar actualizada a rutas reales y activación por prefijo

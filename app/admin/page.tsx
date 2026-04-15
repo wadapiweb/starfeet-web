@@ -1,29 +1,15 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { AdminCouponsManager } from "@/components/admin/AdminCouponsManager";
-import { BackofficeShell } from "@/components/backoffice/BackofficeShell";
-import { adminNavItems } from "@/lib/backoffice-navigation";
+import { ModulePlaceholder } from "@/components/backoffice/ModulePlaceholder";
 
-export default async function AdminPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/api/auth/signin");
-  }
-  if (session.user.role !== "ADMIN") {
-    redirect("/");
-  }
-
+export default function AdminPage() {
   return (
-    <BackofficeShell
-      area="ADMIN"
-      title="Panel Admin"
-      subtitle="Acceso central a ventas, cupones, envíos, leads, campañas y finanzas."
-      navItems={adminNavItems}
-      userName={session.user.name}
-      userEmail={session.user.email}
-    >
-        <AdminCouponsManager />
-    </BackofficeShell>
+    <ModulePlaceholder
+      moduleName="Resumen"
+      summary="Tablero ejecutivo con estado general de operación y prioridades del día."
+      backlog={[
+        "KPIs de ventas y conversión en tiempo real",
+        "Alertas de cupones por vencer y alto uso",
+        "Salud de pagos, envíos y entregas",
+      ]}
+    />
   );
 }

@@ -285,3 +285,18 @@ Crear un shell de backoffice reutilizable con `Sidebar + Header propio + Session
 ### Consecuencia
 - Admin y Kinesio comparten infraestructura de layout, diferenciándose por `navItems` y metadata.
 - Próximo paso: convertir ítems de navegación en subrutas reales para aprovechar totalmente el shell.
+
+---
+
+## 2026-04-15 — Guardas de rol en layouts por dominio
+
+### Decisión
+Mover la autorización de `admin` y `kinesio` desde páginas sueltas hacia `layout.tsx` de cada dominio, encapsulando seguridad y shell de navegación en un único punto.
+
+### Motivo
+- Elimina duplicación de checks de sesión/rol.
+- Permite escalar subrutas sin repetir lógica de autorización y layout.
+
+### Consecuencia
+- Todas las subrutas de cada dominio heredan automáticamente guardas y estructura visual.
+- Se simplifica la creación de nuevos módulos en cada panel.

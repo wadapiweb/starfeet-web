@@ -2,6 +2,7 @@ export type BackofficeNavItem = {
   href: string;
   label: string;
   description: string;
+  matchPrefix?: string;
 };
 
 export const adminNavItems: BackofficeNavItem[] = [
@@ -11,24 +12,28 @@ export const adminNavItems: BackofficeNavItem[] = [
     description: "KPIs y estado general",
   },
   {
-    href: "/admin?tab=coupons",
+    href: "/admin/coupons",
     label: "Cupones",
     description: "Creación, filtros y asignaciones",
+    matchPrefix: "/admin/coupons",
   },
   {
-    href: "/admin?tab=sales",
+    href: "/admin/sales",
     label: "Ventas",
     description: "Órdenes, pagos y envíos",
+    matchPrefix: "/admin/sales",
   },
   {
-    href: "/admin?tab=crm",
+    href: "/admin/crm",
     label: "CRM",
     description: "Leads, campañas y seguimiento",
+    matchPrefix: "/admin/crm",
   },
   {
-    href: "/admin?tab=finance",
+    href: "/admin/finance",
     label: "Finanzas",
     description: "Comisiones y liquidaciones",
+    matchPrefix: "/admin/finance",
   },
 ];
 
@@ -39,23 +44,27 @@ export const kinesioNavItems: BackofficeNavItem[] = [
     description: "Métricas y actividad reciente",
   },
   {
-    href: "/kinesio?tab=coupons",
+    href: "/kinesio/coupons",
     label: "Mis cupones",
     description: "Asignados, uso y vigencia",
+    matchPrefix: "/kinesio/coupons",
   },
   {
-    href: "/kinesio?tab=patients",
+    href: "/kinesio/patients",
     label: "Pacientes",
     description: "Seguimiento por fecha y detalle",
+    matchPrefix: "/kinesio/patients",
   },
   {
-    href: "/kinesio?tab=commissions",
+    href: "/kinesio/commissions",
     label: "Comisiones",
     description: "Devengado, estados y exportable",
+    matchPrefix: "/kinesio/commissions",
   },
   {
-    href: "/kinesio?tab=payouts",
+    href: "/kinesio/payouts",
     label: "Liquidaciones",
     description: "Cierres por período",
+    matchPrefix: "/kinesio/payouts",
   },
 ];

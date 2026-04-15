@@ -41,3 +41,5 @@
 - [ ] Agregar endpoint `/api/health` y chequeo sintético autenticación para observabilidad del entorno dev.
 - [ ] Crear subrutas reales de admin y kinesio (`/admin/sales`, `/admin/crm`, `/kinesio/commissions`, etc.) y conectar navegación del shell.
 - [ ] Extraer tokens visuales de backoffice (spacing, radius, typographic scale) a capa de design system por dominio.
+- [ ] Reemplazar placeholders de módulos por implementaciones reales conectadas a API en cada subruta.
+- [ ] Agregar breadcrumbs y metadata dinámica por submódulo en el header del shell.

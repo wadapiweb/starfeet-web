@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { BackofficeNavItem } from "@/lib/backoffice-navigation";
 import { BackofficeSignOutButton } from "@/components/backoffice/BackofficeSignOutButton";
 
@@ -26,13 +26,7 @@ export function BackofficeShell({
   children,
 }: BackofficeShellProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const currentUrl = useMemo(() => {
-    const query = searchParams.toString();
-    return query ? `${pathname}?${query}` : pathname;
-  }, [pathname, searchParams]);
 
   return (
     <main className="min-h-screen bg-gray-50 pt-28 pb-12 px-4 md:px-6">
@@ -63,7 +57,11 @@ export function BackofficeShell({
 
             <nav className="mt-5 space-y-2" aria-label={`Navegación ${area.toLowerCase()}`}>
               {navItems.map((item) => {
-                const active = currentUrl === item.href || (item.href === pathname && !item.href.includes("?"));
+                const matchPrefix = item.matchPrefix ?? item.href;
+                const active =
+                  pathname === item.href ||
+                  pathname === matchPrefix ||
+                  pathname.startsWith(`${matchPrefix}/`);
 
                 return (
                   <Link
