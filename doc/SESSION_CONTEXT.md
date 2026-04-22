@@ -326,3 +326,8 @@
   - preferencias guardadas por usuario en `SystemSetting` con `dashboardRangeDays`, `tableDensity`, `showQuickTips` y `autoRefreshMinutes`
   - corrección de métricas con `couponRedemption.usedAt` en dashboard kinesio
   - `ToggleSwitch` extendido para soportar labels/description sin romper usos previos
+- [X] Datos demo funcionales para kinesio:
+  - creados 5 pacientes que usan el cupón `KINESIO-10`
+  - 1 paciente vinculado a usuario registrado y 4 pacientes invitados
+  - 5 órdenes, 5 redenciones y 5 enlaces de paciente actualizados en dashboard
+  - script operativo agregado en `scripts/ops/create_demo_kinesio_patients.ts`
