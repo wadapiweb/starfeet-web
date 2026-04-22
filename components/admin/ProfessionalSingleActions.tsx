@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -119,7 +120,14 @@ export function ProfessionalSingleActions({ professional }: ProfessionalSingleAc
           <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Email</span><input className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${fieldErrors.email ? "border-red-500 bg-red-50" : "border-gray-300"}`} type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />{fieldErrors.email ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.email}</span> : null}</label>
           <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Teléfono</span><input className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} /></label>
           <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Nueva contraseña (opcional)</span><input className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${fieldErrors.password ? "border-red-500 bg-red-50" : "border-gray-300"}`} type="password" minLength={8} value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} />{fieldErrors.password ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.password}</span> : null}</label>
-          <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))} />Profesional activo</label>
+          <div className="flex items-center gap-3">
+            <ToggleSwitch
+              checked={form.isActive}
+              onChange={(checked) => setForm((p) => ({ ...p, isActive: checked }))}
+              ariaLabel="Profesional activo"
+            />
+            <span className="text-sm text-gray-700">Profesional activo</span>
+          </div>
         </form>
       </EntityFormModal>
 

@@ -6,6 +6,7 @@ import { Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useMemo, u
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 
 type ModalMode = "create" | "view" | "edit";
 
@@ -568,38 +569,38 @@ function CouponFormFields({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-3">
+          <ToggleSwitch
             checked={form.isStackable}
-            onChange={(e) => onChange((prev) => ({ ...prev, isStackable: e.target.checked }))}
+            onChange={(checked) => onChange((prev) => ({ ...prev, isStackable: checked }))}
+            ariaLabel="Cupón acumulable"
           />
-          Cupón acumulable
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
+          <span className="text-sm text-gray-700">Cupón acumulable</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <ToggleSwitch
             checked={form.isActive}
-            onChange={(e) => onChange((prev) => ({ ...prev, isActive: e.target.checked }))}
+            onChange={(checked) => onChange((prev) => ({ ...prev, isActive: checked }))}
+            ariaLabel="Cupón activo"
           />
-          Cupón activo
-        </label>
+          <span className="text-sm text-gray-700">Cupón activo</span>
+        </div>
       </div>
 
       <fieldset>
         <legend className="text-xs font-bold uppercase tracking-wider text-gray-600">Asignar profesionales</legend>
         <div className="mt-2 max-h-40 overflow-auto rounded-xl border border-gray-200 p-2">
           {kinesios.map((kinesio) => (
-            <label key={kinesio.id} className="flex cursor-pointer items-center gap-2 py-1 text-sm">
-              <input
-                type="checkbox"
-                checked={form.kinesioUserIds.includes(kinesio.id)}
-                onChange={() => onToggleKinesio(kinesio.id)}
-              />
+            <div key={kinesio.id} className="flex items-center justify-between gap-3 rounded-xl px-2 py-2 text-sm hover:bg-gray-50">
               <span>
                 {kinesio.name ?? "Sin nombre"} ({kinesio.email})
               </span>
-            </label>
+              <ToggleSwitch
+                checked={form.kinesioUserIds.includes(kinesio.id)}
+                onChange={() => onToggleKinesio(kinesio.id)}
+                ariaLabel={`Asignar profesional ${kinesio.name ?? kinesio.email}`}
+              />
+            </div>
           ))}
         </div>
       </fieldset>

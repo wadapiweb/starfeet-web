@@ -313,3 +313,6 @@
   - reescrito `app/admin/page.tsx` con `select` explícito en `order.findMany`
   - eliminado el camino que exponía el error por `patientId` nulo en el dashboard
   - reiniciado `starfeet-web` y smokeado `/admin` con redirección a `/login` sin traza de Prisma
+- [X] Migrados checkboxes booleanos de admin a `ToggleSwitch` reusable:
+  - settings, productos, profesionales y cupones usan ahora toggle visual consistente
+  - las relaciones múltiples de cupones mantienen selección funcional con el mismo patrón visual

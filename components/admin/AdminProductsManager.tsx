@@ -6,6 +6,7 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } f
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 
 type ProductTypeValue = "STARFEET" | "SLIPPER" | "OTHER";
 type ModalMode = "create" | "view" | "edit";
@@ -546,14 +547,14 @@ function ProductFormFields({
         />
       </label>
 
-      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-        <input
-          type="checkbox"
+      <div className="flex items-center gap-3">
+        <ToggleSwitch
           checked={form.isActive}
-          onChange={(e) => onChange((prev) => ({ ...prev, isActive: e.target.checked }))}
+          onChange={(checked) => onChange((prev) => ({ ...prev, isActive: checked }))}
+          ariaLabel="Producto activo"
         />
-        Producto activo
-      </label>
+        <span className="text-sm text-gray-700">Producto activo</span>
+      </div>
 
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-600">Control de stock por talle</p>

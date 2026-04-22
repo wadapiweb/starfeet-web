@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 
 type ModalMode = "create" | "view" | "edit";
 
@@ -403,14 +404,14 @@ export function AdminProfessionalsManager({ initialEdit = null }: { initialEdit?
           </label>
 
           {modalMode !== "create" ? (
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
                 checked={editForm.isActive}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, isActive: e.target.checked }))}
+                onChange={(checked) => setEditForm((prev) => ({ ...prev, isActive: checked }))}
+                ariaLabel="Profesional activo"
               />
-              Profesional activo
-            </label>
+              <span className="text-sm text-gray-700">Profesional activo</span>
+            </div>
           ) : null}
         </form>
       </EntityFormModal>

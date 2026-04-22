@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
 
@@ -288,7 +289,14 @@ function ProductFormFields({
         {uploadError ? <p className="mt-2 text-xs font-semibold text-red-700">{uploadError}</p> : null}
         {uploadSuccess ? <p className="mt-2 text-xs font-semibold text-green-700">{uploadSuccess}</p> : null}
       </div>
-      <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={form.isActive} onChange={(e) => onChange((p) => ({ ...p, isActive: e.target.checked }))} />Producto activo</label>
+      <div className="flex items-center gap-3">
+        <ToggleSwitch
+          checked={form.isActive}
+          onChange={(checked) => onChange((p) => ({ ...p, isActive: checked }))}
+          ariaLabel="Producto activo"
+        />
+        <span className="text-sm text-gray-700">Producto activo</span>
+      </div>
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-600">Control de stock por talle</p>
         <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
