@@ -41,7 +41,7 @@ export async function GET(request: Request) {
               some: { kinesioUserId: user.id },
             },
           },
-          ...(dateFilter ? { redeemedAt: dateFilter } : {}),
+          ...(dateFilter ? { usedAt: dateFilter } : {}),
         },
       }),
     ]);

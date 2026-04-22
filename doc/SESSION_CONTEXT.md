@@ -320,3 +320,9 @@
   - removidos KPI cards superiores
   - tabs con iconos representativos y scroll horizontal en mobile
   - agregado `Apariencia` con tema claro/oscuro aplicado al backoffice admin
+- [X] Área `kinesio` convertida en entorno funcional:
+  - nuevas vistas reales para `coupons`, `patients`, `commissions`, `payouts`, `profile`, `settings` y `help`
+  - APIs `GET/PATCH /api/v1/kinesio/profile` y `GET/PATCH /api/v1/kinesio/settings`
+  - preferencias guardadas por usuario en `SystemSetting` con `dashboardRangeDays`, `tableDensity`, `showQuickTips` y `autoRefreshMinutes`
+  - corrección de métricas con `couponRedemption.usedAt` en dashboard kinesio
+  - `ToggleSwitch` extendido para soportar labels/description sin romper usos previos

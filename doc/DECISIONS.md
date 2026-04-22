@@ -1,5 +1,19 @@
 # DECISIONS
 
+## 2026-04-21 — Settings admin como fuente real de configuración
+
+### Decisión
+Implementar `/admin/settings` como editor por tabs con persistencia en `SystemSetting` y defaults codificados para fallback seguro.
+
+### Motivo
+- El panel anterior era estático y no controlaba reglas de negocio.
+- Se necesitaba una superficie operativa para configurar carrito, stock, cupones, seguridad y pasarelas sin tocar código.
+
+### Consecuencia
+- Las reglas reales de negocio ahora leen configuración persistida cuando corresponde.
+- El frontend server-side puede caer a defaults si la base no responde durante build o prerender.
+- Los cambios en settings deben validarse en DB y documentarse junto al deploy.
+
 ## 2026-04-15 — Estrategia de branches Git (dev / staging / prod)
 
 ### Decisión
@@ -364,3 +378,21 @@ El panel `/admin/finance` deja de depender sólo de `commission_entries` y pasa 
 - La vista financiera puede mostrar datos reales aun sin comisiones registradas.
 - Se habilita una lectura operativa más útil para admin y prepara el terreno para liquidación formal por período.
 - La siguiente iteración debería sumar filtros por rango de fechas y exportación.
+
+## 2026-04-22 — Entorno kinesio funcional con preferencias por usuario
+
+### Decisión
+Convertir `kinesio` en un entorno operable real:
+- `dashboard`, `coupons`, `patients`, `commissions`, `payouts`, `profile`, `settings` y `help` dejan de ser placeholders
+- `profile` y `settings` exponen APIs propias con persistencia por usuario
+- las preferencias de kinesio se guardan en `SystemSetting` bajo una key por usuario
+
+### Motivo
+- El workspace kinesio necesita ser útil de punta a punta, no sólo mostrar KPIs.
+- El profesional requiere editar sus datos, ajustar su vista y consultar negocio real sin depender del admin.
+- Reutilizar `SystemSetting` evita introducir una tabla nueva sólo para preferencias operativas.
+
+### Consecuencia
+- Se centraliza la UX de kinesio en componentes reutilizables y datos reales.
+- El panel puede evolucionar con auto refresh, densidad visual y filtros persistentes por usuario.
+- Queda abierta una futura migración a una tabla de preferencias dedicada si la granularidad por usuario crece.

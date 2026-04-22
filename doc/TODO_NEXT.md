@@ -48,6 +48,8 @@
 - [ ] Crear subrutas reales de admin y kinesio (`/admin/sales`, `/admin/crm`, `/kinesio/commissions`, etc.) y conectar navegación del shell.
 - [ ] Extraer tokens visuales de backoffice (spacing, radius, typographic scale) a capa de design system por dominio.
 - [ ] Reemplazar placeholders de módulos por implementaciones reales conectadas a API en cada subruta.
+- [ ] Revisar si el panel kinesio necesita auto refresh real en `dashboard` según `autoRefreshMinutes`.
+- [ ] Evaluar persistir filtros de paciente/comisión por usuario si el uso operativo lo justifica.
 - [ ] Agregar breadcrumbs y metadata dinámica por submódulo en el header del shell.
 - [ ] Conectar buscador de header a acciones reales por módulo (órdenes/cupones/pacientes).
 - [ ] Reemplazar badge estático de notificaciones por feed real + centro de notificaciones.

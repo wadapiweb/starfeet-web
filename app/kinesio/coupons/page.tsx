@@ -1,15 +1,5 @@
-import { ModulePlaceholder } from "@/components/backoffice/ModulePlaceholder";
+import { KinesioCouponsPanel } from "@/components/kinesio/KinesioCouponsPanel";
 
 export default function KinesioCouponsPage() {
-  return (
-    <ModulePlaceholder
-      moduleName="Mis Cupones"
-      summary="Visibilidad de cupones asignados, uso y vigencia operacional."
-      backlog={[
-        "Tabla de cupones con progreso de uso",
-        "Indicador de caducidad próxima",
-        "Detalle de redenciones por paciente",
-      ]}
-    />
-  );
+  return <KinesioCouponsPanel />;
 }

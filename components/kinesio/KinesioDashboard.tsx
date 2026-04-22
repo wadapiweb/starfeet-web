@@ -1,6 +1,7 @@
 "use client";
 
 import { DropdownSelect } from "@/components/atoms/DropdownSelect";
+import { densityClasses } from "@/components/kinesio/kinesio-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type DashboardResponse = {
@@ -66,6 +67,13 @@ type PayoutPeriod = {
   count: number;
 };
 
+type KinesioSettings = {
+  dashboardRangeDays: number;
+  tableDensity: "comfortable" | "compact";
+  showQuickTips: boolean;
+  autoRefreshMinutes: number;
+};
+
 const today = new Date();
 const defaultTo = today.toISOString().slice(0, 10);
 const defaultFrom = new Date(today.getTime() - 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10);
@@ -82,6 +90,8 @@ export function KinesioDashboard() {
   const [selectedPatientDetail, setSelectedPatientDetail] = useState<PatientDetail | null>(null);
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [periods, setPeriods] = useState<PayoutPeriod[]>([]);
+  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [showQuickTips, setShowQuickTips] = useState(true);
 
   const query = useMemo(() => `from=${from}&to=${to}`, [from, to]);
 
@@ -89,15 +99,16 @@ export function KinesioDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [dashRes, couponsRes, patientsRes, commissionsRes, payoutsRes] = await Promise.all([
+      const [dashRes, couponsRes, patientsRes, commissionsRes, payoutsRes, settingsRes] = await Promise.all([
         fetch(`/api/v1/kinesio/dashboard?${query}`, { cache: "no-store" }),
         fetch("/api/v1/kinesio/coupons", { cache: "no-store" }),
         fetch(`/api/v1/kinesio/patients?${query}`, { cache: "no-store" }),
         fetch(`/api/v1/kinesio/commissions?${query}`, { cache: "no-store" }),
         fetch(`/api/v1/kinesio/payouts?${query}`, { cache: "no-store" }),
+        fetch("/api/v1/kinesio/settings", { cache: "no-store" }),
       ]);
 
-      if (!dashRes.ok || !couponsRes.ok || !patientsRes.ok || !commissionsRes.ok || !payoutsRes.ok) {
+      if (!dashRes.ok || !couponsRes.ok || !patientsRes.ok || !commissionsRes.ok || !payoutsRes.ok || !settingsRes.ok) {
         throw new Error("No se pudieron cargar los datos del dashboard.");
       }
 
@@ -106,6 +117,7 @@ export function KinesioDashboard() {
       const patientsJson = await patientsRes.json();
       const commissionsJson = await commissionsRes.json();
       const payoutsJson = await payoutsRes.json();
+      const settingsJson = await settingsRes.json();
 
       const patientList = patientsJson.patients ?? [];
       setDashboard(dashJson);
@@ -113,6 +125,9 @@ export function KinesioDashboard() {
       setPatients(patientList);
       setCommissions(commissionsJson.commissions ?? []);
       setPeriods(payoutsJson.periods ?? []);
+      const kinesioSettings = settingsJson.settings as KinesioSettings | undefined;
+      setDensity(kinesioSettings?.tableDensity === "compact" ? "compact" : "comfortable");
+      setShowQuickTips(kinesioSettings?.showQuickTips !== false);
       setSelectedPatientId((current) => current || patientList[0]?.id || "");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -147,7 +162,16 @@ export function KinesioDashboard() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      {showQuickTips ? (
+        <section className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-sky-700">Tip operativo</p>
+          <p className="mt-1 text-sm text-sky-900">
+            Empezá por el rango de fechas, seguí con pacientes y terminá en comisiones. Esa secuencia evita lecturas inconsistentes.
+          </p>
+        </section>
+      ) : null}
+
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Filtros</h2>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
@@ -179,7 +203,7 @@ export function KinesioDashboard() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <section className="grid grid-cols-2 gap-3">
+      <section className={`grid grid-cols-2 ${density === "compact" ? "gap-2" : "gap-3"}`}>
         <MetricCard label="Pacientes" value={dashboard?.patientsCount ?? 0} loading={loading} />
         <MetricCard label="Usos de cupón" value={dashboard?.couponUsage ?? 0} loading={loading} />
         <MetricCard label="Comisiones" value={dashboard?.commissionsCount ?? 0} loading={loading} />
@@ -190,7 +214,7 @@ export function KinesioDashboard() {
         />
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Estado de liquidación</h2>
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
           {(["PENDING", "VALIDATED", "PAID", "REJECTED"] as const).map((status) => (
@@ -202,7 +226,7 @@ export function KinesioDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Liquidaciones por período</h2>
         <div className="mt-3 space-y-2">
           {periods.length === 0 && <p className="text-sm text-gray-500">Sin movimientos en el período.</p>}
@@ -217,7 +241,7 @@ export function KinesioDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Cupones asignados</h2>
         <div className="mt-3 space-y-2">
           {coupons.length === 0 && <p className="text-sm text-gray-500">No hay cupones asignados.</p>}
@@ -233,7 +257,7 @@ export function KinesioDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Pacientes</h2>
         <div className="mt-3">
           <label className="block">
@@ -272,7 +296,7 @@ export function KinesioDashboard() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white ${densityClasses(density)}`}>
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Comisiones recientes</h2>
         <div className="mt-3 space-y-2">
                 {commissions.length === 0 && <p className="text-sm text-gray-500">Sin comisiones en el período.</p>}
