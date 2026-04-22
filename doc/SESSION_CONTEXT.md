@@ -5,13 +5,15 @@
 - Stack: Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 + Prisma ORM + next-auth v5 + next-intl + Framer Motion + Zustand
 
 ## Estado de sesión
-- Fecha: 2026-04-15
+- Fecha: 2026-04-21
 - Rama activa: main
 - Objetivo del bloque: Instalación y configuración del Senior Staged Delivery Workflow.
 - Consulta operativa: inventario actual de `users` leído desde la base local para soporte de credenciales.
 - Bloque actual: mejora del panel `/admin/finance` para mostrar caja, pipeline abierto, comisiones, cupones y liquidaciones con datos reales.
 - Bloque actual: auditoría y refuerzo de labels/aria-label en filtros y selectores de `admin` y `kinesio`.
 - Bloque actual: normalización de labels de estados visibles a español en CRM, ventas, finanzas y kinesio.
+- Bloque actual: panel `/admin/settings` convertido en editor con tabs y persistencia real por categoría (`SystemSetting`).
+- Bloque actual: wiring de settings a carrito, checkout, stock, cupones, seguridad y pasarela por defecto.
 
 ## Cambios implementados
 - [X] Copiado del template `workflow_1.zip` al root del proyecto.
@@ -131,15 +133,16 @@
 - [ ] smoke
 
 ## Impacto de deploy
-- DB/migrations: N/A (cambios solo de infraestructura de proceso)
-- Infra/env: Se añaden archivos de workflow, scripts y doc — sin impacto en runtime
-- Rollback: `git revert` o eliminar los directorios añadidos
+- DB/migrations: requiere aplicar el schema actualizado (`SystemSetting`, `AccessCode`, `Cart`, `Order`, `CouponRedemption`, `PatientProfile`, `PatientKinesioLink`, `CartItem`) con `prisma db push` o migración equivalente.
+- Infra/env: la UI de settings, checkout y auth leen configuración persistida; sin cambios de secretos.
+- Rollback: revertir el schema y el wiring de settings, luego regenerar Prisma Client y revalidar build.
 
 ## Riesgos residuales
 - [ ] Configurar variables/secrets en GitHub Actions antes de activar el CI
 - [ ] Personalizar rutas del smoke test con endpoints reales de la app
 - [ ] Activar branch protection en `main` en GitHub
 - [ ] Implementar técnicamente decisiones de Etapa 0 en schema, API y UI
+- [ ] Aplicar `prisma db push` en cada entorno para materializar el schema nuevo y validar datos existentes contra `Cart`, `Order`, `PatientProfile` y `CouponRedemption`.
 - [ ] warnings de deprecación Prisma config (`package.json#prisma`) a normalizar en siguiente bloque
 - [ ] falta conectar flujo checkout -> comisiones con lógica de negocio completa (devengo/liquidación real)
 - [ ] dashboards y módulos restantes aún en modo scaffold parcial (admin extendido)
@@ -160,6 +163,10 @@
 - ajuste `NODE_OPTIONS` a 1024MB para `dev` y `build` en `package.json` (evita reinicios por OOM en dev)
 - estilos globales para `input/textarea/select` con texto oscuro y fondo blanco (mejora contraste en auth forms)
 - reinicio de contenedor `starfeet-web` para aplicar cambios de runtime
+- [X] Panel de settings admin implementado:
+- tabs funcionales por categoría (`General`, `Comercio`, `Pagos`, `Notificaciones`, `Seguridad`)
+- persistencia DB-backed con `SystemSetting`
+- wiring real a carrito, checkout, stock, cupones, seguridad y pasarela por defecto
 - [X] Ajuste de Next dev origins:
 - `next.config.ts` actualizado con `allowedDevOrigins` para `dev.starfeet.ar` y hosts locales.
 - verificación de login `/login` respondiendo 200 en contenedor tras restart.
@@ -302,3 +309,7 @@
 - nueva vista detalle por compra: `app/admin/sales/[id]/page.tsx`
 - listado de ventas enlazado a single por ID desde `AdminSalesManager`.
 - API admin de ventas extendida con `GET /api/v1/admin/sales/:id` para detalle.
+- [X] Endurecer `/admin` contra runtime viejo de Prisma:
+  - reescrito `app/admin/page.tsx` con `select` explícito en `order.findMany`
+  - eliminado el camino que exponía el error por `patientId` nulo en el dashboard
+  - reiniciado `starfeet-web` y smokeado `/admin` con redirección a `/login` sin traza de Prisma
