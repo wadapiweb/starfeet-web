@@ -347,3 +347,20 @@ Incorporar campo `slug` único en entidades core (`User`, `Product`, `Coupon`, `
 - Las altas nuevas generan slug automáticamente.
 - Se requiere `backfill` de datos históricos y sincronización de esquema por entorno (`prisma db push` en el estado actual sin migraciones versionadas).
 - Durante transición, algunas rutas aceptan `slug` e `id` para compatibilidad retroactiva.
+
+---
+
+## 2026-04-21 — Panel financiero orientado a caja + comisiones + liquidaciones
+
+### Decisión
+El panel `/admin/finance` deja de depender sólo de `commission_entries` y pasa a consolidar caja real, pipeline abierto, comisiones, cupones y liquidaciones en un mismo dashboard.
+
+### Motivo
+- La base real del negocio vive en varias tablas: `orders`, `commission_entries`, `coupon_redemptions`, `coupon_assignments` y `payout_periods`.
+- Un panel sólo de comisiones devuelve ceros cuando todavía no hubo redenciones, aunque ya existan órdenes cobradas.
+- Finanzas necesita responder dos preguntas distintas: qué entra a caja y qué queda por liquidar.
+
+### Consecuencia
+- La vista financiera puede mostrar datos reales aun sin comisiones registradas.
+- Se habilita una lectura operativa más útil para admin y prepara el terreno para liquidación formal por período.
+- La siguiente iteración debería sumar filtros por rango de fechas y exportación.

@@ -8,6 +8,8 @@
 - Fecha: 2026-04-15
 - Rama activa: main
 - Objetivo del bloque: Instalación y configuración del Senior Staged Delivery Workflow.
+- Consulta operativa: inventario actual de `users` leído desde la base local para soporte de credenciales.
+- Bloque actual: mejora del panel `/admin/finance` para mostrar caja, pipeline abierto, comisiones, cupones y liquidaciones con datos reales.
 
 ## Cambios implementados
 - [X] Copiado del template `workflow_1.zip` al root del proyecto.
