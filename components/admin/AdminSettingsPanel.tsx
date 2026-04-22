@@ -1,5 +1,7 @@
 "use client";
 
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
+import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 import {
   ADMIN_SETTING_CATEGORIES,
   ADMIN_SETTING_CATEGORIES_META,
@@ -8,29 +10,14 @@ import {
   type AdminSettingCategory,
   type AdminSettingDefinition,
   type AdminSettingValue,
-  getActivePaymentProviders,
 } from "@/lib/admin-settings";
-import { useMemo, useState } from "react";
-import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
+import { useState } from "react";
 
 type AdminSettingsState = Record<AdminSettingCategory, Record<string, AdminSettingValue>>;
 
 type Props = {
   initialSettings: AdminSettingsState;
 };
-
-function providerLabel(provider: string) {
-  switch (provider) {
-    case "MERCADOPAGO":
-      return "MercadoPago";
-    case "TRANSFERENCIA":
-      return "Transferencia";
-    case "PAYPAL":
-      return "PayPal";
-    default:
-      return provider;
-  }
-}
 
 function SettingsField({
   definition,
@@ -52,29 +39,23 @@ function SettingsField({
           <p className="mt-1 text-xs text-gray-500">{definition.description}</p>
         </div>
         {definition.kind === "boolean" ? (
-          <ToggleSwitch
-            checked={Boolean(value)}
-            onChange={(checked) => onChange(checked)}
-            ariaLabel={definition.label}
-          />
+          <ToggleSwitch checked={Boolean(value)} onChange={(checked) => onChange(checked)} ariaLabel={definition.label} />
         ) : null}
       </div>
 
       {definition.kind === "select" ? (
-        <select
-          className={inputBase}
+        <DropdownSelect
           value={String(value)}
-          onChange={(event) => onChange(event.target.value)}
-        >
-          {definition.options?.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          options={definition.options ?? []}
+          onChange={onChange}
+          ariaLabel={definition.label}
+          className="mt-1"
+          buttonClassName={inputBase}
+          menuClassName="border-gray-200"
+        />
       ) : null}
 
-      {definition.kind === "text" || definition.kind === "email" ? (
+      {(definition.kind === "text" || definition.kind === "email") ? (
         <input
           className={inputBase}
           type={definition.kind}
@@ -84,12 +65,7 @@ function SettingsField({
       ) : null}
 
       {definition.kind === "textarea" ? (
-        <textarea
-          className={inputBase}
-          rows={4}
-          value={String(value)}
-          onChange={(event) => onChange(event.target.value)}
-        />
+        <textarea className={inputBase} rows={4} value={String(value)} onChange={(event) => onChange(event.target.value)} />
       ) : null}
 
       {definition.kind === "number" ? (
@@ -112,6 +88,73 @@ function SettingsField({
   );
 }
 
+function TabIcon({ category, active }: { category: AdminSettingCategory; active: boolean }) {
+  const className = `h-4 w-4 shrink-0 ${active ? "text-white" : "text-gray-500"}`;
+
+  switch (category) {
+    case "general":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case "appearance":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path
+            d="M21 12.5A8.5 8.5 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "commerce":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path d="M6 6h15l-1.5 8h-11L6 6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M6 6 5 3H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="9" cy="19" r="1.5" fill="currentColor" />
+          <circle cx="18" cy="19" r="1.5" fill="currentColor" />
+        </svg>
+      );
+    case "payments":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="2" />
+          <path d="M3 9h18" stroke="currentColor" strokeWidth="2" />
+          <path d="M7 15h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case "notifications":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path
+            d="M15 17H9m7-4V9a4 4 0 1 0-8 0v4l-2 2v1h14v-1l-2-2Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "security":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path
+            d="M12 3 5 6v5c0 5 3.5 8.5 7 10 3.5-1.5 7-5 7-10V6l-7-3Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          <path d="M9.5 12.5 11 14l3-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 export function AdminSettingsPanel({ initialSettings }: Props) {
   const [drafts, setDrafts] = useState<AdminSettingsState>(initialSettings);
   const [activeCategory, setActiveCategory] = useState<AdminSettingCategory>("general");
@@ -122,32 +165,6 @@ export function AdminSettingsPanel({ initialSettings }: Props) {
   const activeDefinitions = ADMIN_SETTING_DEFINITIONS_BY_CATEGORY[activeCategory];
   const activeSettings = drafts[activeCategory];
   const activeDefaults = ADMIN_SETTING_DEFAULTS[activeCategory];
-
-  const summary = useMemo(() => {
-    const paymentProviders = getActivePaymentProviders(drafts.payments);
-    return [
-      {
-        label: "Carrito",
-        value: `${drafts.commerce.cartTtlMinutes} min`,
-        note: "TTL activo de carrito y reapertura automática",
-      },
-      {
-        label: "Stock",
-        value: `${drafts.commerce.defaultLowStockThreshold} unidades`,
-        note: "Umbral base para inventarios nuevos",
-      },
-      {
-        label: "Pagos",
-        value: paymentProviders.length ? paymentProviders.map(providerLabel).join(" / ") : "Sin pasarelas",
-        note: `Predeterminado: ${providerLabel(String(drafts.payments.defaultPaymentProvider))}`,
-      },
-      {
-        label: "Seguridad",
-        value: `${drafts.security.minPasswordLength} caracteres`,
-        note: `Guest checkout: ${drafts.commerce.guestCheckoutEnabled ? "activo" : "bloqueado"}`,
-      },
-    ];
-  }, [drafts]);
 
   function updateField(category: AdminSettingCategory, key: string, value: AdminSettingValue) {
     setDrafts((current) => ({
@@ -211,20 +228,13 @@ export function AdminSettingsPanel({ initialSettings }: Props) {
         </p>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {summary.map((item) => (
-          <article key={item.label} className="rounded-2xl border border-gray-200 bg-white p-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{item.label}</p>
-            <p className="mt-2 font-condensed text-2xl font-black uppercase text-starfeet-blue">{item.value}</p>
-            <p className="mt-2 text-xs text-gray-500">{item.note}</p>
-          </article>
-        ))}
-      </section>
+      {message ? <p className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p> : null}
+      {error ? <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
 
       <div
         role="tablist"
         aria-label="Categorías de configuración"
-        className="flex flex-wrap gap-2 rounded-2xl border border-gray-200 bg-white p-2"
+        className="flex gap-2 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2"
       >
         {ADMIN_SETTING_CATEGORIES.map((category) => {
           const meta = ADMIN_SETTING_CATEGORIES_META[category];
@@ -239,25 +249,21 @@ export function AdminSettingsPanel({ initialSettings }: Props) {
               aria-controls={`settings-panel-${category}`}
               id={`settings-tab-${category}`}
               onClick={() => setActiveCategory(category)}
-              className={`rounded-xl px-4 py-3 text-left transition ${
+              className={`flex min-w-44 items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                 active
-                  ? "bg-starfeet-blue text-white"
-                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  ? "border-starfeet-blue bg-starfeet-blue text-white"
+                  : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
               }`}
             >
-              <span className="block text-sm font-bold">{meta.title}</span>
-              <span className="block text-[11px] opacity-80">{meta.description}</span>
+              <TabIcon category={category} active={active} />
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">{meta.title}</span>
+                <span className={`block text-[11px] ${active ? "text-white/80" : "text-gray-500"}`}>{meta.description}</span>
+              </span>
             </button>
           );
         })}
       </div>
-
-      {message ? (
-        <p className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p>
-      ) : null}
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-      ) : null}
 
       <section
         id={`settings-panel-${activeCategory}`}
@@ -290,6 +296,16 @@ export function AdminSettingsPanel({ initialSettings }: Props) {
             </button>
           </div>
         </div>
+
+        {activeCategory === "appearance" ? (
+          <div className="mt-5 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
+            <p className="font-bold uppercase tracking-wider text-gray-700">Aplicación visual</p>
+            <p className="mt-1">
+              Este ajuste controla el tema del backoffice. Claro prioriza contraste sobre fondos blancos; oscuro reduce fatiga visual
+              en jornadas largas.
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           {activeDefinitions.map((definition) => (

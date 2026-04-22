@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -266,7 +267,21 @@ function ProductFormFields({
         <textarea className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" rows={3} value={form.description} onChange={(e) => onChange((p) => ({ ...p, description: e.target.value }))} />
       </label>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo</span><select className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" value={form.type} onChange={(e) => onChange((p) => ({ ...p, type: e.target.value as ProductTypeValue }))}><option value="STARFEET">STARFEET</option><option value="SLIPPER">SLIPPER</option><option value="OTHER">OTHER</option></select></label>
+        <label className="block">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo</span>
+          <DropdownSelect
+            value={form.type}
+            onChange={(value) => onChange((p) => ({ ...p, type: value as ProductTypeValue }))}
+            ariaLabel="Tipo de producto"
+            options={[
+              { value: "STARFEET", label: "STARFEET" },
+              { value: "SLIPPER", label: "SLIPPER" },
+              { value: "OTHER", label: "OTHER" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+        </label>
         <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio ARS</span><input className={fieldClass("priceArs")} type="number" step="0.01" value={form.priceArs} onChange={(e) => onChange((p) => ({ ...p, priceArs: e.target.value }))} />{fieldErrors.priceArs ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceArs}</span> : null}</label>
         <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio USD</span><input className={fieldClass("priceUsd")} type="number" step="0.01" value={form.priceUsd} onChange={(e) => onChange((p) => ({ ...p, priceUsd: e.target.value }))} />{fieldErrors.priceUsd ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceUsd}</span> : null}</label>
       </div>

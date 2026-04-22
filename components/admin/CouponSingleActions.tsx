@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -203,7 +204,20 @@ function CouponFormFields({
         {fieldErrors.code ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.code}</span> : null}
       </label>
       <div className="grid grid-cols-2 gap-3">
-        <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo descuento</span><select className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" value={form.discountType} onChange={(e) => onChange((p) => ({ ...p, discountType: e.target.value as CouponForm["discountType"] }))}><option value="PERCENTAGE">Porcentaje</option><option value="FIXED_AMOUNT">Monto fijo</option></select></label>
+        <label className="block">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo descuento</span>
+          <DropdownSelect
+            value={form.discountType}
+            onChange={(value) => onChange((p) => ({ ...p, discountType: value as CouponForm["discountType"] }))}
+            ariaLabel="Tipo de descuento"
+            options={[
+              { value: "PERCENTAGE", label: "Porcentaje" },
+              { value: "FIXED_AMOUNT", label: "Monto fijo" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+        </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Valor descuento</span>
           <input
@@ -218,7 +232,20 @@ function CouponFormFields({
         </label>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <label className="block"><span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo comisión</span><select className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm" value={form.commissionType} onChange={(e) => onChange((p) => ({ ...p, commissionType: e.target.value as CouponForm["commissionType"] }))}><option value="PERCENTAGE">Porcentaje</option><option value="FIXED_AMOUNT">Monto fijo</option></select></label>
+        <label className="block">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo comisión</span>
+          <DropdownSelect
+            value={form.commissionType}
+            onChange={(value) => onChange((p) => ({ ...p, commissionType: value as CouponForm["commissionType"] }))}
+            ariaLabel="Tipo de comisión"
+            options={[
+              { value: "PERCENTAGE", label: "Porcentaje" },
+              { value: "FIXED_AMOUNT", label: "Monto fijo" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+        </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Valor comisión</span>
           <input

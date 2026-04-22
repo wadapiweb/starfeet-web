@@ -6,6 +6,7 @@ import { Dispatch, FormEvent, SetStateAction, useCallback, useEffect, useMemo, u
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 
 type ModalMode = "create" | "view" | "edit";
@@ -343,15 +344,17 @@ export function AdminCouponsManager({ initialEdit = null }: { initialEdit?: stri
           </label>
           <label className="block">
             <span className="sr-only">Filtrar por estado</span>
-            <select
-              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            <DropdownSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-            >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
+              onChange={(value) => setStatusFilter(value as "all" | "active" | "inactive")}
+              ariaLabel="Filtrar por estado"
+              options={[
+                { value: "all", label: "Todos" },
+                { value: "active", label: "Activos" },
+                { value: "inactive", label: "Inactivos" },
+              ]}
+              buttonClassName="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            />
           </label>
         </div>
 
@@ -491,14 +494,17 @@ function CouponFormFields({
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo descuento</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          <DropdownSelect
             value={form.discountType}
-            onChange={(e) => onChange((prev) => ({ ...prev, discountType: e.target.value as CouponForm["discountType"] }))}
-          >
-            <option value="PERCENTAGE">Porcentaje</option>
-            <option value="FIXED_AMOUNT">Monto fijo</option>
-          </select>
+            onChange={(value) => onChange((prev) => ({ ...prev, discountType: value as CouponForm["discountType"] }))}
+            ariaLabel="Tipo de descuento"
+            options={[
+              { value: "PERCENTAGE", label: "Porcentaje" },
+              { value: "FIXED_AMOUNT", label: "Monto fijo" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
         </label>
 
         <label className="block">
@@ -518,14 +524,17 @@ function CouponFormFields({
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo comisión</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          <DropdownSelect
             value={form.commissionType}
-            onChange={(e) => onChange((prev) => ({ ...prev, commissionType: e.target.value as CouponForm["commissionType"] }))}
-          >
-            <option value="PERCENTAGE">Porcentaje</option>
-            <option value="FIXED_AMOUNT">Monto fijo</option>
-          </select>
+            onChange={(value) => onChange((prev) => ({ ...prev, commissionType: value as CouponForm["commissionType"] }))}
+            ariaLabel="Tipo de comisión"
+            options={[
+              { value: "PERCENTAGE", label: "Porcentaje" },
+              { value: "FIXED_AMOUNT", label: "Monto fijo" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
         </label>
 
         <label className="block">

@@ -6,6 +6,7 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } f
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
 import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
 
 type ProductTypeValue = "STARFEET" | "SLIPPER" | "OTHER";
@@ -332,28 +333,32 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
           </label>
           <label className="block">
             <span className="sr-only">Filtrar por estado</span>
-            <select
-              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            <DropdownSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-            >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
-            </select>
+              onChange={(value) => setStatusFilter(value as "all" | "active" | "inactive")}
+              ariaLabel="Filtrar por estado"
+              options={[
+                { value: "all", label: "Todos" },
+                { value: "active", label: "Activos" },
+                { value: "inactive", label: "Inactivos" },
+              ]}
+              buttonClassName="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            />
           </label>
           <label className="block">
             <span className="sr-only">Filtrar por tipo</span>
-            <select
-              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            <DropdownSelect
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as "all" | ProductTypeValue)}
-            >
-              <option value="all">Todos los tipos</option>
-              <option value="STARFEET">STARFEET</option>
-              <option value="SLIPPER">SLIPPER</option>
-              <option value="OTHER">OTHER</option>
-            </select>
+              onChange={(value) => setTypeFilter(value as "all" | ProductTypeValue)}
+              ariaLabel="Filtrar por tipo"
+              options={[
+                { value: "all", label: "Todos los tipos" },
+                { value: "STARFEET", label: "STARFEET" },
+                { value: "SLIPPER", label: "SLIPPER" },
+                { value: "OTHER", label: "OTHER" },
+              ]}
+              buttonClassName="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            />
           </label>
         </div>
 
@@ -490,15 +495,18 @@ function ProductFormFields({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          <DropdownSelect
             value={form.type}
-            onChange={(e) => onChange((prev) => ({ ...prev, type: e.target.value as ProductTypeValue }))}
-          >
-            <option value="STARFEET">STARFEET</option>
-            <option value="SLIPPER">SLIPPER</option>
-            <option value="OTHER">OTHER</option>
-          </select>
+            onChange={(value) => onChange((prev) => ({ ...prev, type: value as ProductTypeValue }))}
+            ariaLabel="Tipo de producto"
+            options={[
+              { value: "STARFEET", label: "STARFEET" },
+              { value: "SLIPPER", label: "SLIPPER" },
+              { value: "OTHER", label: "OTHER" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
         </label>
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio ARS</span>

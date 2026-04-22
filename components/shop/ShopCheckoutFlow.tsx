@@ -1,5 +1,6 @@
 "use client";
 
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { useMemo, useState } from "react";
 
 type ShopProduct = {
@@ -37,9 +38,13 @@ type CartData = {
 export function ShopCheckoutFlow({
   products,
   prefillEmail,
+  paymentProviders,
+  defaultPaymentProvider,
 }: {
   products: ShopProduct[];
   prefillEmail?: string;
+  paymentProviders: Array<"MERCADOPAGO" | "TRANSFERENCIA" | "PAYPAL">;
+  defaultPaymentProvider: "MERCADOPAGO" | "TRANSFERENCIA" | "PAYPAL";
 }) {
   const [email, setEmail] = useState(prefillEmail ?? "");
   const [currency, setCurrency] = useState<"ARS" | "USD">("ARS");
@@ -47,6 +52,9 @@ export function ShopCheckoutFlow({
   const [couponCode, setCouponCode] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [paymentProvider, setPaymentProvider] = useState(
+    paymentProviders.includes(defaultPaymentProvider) ? defaultPaymentProvider : paymentProviders[0] ?? "MERCADOPAGO",
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -160,7 +168,7 @@ export function ShopCheckoutFlow({
           cartId: cart.id,
           clientName,
           clientPhone,
-          paymentProvider: "MERCADOPAGO",
+          paymentProvider,
         }),
       });
       const json = await res.json();
@@ -218,14 +226,46 @@ export function ShopCheckoutFlow({
 
         <label className="mt-3 block">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Moneda</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          <DropdownSelect
             value={currency}
-            onChange={(e) => setCurrency(e.target.value as "ARS" | "USD")}
-          >
-            <option value="ARS">ARS</option>
-            <option value="USD">USD</option>
-          </select>
+            onChange={(value) => setCurrency(value as "ARS" | "USD")}
+            ariaLabel="Moneda"
+            options={[
+              { value: "ARS", label: "ARS" },
+              { value: "USD", label: "USD" },
+            ]}
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="mt-3 block">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Pasarela de pago</span>
+          <DropdownSelect
+            value={paymentProviders.length === 0 ? "" : paymentProvider}
+            onChange={(value) => setPaymentProvider(value as "MERCADOPAGO" | "TRANSFERENCIA" | "PAYPAL")}
+            ariaLabel="Pasarela de pago"
+            placeholder={paymentProviders.length === 0 ? "Sin pasarelas activas" : "Seleccionar pasarela"}
+            disabled={paymentProviders.length === 0}
+            options={
+              paymentProviders.length === 0
+                ? []
+                : paymentProviders.map((provider) => ({
+                    value: provider,
+                    label:
+                      provider === "MERCADOPAGO"
+                        ? "MercadoPago"
+                        : provider === "TRANSFERENCIA"
+                          ? "Transferencia bancaria"
+                          : "PayPal",
+                  }))
+            }
+            className="mt-1"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100"
+          />
+          <p className="mt-1 text-[11px] text-gray-500">
+            Se alimenta desde la configuración del admin.
+          </p>
         </label>
 
         <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
@@ -275,7 +315,7 @@ export function ShopCheckoutFlow({
           type="button"
           onClick={checkout}
           className="mt-4 w-full rounded-xl bg-starfeet-lime px-3 py-3 text-sm font-black uppercase text-starfeet-blue disabled:opacity-50"
-          disabled={loading}
+          disabled={loading || paymentProviders.length === 0}
         >
           Confirmar checkout
         </button>

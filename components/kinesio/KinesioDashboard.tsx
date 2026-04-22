@@ -1,5 +1,6 @@
 "use client";
 
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type DashboardResponse = {
@@ -237,18 +238,18 @@ export function KinesioDashboard() {
         <div className="mt-3">
           <label className="block">
             <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Paciente seleccionado</span>
-          <select
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            <DropdownSelect
               value={selectedPatientId}
-              onChange={(e) => setSelectedPatientId(e.target.value)}
-            >
-              <option value="">Seleccionar paciente</option>
-              {patients.map((patient) => (
-                <option key={patient.id} value={patient.id}>
-                  {(patient.name ?? patient.email) + ` (${patient.email})`}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedPatientId(value)}
+              ariaLabel="Paciente seleccionado"
+              placeholder="Seleccionar paciente"
+              options={patients.map((patient) => ({
+                value: patient.id,
+                label: `${patient.name ?? patient.email} (${patient.email})`,
+              }))}
+              className="mt-1"
+              buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            />
           </label>
         </div>
         <div className="mt-3 space-y-2">

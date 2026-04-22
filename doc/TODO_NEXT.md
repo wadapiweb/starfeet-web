@@ -74,3 +74,4 @@
 - [X] Crear script de datos demo de ventas con 3 estados (`PENDING_PAYMENT`, `PAID`, `DELIVERED`) para pruebas funcionales.
 - [X] Sanear `app/admin/page.tsx` para evitar el error de `patientId` nulo y dejar `/admin` estable bajo Prisma regenerado.
 - [X] Reemplazar checkboxes booleanos de admin por toggles reutilizables (`ToggleSwitch`) para unificar la UX de settings y formularios.
+- [X] Reducir ruido en `admin/settings`: quitar KPI cards, sumar tabs con iconos y persistir tema claro/oscuro del backoffice.

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { OrderStatus, Currency } from "@prisma/client";
+import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 
 type OrderSummary = {
   id: string;
@@ -92,22 +93,24 @@ export function AdminSalesManager() {
           </label>
           <label className="block">
             <span className="sr-only">Filtrar por estado</span>
-            <select
-              className="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none"
+            <DropdownSelect
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
+              onChange={(value) => {
+                setStatusFilter(value);
                 setPage(1);
               }}
-            >
-              <option value="all">Todos los estados</option>
-              <option value="INITIATED">Iniciado</option>
-              <option value="PENDING_PAYMENT">Pendiente Pago</option>
-              <option value="PAID">Pagado</option>
-              <option value="SHIPPED">Enviado</option>
-              <option value="DELIVERED">Entregado</option>
-              <option value="CANCELLED">Cancelado</option>
-            </select>
+              ariaLabel="Filtrar por estado"
+              options={[
+                { value: "all", label: "Todos los estados" },
+                { value: "INITIATED", label: "Iniciado" },
+                { value: "PENDING_PAYMENT", label: "Pendiente Pago" },
+                { value: "PAID", label: "Pagado" },
+                { value: "SHIPPED", label: "Enviado" },
+                { value: "DELIVERED", label: "Entregado" },
+                { value: "CANCELLED", label: "Cancelado" },
+              ]}
+              buttonClassName="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none"
+            />
           </label>
         </div>
       </header>
@@ -162,24 +165,27 @@ export function AdminSalesManager() {
                     </p>
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      aria-label={`Cambiar estado de la orden ${order.id.slice(0, 10)}`}
-                      className={`text-xs font-bold border rounded-md px-2 py-1 outline-none ${
-                        order.status === "PAID" ? "bg-green-50 border-green-200 text-green-700" :
-                        order.status === "CANCELLED" ? "bg-red-50 border-red-200 text-red-700" :
-                        "bg-white border-gray-300 text-gray-700"
-                      }`}
+                    <DropdownSelect
+                      ariaLabel={`Cambiar estado de la orden ${order.id.slice(0, 10)}`}
                       value={order.status}
-                      onChange={(e) => updateStatus(order.id, e.target.value as OrderStatus)}
+                      onChange={(value) => updateStatus(order.id, value as OrderStatus)}
                       disabled={loading}
-                    >
-                      <option value="INITIATED">Iniciado</option>
-                      <option value="PENDING_PAYMENT">Pend. Pago</option>
-                      <option value="PAID">Pagado</option>
-                      <option value="SHIPPED">Enviado</option>
-                      <option value="DELIVERED">Entregado</option>
-                      <option value="CANCELLED">Cancelado</option>
-                    </select>
+                      options={[
+                        { value: "INITIATED", label: "Iniciado" },
+                        { value: "PENDING_PAYMENT", label: "Pend. Pago" },
+                        { value: "PAID", label: "Pagado" },
+                        { value: "SHIPPED", label: "Enviado" },
+                        { value: "DELIVERED", label: "Entregado" },
+                        { value: "CANCELLED", label: "Cancelado" },
+                      ]}
+                      buttonClassName={`text-xs font-bold border rounded-md px-2 py-1 outline-none ${
+                        order.status === "PAID"
+                          ? "bg-green-50 border-green-200 text-green-700"
+                          : order.status === "CANCELLED"
+                            ? "bg-red-50 border-red-200 text-red-700"
+                            : "bg-white border-gray-300 text-gray-700"
+                      }`}
+                    />
                   </td>
                 </tr>
               ))

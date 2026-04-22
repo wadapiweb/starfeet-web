@@ -316,3 +316,7 @@
 - [X] Migrados checkboxes booleanos de admin a `ToggleSwitch` reusable:
   - settings, productos, profesionales y cupones usan ahora toggle visual consistente
   - las relaciones múltiples de cupones mantienen selección funcional con el mismo patrón visual
+- [X] `admin/settings` simplificado visualmente y con tema persistido:
+  - removidos KPI cards superiores
+  - tabs con iconos representativos y scroll horizontal en mobile
+  - agregado `Apariencia` con tema claro/oscuro aplicado al backoffice admin

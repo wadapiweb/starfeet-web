@@ -1,19 +1,34 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { ShopCheckoutFlow } from "@/components/shop/ShopCheckoutFlow";
+import { getAdminPaymentSettings } from "@/lib/admin-settings.server";
 
 export default async function TiendaPage() {
   const session = await auth();
-  const products = await prisma.product
-    .findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: "desc" },
-      take: 24,
-    })
-    .catch((error) => {
-      console.error("Tienda fallback: database unavailable", error);
-      return [];
-    });
+  const [products, paymentSettings] = await Promise.all([
+    prisma.product
+      .findMany({
+        where: { isActive: true },
+        orderBy: { createdAt: "desc" },
+        take: 24,
+      })
+      .catch((error) => {
+        console.error("Tienda fallback: database unavailable", error);
+        return [];
+      }),
+    getAdminPaymentSettings().catch((error) => {
+      console.error("Tienda fallback: payment settings unavailable", error);
+      return {
+        defaultPaymentProvider: "MERCADOPAGO" as const,
+        providers: ["MERCADOPAGO", "TRANSFERENCIA"] as const,
+        enabled: {
+          mercadopago: true,
+          transfer: true,
+          paypal: false,
+        },
+      };
+    }),
+  ]);
 
   const normalizedProducts = products.map((product) => ({
     id: product.id,
@@ -35,7 +50,14 @@ export default async function TiendaPage() {
             Catálogo + flujo de carrito/checkout para comprador registrado o invitado.
           </p>
         </header>
-        <ShopCheckoutFlow products={normalizedProducts} prefillEmail={session?.user?.email ?? ""} />
+        <ShopCheckoutFlow
+          products={normalizedProducts}
+          prefillEmail={session?.user?.email ?? ""}
+          paymentProviders={paymentSettings.providers as Array<"MERCADOPAGO" | "TRANSFERENCIA" | "PAYPAL">}
+          defaultPaymentProvider={
+            paymentSettings.defaultPaymentProvider as "MERCADOPAGO" | "TRANSFERENCIA" | "PAYPAL"
+          }
+        />
       </div>
     </main>
   );
