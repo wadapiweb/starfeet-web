@@ -15,6 +15,21 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
+function commissionStatusLabel(status: string) {
+  switch (status) {
+    case "PENDING":
+      return "Pendiente";
+    case "VALIDATED":
+      return "Validada";
+    case "PAID":
+      return "Pagada";
+    case "REJECTED":
+      return "Rechazada";
+    default:
+      return status;
+  }
+}
+
 export default async function AdminProfessionalDetailPage({ params }: AdminProfessionalDetailPageProps) {
   const { slug } = await params;
 
@@ -289,7 +304,7 @@ export default async function AdminProfessionalDetailPage({ params }: AdminProfe
                       {entry.order.currency} {currencyFormatter.format(Number(entry.order.totalAmount))}
                     </td>
                     <td className="px-3 py-2">ARS {currencyFormatter.format(Number(entry.amount))}</td>
-                    <td className="px-3 py-2">{entry.status}</td>
+                    <td className="px-3 py-2">{commissionStatusLabel(entry.status)}</td>
                   </tr>
                 ))
               )}

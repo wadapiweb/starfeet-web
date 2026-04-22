@@ -10,6 +10,8 @@
 - Objetivo del bloque: Instalación y configuración del Senior Staged Delivery Workflow.
 - Consulta operativa: inventario actual de `users` leído desde la base local para soporte de credenciales.
 - Bloque actual: mejora del panel `/admin/finance` para mostrar caja, pipeline abierto, comisiones, cupones y liquidaciones con datos reales.
+- Bloque actual: auditoría y refuerzo de labels/aria-label en filtros y selectores de `admin` y `kinesio`.
+- Bloque actual: normalización de labels de estados visibles a español en CRM, ventas, finanzas y kinesio.
 
 ## Cambios implementados
 - [X] Copiado del template `workflow_1.zip` al root del proyecto.

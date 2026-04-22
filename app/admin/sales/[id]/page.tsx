@@ -30,6 +30,21 @@ function statusLabel(status: string) {
   }
 }
 
+function commissionStatusLabel(status: string) {
+  switch (status) {
+    case "PENDING":
+      return "Pendiente";
+    case "VALIDATED":
+      return "Validada";
+    case "PAID":
+      return "Pagada";
+    case "REJECTED":
+      return "Rechazada";
+    default:
+      return status;
+  }
+}
+
 function statusTone(status: string) {
   switch (status) {
     case "PAID":
@@ -142,7 +157,7 @@ export default async function AdminSaleDetailPage({ params }: AdminSaleDetailPag
               {order.commissionEntries.map((entry) => (
                 <li key={entry.id} className="rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-700">
                   <p className="font-semibold">{entry.kinesioUser.name ?? entry.kinesioUser.email}</p>
-                  <p>ARS {money.format(Number(entry.amount))} · {entry.status}</p>
+                  <p>ARS {money.format(Number(entry.amount))} · {commissionStatusLabel(entry.status)}</p>
                 </li>
               ))}
             </ul>

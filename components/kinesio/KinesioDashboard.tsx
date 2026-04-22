@@ -194,7 +194,7 @@ export function KinesioDashboard() {
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
           {(["PENDING", "VALIDATED", "PAID", "REJECTED"] as const).map((status) => (
             <div key={status} className="rounded-xl border border-gray-200 p-2">
-              <p className="text-xs font-bold text-gray-500">{status}</p>
+              <p className="text-xs font-bold text-gray-500">{commissionStatusLabel(status)}</p>
               <p className="font-bold text-starfeet-blue">{dashboard?.commissionByStatus?.[status] ?? 0}</p>
             </div>
           ))}
@@ -235,18 +235,21 @@ export function KinesioDashboard() {
       <section className="rounded-2xl border border-gray-200 bg-white p-4">
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Pacientes</h2>
         <div className="mt-3">
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Paciente seleccionado</span>
           <select
-            className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            value={selectedPatientId}
-            onChange={(e) => setSelectedPatientId(e.target.value)}
-          >
-            <option value="">Seleccionar paciente</option>
-            {patients.map((patient) => (
-              <option key={patient.id} value={patient.id}>
-                {(patient.name ?? patient.email) + ` (${patient.email})`}
-              </option>
-            ))}
-          </select>
+              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              value={selectedPatientId}
+              onChange={(e) => setSelectedPatientId(e.target.value)}
+            >
+              <option value="">Seleccionar paciente</option>
+              {patients.map((patient) => (
+                <option key={patient.id} value={patient.id}>
+                  {(patient.name ?? patient.email) + ` (${patient.email})`}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="mt-3 space-y-2">
           {!selectedPatientDetail && <p className="text-sm text-gray-500">No hay detalle de paciente seleccionado.</p>}
@@ -259,7 +262,7 @@ export function KinesioDashboard() {
                 {selectedPatientDetail.orders.length === 0 && <p className="text-xs text-gray-500">Sin órdenes.</p>}
                 {selectedPatientDetail.orders.map((order) => (
                   <p key={order.id} className="text-xs text-gray-600">
-                    {order.id.slice(0, 8)} · {order.status} · {order.currency} {Number(order.totalAmount).toLocaleString()}
+                    {order.id.slice(0, 8)} · {orderStatusLabel(order.status)} · {order.currency} {Number(order.totalAmount).toLocaleString()}
                   </p>
                 ))}
               </div>
@@ -271,18 +274,18 @@ export function KinesioDashboard() {
       <section className="rounded-2xl border border-gray-200 bg-white p-4">
         <h2 className="font-condensed font-bold text-2xl text-starfeet-blue uppercase">Comisiones recientes</h2>
         <div className="mt-3 space-y-2">
-          {commissions.length === 0 && <p className="text-sm text-gray-500">Sin comisiones en el período.</p>}
-          {commissions.map((entry) => (
-            <article key={entry.id} className="rounded-xl border border-gray-200 p-3">
-              <p className="font-bold text-starfeet-blue">
-                {Number(entry.amount).toLocaleString()} · {entry.status}
-              </p>
-              <p className="text-xs text-gray-600">
-                Orden {entry.order.id.slice(0, 8)} · Cliente {entry.order.snapshotClientEmail ?? "N/A"} · Cupón{" "}
-                {entry.coupon?.code ?? "N/A"}
-              </p>
-            </article>
-          ))}
+                {commissions.length === 0 && <p className="text-sm text-gray-500">Sin comisiones en el período.</p>}
+                {commissions.map((entry) => (
+                  <article key={entry.id} className="rounded-xl border border-gray-200 p-3">
+                    <p className="font-bold text-starfeet-blue">
+                      {Number(entry.amount).toLocaleString()} · {commissionStatusLabel(entry.status)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Orden {entry.order.id.slice(0, 8)} · Cliente {entry.order.snapshotClientEmail ?? "N/A"} · Cupón{" "}
+                      {entry.coupon?.code ?? "N/A"}
+                    </p>
+                  </article>
+                ))}
         </div>
       </section>
     </div>
@@ -296,4 +299,38 @@ function MetricCard({ label, value, loading }: { label: string; value: string | 
       <p className="mt-2 font-condensed font-black text-3xl text-starfeet-blue">{loading ? "..." : value}</p>
     </article>
   );
+}
+
+function commissionStatusLabel(status: "PENDING" | "VALIDATED" | "PAID" | "REJECTED") {
+  switch (status) {
+    case "PENDING":
+      return "Pendiente";
+    case "VALIDATED":
+      return "Validada";
+    case "PAID":
+      return "Pagada";
+    case "REJECTED":
+      return "Rechazada";
+    default:
+      return status;
+  }
+}
+
+function orderStatusLabel(status: string) {
+  switch (status) {
+    case "INITIATED":
+      return "Iniciada";
+    case "PENDING_PAYMENT":
+      return "Pendiente de pago";
+    case "PAID":
+      return "Pagada";
+    case "SHIPPED":
+      return "Enviada";
+    case "DELIVERED":
+      return "Entregada";
+    case "CANCELLED":
+      return "Cancelada";
+    default:
+      return status;
+  }
 }

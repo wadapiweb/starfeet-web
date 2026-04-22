@@ -6,6 +6,25 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
+function orderStatusLabel(status: string) {
+  switch (status) {
+    case "INITIATED":
+      return "Iniciada";
+    case "PENDING_PAYMENT":
+      return "Pendiente de pago";
+    case "PAID":
+      return "Pagada";
+    case "SHIPPED":
+      return "Enviada";
+    case "DELIVERED":
+      return "Entregada";
+    case "CANCELLED":
+      return "Cancelada";
+    default:
+      return status;
+  }
+}
+
 export default async function AdminDashboardPage() {
   const [
     kinesiosActivos,
@@ -108,7 +127,7 @@ export default async function AdminDashboardPage() {
                         order.status === 'CANCELLED' ? "bg-red-100 text-red-800" :
                         "bg-gray-100 text-gray-800"
                       }`}>
-                        {order.status}
+                        {orderStatusLabel(order.status)}
                       </span>
                     </td>
                   </tr>

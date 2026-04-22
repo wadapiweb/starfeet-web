@@ -79,30 +79,36 @@ export function AdminSalesManager() {
           <p className="text-sm text-gray-600">Total resultados: {total}</p>
         </div>
         <div className="flex gap-2">
-          <input
-            type="search"
-            placeholder="Buscar ID, email o nombre"
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-starfeet-blue"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && loadData()}
-          />
-          <select
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="all">Todos los estados</option>
-            <option value="INITIATED">Iniciado</option>
-            <option value="PENDING_PAYMENT">Pendiente Pago</option>
-            <option value="PAID">Pagado</option>
-            <option value="SHIPPED">Enviado</option>
-            <option value="DELIVERED">Entregado</option>
-            <option value="CANCELLED">Cancelado</option>
-          </select>
+          <label className="block">
+            <span className="sr-only">Buscar órdenes</span>
+            <input
+              type="search"
+              placeholder="Buscar ID, email o nombre"
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-starfeet-blue"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && loadData()}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Filtrar por estado</span>
+            <select
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">Todos los estados</option>
+              <option value="INITIATED">Iniciado</option>
+              <option value="PENDING_PAYMENT">Pendiente Pago</option>
+              <option value="PAID">Pagado</option>
+              <option value="SHIPPED">Enviado</option>
+              <option value="DELIVERED">Entregado</option>
+              <option value="CANCELLED">Cancelado</option>
+            </select>
+          </label>
         </div>
       </header>
 
@@ -157,6 +163,7 @@ export function AdminSalesManager() {
                   </td>
                   <td className="px-4 py-3">
                     <select
+                      aria-label={`Cambiar estado de la orden ${order.id.slice(0, 10)}`}
                       className={`text-xs font-bold border rounded-md px-2 py-1 outline-none ${
                         order.status === "PAID" ? "bg-green-50 border-green-200 text-green-700" :
                         order.status === "CANCELLED" ? "bg-red-50 border-red-200 text-red-700" :

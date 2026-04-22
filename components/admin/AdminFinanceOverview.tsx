@@ -428,6 +428,26 @@ function CompactTable({
 }
 
 function StatusTag({ status }: { status: OrderStatus | CommissionStatus }) {
+  const label =
+    status === "PAID"
+      ? "Pagado"
+      : status === "VALIDATED"
+        ? "Validada"
+        : status === "PENDING"
+          ? "Pendiente"
+          : status === "REJECTED"
+            ? "Rechazada"
+            : status === "INITIATED"
+              ? "Iniciada"
+              : status === "PENDING_PAYMENT"
+                ? "Pendiente de pago"
+                : status === "SHIPPED"
+                  ? "Enviada"
+                  : status === "DELIVERED"
+                    ? "Entregada"
+                    : status === "CANCELLED"
+                      ? "Cancelada"
+                      : status;
   const styles =
     status === "PAID"
       ? "bg-green-100 text-green-800"
@@ -439,7 +459,7 @@ function StatusTag({ status }: { status: OrderStatus | CommissionStatus }) {
 
   return (
     <span className={`inline-flex rounded px-2 py-0.5 text-[10px] font-bold uppercase ${styles}`}>
-      {status}
+      {label}
     </span>
   );
 }

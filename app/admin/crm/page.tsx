@@ -27,14 +27,14 @@ export default async function AdminCrmPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">CRM Pipeline</h2>
+        <h2 className="font-condensed text-3xl font-black uppercase tracking-tight text-starfeet-blue">Pipeline CRM</h2>
         <p className="text-sm text-gray-600 mt-1">Gestión de contactos comerciales y prospectos institucionales.</p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard title="Total Leads" value={totalLeads.toString()} bg="bg-blue-50" text="text-starfeet-blue" />
+        <StatCard title="Total de leads" value={totalLeads.toString()} bg="bg-blue-50" text="text-starfeet-blue" />
         <StatCard title="Nuevos" value={(stats.NEW_LEAD || 0).toString()} bg="bg-gray-100" text="text-gray-800" />
-        <StatCard title="En Proceso" value={((stats.CONTACTED || 0) + (stats.QUALIFIED || 0) + (stats.PROPOSAL_SENT || 0)).toString()} bg="bg-amber-100" text="text-amber-800" />
+        <StatCard title="En proceso" value={((stats.CONTACTED || 0) + (stats.QUALIFIED || 0) + (stats.PROPOSAL_SENT || 0)).toString()} bg="bg-amber-100" text="text-amber-800" />
         <StatCard title="Ganados" value={(stats.WON || 0).toString()} bg="bg-green-100" text="text-green-800" />
       </div>
 
@@ -72,7 +72,7 @@ export default async function AdminCrmPage() {
                         lead.status === 'LOST' ? "bg-red-100 text-red-800" :
                         "bg-blue-100 text-starfeet-blue"
                       }`}>
-                        {lead.status.replace("_", " ")}
+                        {leadStatusLabel(lead.status)}
                       </span>
                     </td>
                   </tr>
@@ -93,4 +93,28 @@ function StatCard({ title, value, bg, text }: { title: string, value: string, bg
       <p className={`mt-1 font-condensed text-3xl font-black ${text}`}>{value}</p>
     </div>
   );
+}
+
+function leadStatusLabel(status: string) {
+  switch (status) {
+    case "NEW_LEAD":
+      return "Nuevo";
+    case "CONTACTED":
+      return "Contactado";
+    case "QUALIFIED":
+      return "Calificado";
+    case "PROPOSAL":
+    case "PROPOSAL_SENT":
+      return "Propuesta enviada";
+    case "NEGOTIATION":
+      return "Negociación";
+    case "WON":
+    case "CLOSED_WON":
+      return "Ganado";
+    case "LOST":
+    case "CLOSED_LOST":
+      return "Perdido";
+    default:
+      return status;
+  }
 }

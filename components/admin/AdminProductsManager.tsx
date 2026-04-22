@@ -320,31 +320,40 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
 
       <article className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <input
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Buscar por nombre o slug"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <select
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-          >
-            <option value="all">Todos</option>
-            <option value="active">Activos</option>
-            <option value="inactive">Inactivos</option>
-          </select>
-          <select
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as "all" | ProductTypeValue)}
-          >
-            <option value="all">Todos los tipos</option>
-            <option value="STARFEET">STARFEET</option>
-            <option value="SLIPPER">SLIPPER</option>
-            <option value="OTHER">OTHER</option>
-          </select>
+          <label className="block">
+            <span className="sr-only">Buscar productos</span>
+            <input
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              placeholder="Buscar por nombre o slug"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Filtrar por estado</span>
+            <select
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+            >
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="sr-only">Filtrar por tipo</span>
+            <select
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as "all" | ProductTypeValue)}
+            >
+              <option value="all">Todos los tipos</option>
+              <option value="STARFEET">STARFEET</option>
+              <option value="SLIPPER">SLIPPER</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </label>
         </div>
 
         <div className="mt-4 overflow-auto rounded-xl border border-gray-200">

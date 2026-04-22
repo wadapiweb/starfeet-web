@@ -331,21 +331,27 @@ export function AdminCouponsManager({ initialEdit = null }: { initialEdit?: stri
 
       <article className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <input
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Filtrar por código"
-            value={codeFilter}
-            onChange={(e) => setCodeFilter(e.target.value)}
-          />
-          <select
-            className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-          >
-            <option value="all">Todos</option>
-            <option value="active">Activos</option>
-            <option value="inactive">Inactivos</option>
-          </select>
+          <label className="block">
+            <span className="sr-only">Filtrar por código</span>
+            <input
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              placeholder="Filtrar por código"
+              value={codeFilter}
+              onChange={(e) => setCodeFilter(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="sr-only">Filtrar por estado</span>
+            <select
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+            >
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </label>
         </div>
 
         <div className="mt-4 overflow-auto rounded-xl border border-gray-200">

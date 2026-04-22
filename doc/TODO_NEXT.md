@@ -12,6 +12,8 @@
 ## Backlog inmediato
 - [X] Consulta operativa: inventario actual de usuarios/roles revisado para soporte de acceso.
 - [X] Panel `/admin/finance` expandido para caja, pipeline, comisiones, liquidaciones y top cupones con datos reales.
+- [X] Labels accesibles reforzados en filtros y selectores principales de admin/kinesio.
+- [X] Estados visibles normalizados a español en CRM, ventas, finanzas y kinesio.
 - [X] Etapa 1: Proponer y validar blueprint técnico (módulos, carpetas, bounded contexts y ownership).
 - [X] Etapa 1: Diseñar migración Prisma para cupones multi-kinesiólogo y entidad paciente.
 - [X] Etapa 1: Diseñar modelo de carrito con TTL 2h + revalidación de cupón en checkout.
