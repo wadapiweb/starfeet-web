@@ -400,3 +400,16 @@
 - [X] Aislamiento del entorno de desarrollo de la Landing Page:
   - Añadido el contenedor `starfeet-landing` en modo desarrollo (`npm run dev`) en el archivo `docker-compose.yml` del VPS.
   - Expuesto el contenedor en Traefik bajo el dominio de desarrollo `dev1.starfeet.ar` para previsualizar cambios en tiempo real antes de empujar a producción en Hostinger Cloud.
+- [X] Mejoras de Validación de Formularios (Zod, Foco Dinámico, Clases Visuales):
+  - Definido `lib/validation.ts` con esquemas Zod reutilizables para Login y Producto.
+  - Refactorizado `LoginForm.tsx` y `ProductFormFields.tsx` para aplicar validación de Zod, focos dinámicos en el primer error, resaltado visual de bordes en rojo e inline text error, garantizando usabilidad.
+- [X] Seguridad y Auditoría de Autenticación (Intentos Fallidos y Lockout):
+  - Actualizado `schema.prisma` agregando campos de bloqueo de login (`lockoutUntil`, `failedLoginAttempts`).
+  - Ejecutada la sincronización de esquema a base de datos PostgreSQL (`npx prisma db push`).
+  - Modificada la ruta de credentials en `auth.ts` para aplicar rate limit de inicio de sesión fallido, bloqueando temporalmente la cuenta por 15 minutos al acumular 5 intentos fallidos consecutivos.
+- [X] Adaptabilidad Visual, Temas y A11y:
+  - Asegurada la propagación del contenedor `.dark` en el Shell de Backoffice (`BackofficeShell.tsx`).
+  - Reforzados estados de accesibilidad (roles ARIA, tabIndex, manejo de eventos de teclado) en `ToggleSwitch.tsx` y `DropdownSelect.tsx`.
+- [X] Resolución de Pre-renderizado Estático en Next.js:
+  - Removido wrapper global de `NextIntlClientProvider` en `app/layout.tsx` y reubicado de manera aislada en `app/login/page.tsx` mediante carga directa de `es.json`. Esto resolvió el fallo de prerender de `_global-error` provocado por la colisión de next-intl con la fase estática del compilador.
+  - El linter (`npm run lint`) y compilación final pasan al 100% de manera limpia.

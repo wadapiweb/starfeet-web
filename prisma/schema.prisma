@@ -146,6 +146,8 @@ model User {
   documentNumber String?
   role           Role      @default(CLIENTE)
   isActive       Boolean   @default(true)
+  failedLoginAttempts Int      @default(0)
+  lockoutUntil   DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

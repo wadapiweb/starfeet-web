@@ -1,0 +1,29 @@
+{
+  "validation": {
+    "required": "Este campo es obligatorio.",
+    "invalidEmail": "Ingresá un correo electrónico válido.",
+    "minPassword": "La contraseña debe tener al menos {min} caracteres.",
+    "pricePositive": "El precio debe ser mayor a 0.",
+    "slugInvalid": "Usá minúsculas, números y guiones. El sistema lo normaliza al guardar.",
+    "variantRequired": "Agregá al menos una variante con talle, color y stock.",
+    "colorRequired": "El color es obligatorio.",
+    "sizeRequired": "El talle es obligatorio.",
+    "stockInvalid": "Stock válido requerido.",
+    "thresholdInvalid": "Umbral válido requerido."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Contraseña",
+    "submit": "Ingresar con email",
+    "submitting": "Ingresando...",
+    "google": "Continuar con Google",
+    "googleConnecting": "Conectando con Google...",
+    "recoverPassword": "Recuperar contraseña",
+    "createAccount": "Crear cuenta",
+    "guestPrompt": "¿Compraste como invitado?",
+    "guestAction": "Ver compra con email",
+    "loginError": "No pudimos iniciar sesión. Verifica email/contraseña o estado de cuenta.",
+    "googleError": "No se pudo iniciar con Google en este momento.",
+    "lockoutError": "Esta cuenta está bloqueada temporalmente por exceso de intentos fallidos. Por favor, reintenta en {minutes} minutos."
+  }
+}

@@ -34,7 +34,7 @@ export function BackofficeShell({
   const isDark = themeMode === "dark";
 
   return (
-    <div className={isDark ? "min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-[#f3f5f9] text-gray-900"}>
+    <div className={isDark ? "dark min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-[#f3f5f9] text-gray-900"}>
       <aside
         className={`fixed inset-y-0 left-0 z-40 hidden w-72 border-r px-4 py-5 lg:flex lg:flex-col ${
           isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"

@@ -65,11 +65,13 @@ export function DropdownSelect({
       const spaceAbove = rect.top;
       const menuHeight = 260; // Max-h-60 (240px) + padding/border
 
-      if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-        setDirection("up");
-      } else {
-        setDirection("down");
-      }
+      requestAnimationFrame(() => {
+        if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+          setDirection("up");
+        } else {
+          setDirection("down");
+        }
+      });
     }
   }, [open]);
 
@@ -105,7 +107,7 @@ export function DropdownSelect({
           buttonClassName,
         ].join(" ")}
       >
-        <span className={`min-w-0 truncate ${selected ? "text-gray-900" : "text-gray-500"}`}>
+        <span className={`min-w-0 truncate ${selected ? "text-gray-900 dark:text-slate-100" : "text-gray-500"}`}>
           {selected?.label ?? placeholder}
         </span>
         <svg
@@ -123,7 +125,7 @@ export function DropdownSelect({
           role="listbox"
           aria-label={ariaLabel}
           className={[
-            "absolute z-50 w-full overflow-auto rounded-xl border bg-white p-1 shadow-2xl",
+            "absolute z-50 w-full overflow-auto rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-1 shadow-2xl",
             direction === "up" ? "bottom-full mb-2" : "top-full mt-2",
             "max-h-60", // 240px
             menuClassName,
@@ -141,12 +143,14 @@ export function DropdownSelect({
                 onClick={() => choose(option.value)}
                 className={[
                   "flex w-full items-start justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition",
-                  active ? "bg-starfeet-blue text-white" : "text-gray-700 hover:bg-gray-50",
+                  active 
+                    ? "bg-starfeet-blue text-white" 
+                    : "text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-900",
                 ].join(" ")}
               >
                 <span className="min-w-0">
                   <span className="block font-medium">{option.label}</span>
-                  {option.description ? <span className={`block text-xs ${active ? "text-white/80" : "text-gray-500"}`}>{option.description}</span> : null}
+                  {option.description ? <span className={`block text-xs ${active ? "text-white/80" : "text-gray-500 dark:text-slate-400"}`}>{option.description}</span> : null}
                 </span>
                 {active ? (
                   <svg viewBox="0 0 20 20" fill="none" className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true">
