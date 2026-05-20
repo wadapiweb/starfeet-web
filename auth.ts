@@ -95,6 +95,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
     ],
     callbacks: {
+        async redirect({ url, baseUrl }) {
+            if (url.startsWith("/")) {
+                return `${baseUrl}${url}`;
+            }
+            const cleanBase = baseDomain.startsWith(".") ? baseDomain.slice(1) : baseDomain;
+            try {
+                const parsedUrl = new URL(url);
+                if (parsedUrl.hostname === cleanBase || parsedUrl.hostname.endsWith(`.${cleanBase}`)) {
+                    return url;
+                }
+            } catch {
+                // fall through
+            }
+            return baseUrl;
+        },
         async signIn({ user, account }) {
             if (!user?.email) return false
             const dbUser = await prisma.user.findUnique({
