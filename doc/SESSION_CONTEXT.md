@@ -389,3 +389,14 @@
   - desktop: layout 3 columnas `[features izq | imagen | features der]` con conectores direccionales
   - mobile: imagen compacta + grid 1-2 col de tarjetas con acento lima izquierdo
   - lint ESLint: 0 errores, 0 warnings
+- [X] Configuración de subdominios y proxy en VPS:
+  - Modificado `proxy.ts` para excluir rutas de autenticación global (`/login`, `/registro`, `/recuperar`, `/post-login`) del proxy de subdominios, previniendo bucles 404 en subdominios.
+  - Recreado el contenedor `starfeet-web` en Docker Compose para regenerar rutas de Traefik y aplicar las variables de sesión wildcard de NextAuth (cookies seguras bajo `.starfeet.ar`).
+- [X] Limpieza de URLs de la tienda (eliminación del prefijo /tienda):
+  - Cambiadas las referencias de `/tienda/producto/` a `/producto/` en `ProductCard.tsx` y `app/tienda/page.tsx`.
+  - Corregido el redireccionamiento de checkout en `ProductDetail.tsx` y `app/tienda/carrito/agregar/page.tsx` para apuntar directamente a `/checkout` en lugar de `/tienda/checkout`.
+  - Modificado el botón volver en `ShopCheckoutFlow.tsx` para regresar a la raíz `/` de la tienda.
+  - Corregida la previsualización del producto en el admin para apuntar a la URL absoluta `https://tienda.starfeet.ar/producto/[slug]`.
+- [X] Aislamiento del entorno de desarrollo de la Landing Page:
+  - Añadido el contenedor `starfeet-landing` en modo desarrollo (`npm run dev`) en el archivo `docker-compose.yml` del VPS.
+  - Expuesto el contenedor en Traefik bajo el dominio de desarrollo `dev1.starfeet.ar` para previsualizar cambios en tiempo real antes de empujar a producción en Hostinger Cloud.

@@ -1,13 +1,13 @@
 # TODO_NEXT
 
 ## Etapas
-- [ ] Etapa 0 Diagnóstico
-- [ ] Etapa 1 Implementación
-- [ ] Etapa 2 Quality gate
-- [ ] Etapa 3 Smoke
+- [X] Etapa 0 Diagnóstico
+- [X] Etapa 1 Implementación
+- [X] Etapa 2 Quality gate
+- [X] Etapa 3 Smoke
 - [ ] Etapa 4 Staging
 - [ ] Etapa 5 Merge/Release
-- [ ] Etapa 6 Cierre documental
+- [X] Etapa 6 Cierre documental
 
 ## Backlog inmediato
 - [X] Etapa 1: Extracción de sección `Manifesto` del componente `Hero` hacia su propio organismo, siguiendo segregación de responsabilidades y atomicidad.
