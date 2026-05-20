@@ -7,9 +7,11 @@ import prisma from "./lib/prisma"
 import { auditSecurityEvent } from "./lib/security/audit"
 import { ensureUserSlug } from "./lib/slug"
 
-const useSecureCookies = process.env.NODE_ENV === "production";
-const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || ".starfeet.ar";
+const useSecureCookies = 
+  process.env.NODE_ENV === "production" || 
+  (!baseDomain.includes("localhost") && !baseDomain.includes("127.0.0.1"));
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),

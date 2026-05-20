@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { BackofficeShell } from "@/components/backoffice/BackofficeShell";
 import { kinesioNavItems } from "@/lib/backoffice-navigation";
+import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
+import { headers } from "next/headers";
 
 export default async function KinesioLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -10,7 +12,9 @@ export default async function KinesioLayout({ children }: { children: React.Reac
     redirect("/login");
   }
   if (session.user.role !== "KINESIOLOGO") {
-    redirect("/");
+    const headersList = await headers();
+    const host = headersList.get("host") || "starfeet.ar";
+    redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));
   }
 
   return (

@@ -332,7 +332,7 @@ function SidebarContent({ area, navItems, pathname, subdomainPrefix, onNavigate,
               type="button"
               className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
               role="menuitem"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
             >
               <IconLogOut className="h-4 w-4" aria-hidden="true" />
               Cerrar sesión
