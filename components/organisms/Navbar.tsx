@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "../atoms/BrandLogo";
 import { Button } from "../atoms/Button";
@@ -16,9 +16,9 @@ export const Navbar = () => {
 
   const [isPlatformHost, setIsPlatformHost] = useState(false);
   const [panelHref, setPanelHref] = useState("/");
-  const [signOutUrl, setSignOutUrl] = useState("/");
   const [loginUrl, setLoginUrl] = useState("/login");
-  const [greeting, setGreeting] = useState("");
+  const [userName, setUserName] = useState("");
+  const [timeGreeting, setTimeGreeting] = useState("");
 
   useEffect(() => {
     const host = window.location.hostname;
@@ -32,20 +32,18 @@ export const Navbar = () => {
     );
     setPanelHref(absoluteDashboard);
 
-    // Sign-out redirects to /login on the correct subdomain.
-    const base = absoluteDashboard.replace(/\/$/, "");
-    setSignOutUrl(`${base}/login`);
-
-    // Greeting string calculation based on user's timezone/hour
+    // Greeting string calculation based on user's timezone/hour (in lowercase)
     if (session?.user?.name) {
+      setUserName(session.user.name.toLowerCase());
+      
       const hour = new Date().getHours();
-      let greetStr = "Buenos días";
+      let greetStr = "buenos días";
       if (hour >= 12 && hour < 20) {
-        greetStr = "Buenas tardes";
+        greetStr = "buenas tardes";
       } else if (hour >= 20 || hour < 6) {
-        greetStr = "Buenas noches";
+        greetStr = "buenas noches";
       }
-      setGreeting(`¡Hola ${session.user.name} ${greetStr}!`);
+      setTimeGreeting(greetStr);
     }
 
     // Build absolute login URL pointing to dashboard.starfeet.ar/login?callbackUrl=...
@@ -97,11 +95,12 @@ export const Navbar = () => {
         <div className="flex items-center gap-2 md:gap-3">
           {session ? (
             <>
-              {/* Hola (nombre) Buenos días, tardes, noches */}
-              {greeting && (
-                <span className="text-xs font-bold uppercase tracking-wider text-starfeet-blue/75 pr-1 md:pr-2 select-none">
-                  {greeting}
-                </span>
+              {/* Greeting in lowercase and two lines */}
+              {userName && (
+                <div className="flex flex-col text-right text-[10px] font-bold leading-[1.25] text-starfeet-blue/75 pr-1.5 select-none md:pr-2">
+                  <span>¡hola {userName}!</span>
+                  <span>{timeGreeting}</span>
+                </div>
               )}
 
               {/* User Icon -> links to their panel (absolute subdomain) */}
@@ -118,22 +117,6 @@ export const Navbar = () => {
                   </svg>
                 </Button>
               </Link>
-
-              {/* Sign-out -> /login on the correct subdomain for the role */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => signOut({ callbackUrl: signOutUrl })}
-                className="h-11 w-11 !px-0"
-                aria-label="Cerrar sesión"
-                title="Cerrar sesión"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m16 17 5-5-5-5" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12H9" />
-                </svg>
-              </Button>
             </>
           ) : (
             <>
