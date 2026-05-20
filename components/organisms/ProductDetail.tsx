@@ -192,7 +192,7 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
       setMessage("Producto agregado al carrito.");
 
       if (buyNow) {
-        router.push("/checkout");
+        router.push("/tienda/checkout");
       }
 
       return json;
@@ -213,9 +213,8 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
                 key={`${image}-${index}`}
                 type="button"
                 onClick={() => setCurrentImageIndex(index)}
-                className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl p-1 transition-all ${
-                  currentImageIndex === index ? "ring-2 ring-starfeet-blue" : "ring-1 ring-gray-100"
-                }`}
+                className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl p-1 transition-all ${currentImageIndex === index ? "ring-2 ring-starfeet-blue" : "ring-1 ring-gray-100"
+                  }`}
               >
                 <div className="relative h-full w-full overflow-hidden rounded-xl">
                   <Image src={image} alt={`${product.name} thumbnail ${index + 1}`} fill className="object-cover" />
@@ -287,8 +286,8 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
           <div className="mb-4 flex items-center gap-4">
             <span className="font-sans text-xs font-bold uppercase tracking-widest text-starfeet-lime">Género</span>
             <div className="flex gap-3">
-            <button
-              type="button"
+              <button
+                type="button"
                 onClick={() => {
                   setSelectedGender("mujer");
                   const nextNumber = PRODUCT_SIZING_NUMBERS.find((number) => {
@@ -297,14 +296,13 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
                   });
                   if (nextNumber) setSelectedNumber(nextNumber);
                 }}
-                className={`text-[10px] font-bold uppercase transition-all ${
-                  selectedGender === "mujer" ? "border-b border-starfeet-blue text-starfeet-blue" : "text-gray-400"
-                }`}
+                className={`text-[10px] font-bold uppercase transition-all ${selectedGender === "mujer" ? "border-b border-starfeet-blue text-starfeet-blue" : "text-gray-400"
+                  }`}
               >
                 Mujer
               </button>
-            <button
-              type="button"
+              <button
+                type="button"
                 onClick={() => {
                   setSelectedGender("hombre");
                   const nextNumber = PRODUCT_SIZING_NUMBERS.find((number) => {
@@ -313,9 +311,8 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
                   });
                   if (nextNumber) setSelectedNumber(nextNumber);
                 }}
-                className={`text-[10px] font-bold uppercase transition-all ${
-                  selectedGender === "hombre" ? "border-b border-starfeet-blue text-starfeet-blue" : "text-gray-400"
-                }`}
+                className={`text-[10px] font-bold uppercase transition-all ${selectedGender === "hombre" ? "border-b border-starfeet-blue text-starfeet-blue" : "text-gray-400"
+                  }`}
               >
                 Hombre
               </button>
@@ -338,13 +335,12 @@ export const ProductDetail = ({ product, sizing, prefillEmail = "" }: ProductDet
                   type="button"
                   disabled={!hasStock}
                   onClick={() => hasStock && setSelectedNumber(number)}
-                  className={`flex aspect-square h-10 w-10 items-center justify-center rounded-md border text-center transition-all disabled:cursor-not-allowed ${
-                    selected
+                  className={`flex aspect-square h-10 w-10 items-center justify-center rounded-md border text-center transition-all disabled:cursor-not-allowed ${selected
                       ? "border-starfeet-blue bg-starfeet-blue text-white"
                       : hasStock
                         ? "border-gray-200 bg-white text-gray-700 hover:border-starfeet-blue/30"
                         : "border-gray-200 bg-gray-100 text-gray-400"
-                  }`}
+                    }`}
                 >
                   <span className="text-[10px] font-black leading-none">{number}</span>
                 </button>

@@ -53,73 +53,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const user = await prisma.user.findUnique({
                     where: { email },
                 });
-
-                if (!user) return null;
-
-                // Lockout check
-                if (user.lockoutUntil && user.lockoutUntil > new Date()) {
+                if (!user || !user.password || !user.isActive) {
                     auditSecurityEvent({
                         action: "AUTH_LOGIN_FAILED",
                         email,
                         provider: "credentials",
                         route: "/api/auth/callback/credentials",
-                        reason: "account_locked_out",
-                    });
-                    throw new Error("lockout");
-                }
-
-                if (!user.password || !user.isActive) {
-                    auditSecurityEvent({
-                        action: "AUTH_LOGIN_FAILED",
-                        email,
-                        provider: "credentials",
-                        route: "/api/auth/callback/credentials",
-                        reason: "user_inactive_or_no_password",
+                        reason: "user_not_found_or_inactive_or_no_password",
                     });
                     return null;
                 }
 
                 const isValid = await bcrypt.compare(password, user.password);
                 if (!isValid) {
-                    // Increment failed attempts and trigger lockout if >= 5
-                    let nextAttempts = user.failedLoginAttempts + 1;
-                    let lockoutUntil: Date | null = null;
-                    if (nextAttempts >= 5) {
-                        lockoutUntil = new Date(Date.now() + 15 * 60 * 1000);
-                        nextAttempts = 0; // reset
-                    }
-
-                    await prisma.user.update({
-                        where: { id: user.id },
-                        data: {
-                            failedLoginAttempts: nextAttempts,
-                            lockoutUntil,
-                        },
-                    });
-
                     auditSecurityEvent({
                         action: "AUTH_LOGIN_FAILED",
                         email,
                         provider: "credentials",
                         route: "/api/auth/callback/credentials",
-                        reason: lockoutUntil ? "account_locked_out_triggered" : "invalid_password",
+                        reason: "invalid_password",
                     });
-
-                    if (lockoutUntil) {
-                        throw new Error("lockout");
-                    }
                     return null;
-                }
-
-                // Successful login - reset failed attempts and lockout
-                if (user.failedLoginAttempts > 0 || user.lockoutUntil) {
-                    await prisma.user.update({
-                        where: { id: user.id },
-                        data: {
-                            failedLoginAttempts: 0,
-                            lockoutUntil: null,
-                        },
-                    });
                 }
 
                 auditSecurityEvent({

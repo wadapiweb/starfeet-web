@@ -27,11 +27,11 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
         isActive: true,
         ...(query
           ? {
-              OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-              ],
-            }
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          }
           : {}),
       },
       orderBy: { createdAt: "desc" },
@@ -95,7 +95,7 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
 
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {visibleProducts.map((product) => {
-            const productUrl = `/producto/${product.slug ?? product.id}`;
+            const productUrl = `/tienda/producto/${product.slug ?? product.id}`;
             const primaryImage = product.imageUrls[0];
             return (
               <article key={product.id} className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -106,18 +106,18 @@ export default async function TiendaPage({ searchParams }: TiendaPageProps) {
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm text-gray-400">Sin imagen</div>
                     )}
-                      {product.compareAtPriceArs ? (
-                        <span className="absolute left-4 top-4 rounded-full bg-starfeet-lime px-3 py-1 text-[10px] font-black uppercase tracking-widest text-starfeet-blue">
-                          Oferta
-                        </span>
-                      ) : null}
-                      {product.activeInventories.length === 0 ? (
-                        <span className="absolute right-4 top-4 rounded-full bg-gray-900/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
-                          Sin stock
-                        </span>
-                      ) : null}
-                    </div>
-                  </Link>
+                    {product.compareAtPriceArs ? (
+                      <span className="absolute left-4 top-4 rounded-full bg-starfeet-lime px-3 py-1 text-[10px] font-black uppercase tracking-widest text-starfeet-blue">
+                        Oferta
+                      </span>
+                    ) : null}
+                    {product.activeInventories.length === 0 ? (
+                      <span className="absolute right-4 top-4 rounded-full bg-gray-900/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                        Sin stock
+                      </span>
+                    ) : null}
+                  </div>
+                </Link>
 
                 <div className="space-y-4 p-5">
                   <div>

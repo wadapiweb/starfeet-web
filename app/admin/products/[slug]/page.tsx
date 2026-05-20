@@ -82,7 +82,7 @@ export default async function AdminProductDetailPage({ params }: AdminProductDet
           </span>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">/{product.slug ?? product.id}</span>
           <Link
-            href={`https://tienda.starfeet.ar/producto/${product.slug ?? product.id}`}
+            href={`/tienda/producto/${product.slug ?? product.id}`}
             target="_blank"
             className="rounded-full border border-starfeet-blue/30 px-3 py-1 text-xs font-bold text-starfeet-blue hover:bg-starfeet-blue/5"
           >
@@ -127,18 +127,18 @@ export default async function AdminProductDetailPage({ params }: AdminProductDet
                 [...product.inventories]
                   .sort((a, b) => a.sortOrder - b.sortOrder || a.physicalSize.localeCompare(b.physicalSize))
                   .map((inventory) => (
-                <tr key={inventory.id} className="border-t border-gray-200 text-gray-700">
-                  <td className="px-3 py-2 font-bold text-starfeet-blue">{inventory.physicalSize}</td>
-                  <td className="px-3 py-2">{inventory.color}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{inventory.sku}</td>
-                    <td className="px-3 py-2">{inventory.stock}</td>
-                    <td className="px-3 py-2">
-                      <span className={`rounded-full px-2 py-1 text-xs font-bold ${inventory.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}>
-                        {inventory.isActive ? "Activa" : "Inactiva"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">{inventory.lowStockThreshold}</td>
-                  </tr>
+                    <tr key={inventory.id} className="border-t border-gray-200 text-gray-700">
+                      <td className="px-3 py-2 font-bold text-starfeet-blue">{inventory.physicalSize}</td>
+                      <td className="px-3 py-2">{inventory.color}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{inventory.sku}</td>
+                      <td className="px-3 py-2">{inventory.stock}</td>
+                      <td className="px-3 py-2">
+                        <span className={`rounded-full px-2 py-1 text-xs font-bold ${inventory.isActive ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}>
+                          {inventory.isActive ? "Activa" : "Inactiva"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">{inventory.lowStockThreshold}</td>
+                    </tr>
                   ))
               )}
             </tbody>

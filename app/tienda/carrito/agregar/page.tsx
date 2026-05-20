@@ -66,8 +66,8 @@ function AddToCartContent() {
       saveCartSession({ cartId, customerEmail });
 
       // Redirect to checkout
-      router.push("/checkout");
-    } catch (err) {
+      router.push("/tienda/checkout");
+    } catch (err: any) {
       console.error("Cart insertion error:", err);
       // If the cart expired or wasn't found, clear and show email form
       clearCartSession();
@@ -106,9 +106,8 @@ function AddToCartContent() {
 
       // 2. Add Item to the newly created cart
       await addItemToCart(cartId, email.trim().toLowerCase());
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Ocurrió un error inesperado.";
-      setError(errMsg);
+    } catch (err: any) {
+      setError(err.message || "Ocurrió un error inesperado.");
       setLoading(false);
     }
   }

@@ -357,7 +357,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
         onView={() => router.push(`/admin/products/${selectedProduct.slug ?? selectedProduct.id}`)}
         onEdit={() => openEditModal(selectedProduct)}
         onDelete={() => requestDeleteProduct(selectedProduct)}
-        viewAsUserHref={`https://tienda.starfeet.ar/producto/${selectedProduct.slug ?? selectedProduct.id}`}
+        viewAsUserHref={`/tienda/producto/${selectedProduct.slug ?? selectedProduct.id}`}
       />
     ) : undefined;
 
@@ -474,7 +474,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
                           onView={() => router.push(`/admin/products/${product.slug ?? product.id}`)}
                           onEdit={() => openEditModal(product)}
                           onDelete={() => requestDeleteProduct(product)}
-                          viewAsUserHref={`https://tienda.starfeet.ar/producto/${product.slug ?? product.id}`}
+                          viewAsUserHref={`/tienda/producto/${product.slug ?? product.id}`}
                         />
                       </div>
                     </td>
@@ -534,8 +534,7 @@ function ProductFormFields({
   fieldErrors: ProductFormErrors;
 }) {
   const fieldClass = (name: keyof ProductFormErrors) =>
-    `mt-1 w-full rounded-xl border px-3 py-2 text-sm ${
-      fieldErrors[name] ? "border-red-500 bg-red-50" : "border-gray-300"
+    `mt-1 w-full rounded-xl border px-3 py-2 text-sm ${fieldErrors[name] ? "border-red-500 bg-red-50" : "border-gray-300"
     }`;
 
   return (
@@ -563,11 +562,11 @@ function ProductFormFields({
             value={form.type}
             onChange={(value) => onChange((prev) => ({ ...prev, type: value as ProductTypeValue }))}
             ariaLabel="Tipo de producto"
-              options={[
-                { value: "STARFEET", label: getProductTypeLabel("STARFEET") },
-                { value: "SLIPPER", label: getProductTypeLabel("SLIPPER") },
-                { value: "OTHER", label: getProductTypeLabel("OTHER") },
-              ]}
+            options={[
+              { value: "STARFEET", label: getProductTypeLabel("STARFEET") },
+              { value: "SLIPPER", label: getProductTypeLabel("SLIPPER") },
+              { value: "OTHER", label: getProductTypeLabel("OTHER") },
+            ]}
             className="mt-1"
             buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />

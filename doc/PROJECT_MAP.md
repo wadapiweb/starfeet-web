@@ -23,4 +23,3 @@ Componentes transaccionales, de control, formularios de registro, checkout y pan
 - **cliente/**: Órdenes del usuario final y seguimiento.
 - **shop/**: Flujo de checkout y pasarela.
 - **auth/**: Formularios de Login, Recuperación y Registro transaccionales.
-- **lib/validation.ts**: Biblioteca de validaciones centralizada usando Zod para el control estricto de inputs en formularios.

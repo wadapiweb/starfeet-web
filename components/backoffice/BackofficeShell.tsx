@@ -1,11 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { BackofficeNavItem } from "@/lib/backoffice-navigation";
 import { BrandLogo } from "@/components/atoms/BrandLogo";
+
+/**
+ * Detects whether we are running on a dedicated subdomain (kine.* or dashboard.*)
+ * and returns the path prefix that should be stripped from nav hrefs.
+ * Returns empty string when no stripping is needed (e.g. localhost or dev domains).
+ */
+function useSubdomainPrefix(area: "ADMIN" | "KINESIO"): string {
+  const [prefix, setPrefix] = useState("");
+
+  useEffect(() => {
+    const host = window.location.hostname;
+    if (area === "KINESIO" && host.startsWith("kine.")) {
+      setPrefix("/kinesio");
+    } else if (area === "ADMIN" && host.startsWith("dashboard.")) {
+      setPrefix("/admin");
+    }
+  }, [area]);
+
+  return prefix;
+}
 
 type BackofficeShellProps = {
   area: "ADMIN" | "KINESIO";
@@ -30,20 +50,33 @@ export function BackofficeShell({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const sectionTitle = resolveSectionTitle(pathname, navItems, title);
+  const subdomainPrefix = useSubdomainPrefix(area);
+
+  // Strip the subdomain prefix from nav items so links are clean on kine.* / dashboard.*
+  const resolvedNavItems = subdomainPrefix
+    ? navItems.map((item) => ({
+        ...item,
+        href: item.href === subdomainPrefix ? "/" : item.href.replace(new RegExp(`^${subdomainPrefix}`), ""),
+        matchPrefix: item.matchPrefix
+          ? item.matchPrefix.replace(new RegExp(`^${subdomainPrefix}`), "")
+          : undefined,
+      }))
+    : navItems;
+
+  const sectionTitle = resolveSectionTitle(pathname, resolvedNavItems, title);
   const isDark = themeMode === "dark";
 
   return (
-    <div className={isDark ? "dark min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-[#f3f5f9] text-gray-900"}>
+    <div className={isDark ? "min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-[#f3f5f9] text-gray-900"}>
       <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden w-72 border-r px-4 py-5 lg:flex lg:flex-col ${
-          isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 hidden w-72 border-r px-4 py-5 lg:flex lg:flex-col ${isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
+          }`}
       >
         <SidebarContent
           area={area}
-          navItems={navItems}
+          navItems={resolvedNavItems}
           pathname={pathname}
+          subdomainPrefix={subdomainPrefix}
           onNavigate={() => undefined}
           userName={userName}
           userEmail={userEmail}
@@ -60,14 +93,14 @@ export function BackofficeShell({
             onClick={() => setMobileOpen(false)}
           />
           <aside
-            className={`absolute inset-y-0 left-0 w-72 border-r px-4 py-5 ${
-              isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
-            }`}
+            className={`absolute inset-y-0 left-0 w-72 border-r px-4 py-5 ${isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
+              }`}
           >
             <SidebarContent
               area={area}
-              navItems={navItems}
+              navItems={resolvedNavItems}
               pathname={pathname}
+              subdomainPrefix={subdomainPrefix}
               onNavigate={() => setMobileOpen(false)}
               userName={userName}
               userEmail={userEmail}
@@ -79,9 +112,8 @@ export function BackofficeShell({
 
       <div className="lg:pl-72">
         <header
-          className={`sticky top-0 z-30 border-b px-4 py-3 backdrop-blur md:px-6 ${
-            isDark ? "border-slate-800 bg-slate-950/90" : "border-gray-200 bg-white/95"
-          }`}
+          className={`sticky top-0 z-30 border-b px-4 py-3 backdrop-blur md:px-6 ${isDark ? "border-slate-800 bg-slate-950/90" : "border-gray-200 bg-white/95"
+            }`}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -89,19 +121,17 @@ export function BackofficeShell({
                 type="button"
                 aria-label="Volver"
                 onClick={() => router.back()}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition ${
-                  isDark
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition ${isDark
                     ? "border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <IconChevronLeft className="h-7 w-7" aria-hidden="true" strokeWidth={2.5} />
               </button>
 
               <h1
-                className={`truncate font-condensed text-2xl font-black uppercase tracking-tight md:text-3xl ${
-                  isDark ? "text-sky-300" : "text-starfeet-blue"
-                }`}
+                className={`truncate font-condensed text-2xl font-black uppercase tracking-tight md:text-3xl ${isDark ? "text-sky-300" : "text-starfeet-blue"
+                  }`}
               >
                 {sectionTitle}
               </h1>
@@ -109,11 +139,10 @@ export function BackofficeShell({
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className={`rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] lg:hidden ${
-                  isDark
+                className={`rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] lg:hidden ${isDark
                     ? "border-slate-700 bg-slate-900 text-slate-200"
                     : "border-gray-300 bg-white text-gray-700"
-                }`}
+                  }`}
               >
                 <span className="inline-flex items-center gap-1.5">
                   <IconMenu className="h-4 w-4" aria-hidden="true" />
@@ -128,16 +157,14 @@ export function BackofficeShell({
                 <input
                   type="search"
                   placeholder="Buscar órdenes, cupones o pacientes"
-                  className={`w-full rounded-xl border px-3 py-2 pl-9 text-sm shadow-sm outline-none transition ${
-                    isDark
+                  className={`w-full rounded-xl border px-3 py-2 pl-9 text-sm shadow-sm outline-none transition ${isDark
                       ? "border-slate-700 bg-slate-900 text-slate-100 placeholder:text-slate-400 focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/15"
                       : "border-gray-300 bg-white text-gray-900 focus:border-starfeet-blue/50 focus:ring-2 focus:ring-starfeet-blue/15"
-                  }`}
+                    }`}
                 />
                 <IconSearch
-                  className={`pointer-events-none absolute left-3 top-2.5 h-4 w-4 ${
-                    isDark ? "text-slate-400" : "text-gray-500"
-                  }`}
+                  className={`pointer-events-none absolute left-3 top-2.5 h-4 w-4 ${isDark ? "text-slate-400" : "text-gray-500"
+                    }`}
                   aria-hidden="true"
                 />
               </label>
@@ -145,11 +172,10 @@ export function BackofficeShell({
               <button
                 type="button"
                 aria-label="Notificaciones"
-                className={`relative rounded-xl border p-2 transition ${
-                  isDark
+                className={`relative rounded-xl border p-2 transition ${isDark
                     ? "border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   3
@@ -162,9 +188,8 @@ export function BackofficeShell({
 
         <main className="px-4 py-4 md:px-6 md:py-6">
           <div
-            className={`rounded-2xl border p-4 shadow-sm md:p-5 ${
-              isDark ? "border-slate-800 bg-slate-900 text-slate-100" : "border-gray-200 bg-white"
-            }`}
+            className={`rounded-2xl border p-4 shadow-sm md:p-5 ${isDark ? "border-slate-800 bg-slate-900 text-slate-100" : "border-gray-200 bg-white"
+              }`}
           >
             {children}
           </div>
@@ -178,17 +203,20 @@ type SidebarContentProps = {
   area: "ADMIN" | "KINESIO";
   navItems: BackofficeNavItem[];
   pathname: string;
+  subdomainPrefix: string;
   onNavigate: () => void;
   userName?: string | null;
   userEmail?: string | null;
   themeMode: "light" | "dark";
 };
 
-function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEmail, themeMode }: SidebarContentProps) {
+function SidebarContent({ area, navItems, pathname, subdomainPrefix, onNavigate, userName, userEmail, themeMode }: SidebarContentProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const profileHref = area === "ADMIN" ? "/admin/profile" : "/kinesio/profile";
-  const settingsHref = area === "ADMIN" ? "/admin/settings" : "/kinesio/settings";
-  const helpHref = area === "ADMIN" ? "/admin/help" : "/kinesio/help";
+  const basePrefix = area === "ADMIN" ? "/admin" : "/kinesio";
+  const linkPrefix = subdomainPrefix ? "" : basePrefix;
+  const profileHref = `${linkPrefix}/profile`;
+  const settingsHref = `${linkPrefix}/settings`;
+  const helpHref = `${linkPrefix}/help`;
   const isDark = themeMode === "dark";
 
   return (
@@ -215,15 +243,14 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`block rounded-xl border px-3 py-3 transition ${
-                active
+              className={`block rounded-xl border px-3 py-3 transition ${active
                   ? isDark
                     ? "border-sky-300 bg-sky-300 text-slate-950"
                     : "border-starfeet-blue bg-starfeet-blue text-white"
                   : isDark
                     ? "border-slate-700 bg-slate-900 text-slate-200 hover:border-sky-300/40"
                     : "border-gray-200 bg-white text-gray-700 hover:border-starfeet-blue/40"
-              }`}
+                }`}
             >
               <p className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.1em]">
                 <ItemIcon className="h-4 w-4" aria-hidden="true" />
@@ -238,9 +265,8 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
         <button
           type="button"
           onClick={() => setMenuOpen((current) => !current)}
-          className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm ${
-            isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-gray-50"
-          }`}
+          className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm ${isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-gray-50"
+            }`}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
         >
@@ -259,9 +285,8 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
 
         {menuOpen ? (
           <div
-            className={`absolute bottom-full left-0 right-0 z-50 mb-2 rounded-xl border p-1 shadow-lg ${
-              isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-white"
-            }`}
+            className={`absolute bottom-full left-0 right-0 z-50 mb-2 rounded-xl border p-1 shadow-lg ${isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-white"
+              }`}
             role="menu"
           >
             <Link
@@ -270,9 +295,8 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+                }`}
               role="menuitem"
             >
               <IconUser className="h-4 w-4" aria-hidden="true" />
@@ -284,9 +308,8 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+                }`}
               role="menuitem"
             >
               <IconSettings className="h-4 w-4" aria-hidden="true" />
@@ -298,9 +321,8 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+                }`}
               role="menuitem"
             >
               <IconCircleHelp className="h-4 w-4" aria-hidden="true" />

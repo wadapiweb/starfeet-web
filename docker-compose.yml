@@ -53,32 +53,6 @@ services:
       # Puerto interno del servicio web de Next.js
       - "traefik.http.services.starfeet-web.loadbalancer.server.port=3000"
 
-  starfeet-landing:
-    image: node:22-alpine
-    container_name: starfeet-landing
-    restart: unless-stopped
-    working_dir: /app
-    command: sh -c "npm install && npm run dev"
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - /opt/docker/starfeet-landing:/app
-      - /app/node_modules
-      - /app/.next
-    networks:
-      - proxy-net
-    labels:
-      - "traefik.enable=true"
-      
-      # Router para HTTPS con Let's Encrypt para dev1.starfeet.ar
-      - "traefik.http.routers.starfeet-landing-https.rule=Host(`dev1.starfeet.ar`)"
-      - "traefik.http.routers.starfeet-landing-https.entrypoints=websecure"
-      - "traefik.http.routers.starfeet-landing-https.tls=true"
-      - "traefik.http.routers.starfeet-landing-https.tls.certresolver=myresolver"
-      
-      # Puerto interno del servicio web de Next.js
-      - "traefik.http.services.starfeet-landing.loadbalancer.server.port=3000"
-
 volumes:
   starfeet_db_data:
 

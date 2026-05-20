@@ -1,13 +1,13 @@
 # TODO_NEXT
 
 ## Etapas
-- [X] Etapa 0 Diagnóstico
-- [X] Etapa 1 Implementación
-- [X] Etapa 2 Quality gate
-- [X] Etapa 3 Smoke
+- [ ] Etapa 0 Diagnóstico
+- [ ] Etapa 1 Implementación
+- [ ] Etapa 2 Quality gate
+- [ ] Etapa 3 Smoke
 - [ ] Etapa 4 Staging
 - [ ] Etapa 5 Merge/Release
-- [X] Etapa 6 Cierre documental
+- [ ] Etapa 6 Cierre documental
 
 ## Backlog inmediato
 - [X] Etapa 1: Extracción de sección `Manifesto` del componente `Hero` hacia su propio organismo, siguiendo segregación de responsabilidades y atomicidad.
@@ -40,7 +40,7 @@
 - [X] Hardening auth v1: rate limit + auditoría de intentos en auth/códigos.
 - [ ] Hardening auth v2: storage distribuido de rate limit (Redis) + lockout progresivo.
 - [ ] Persistir auditoría en tabla dedicada con dashboard admin de seguridad.
-- [X] Configurar `allowedDevOrigins` en `next.config.*` para eliminar warning cross-origin en entorno dev.
+- [ ] Configurar `allowedDevOrigins` en `next.config.*` para eliminar warning cross-origin en entorno dev.
 - [ ] Evaluar elevar memoria o optimizar módulos pesados para reducir tiempo de primera compilación en dev.
 - [ ] Investigar origen de requests `no-cors` cross-site a `/_next/*` en dev (posible tráfico externo/probe o extensión) y filtrar en proxy reverse.
 - [ ] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.
@@ -90,6 +90,10 @@
 - [X] Reducir ruido en `admin/settings`: quitar KPI cards, sumar tabs con iconos y persistir tema claro/oscuro del backoffice.
 - [ ] Evaluar migrar el preview de imágenes a un uploader con drag & drop y reordenamiento, si el catálogo empieza a manejar más de 4-5 imágenes por producto.
 - [ ] Definir si el slug editable debe bloquearse cuando ya existan URLs públicas indexadas o campañas activas.
+- [ ] Si se necesita backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
+- [ ] Evaluar persistir el último filtro de variante/color en la tienda para acelerar compras repetidas.
+- [ ] Considerar una pantalla de gestión de variantes separada si algunos productos superan 8-10 combinaciones.
+- [ ] Agregar validación visual de duplicados talle+color si el negocio necesita impedir variantes repetidas.
 - [ ] Si se necesita backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
 - [ ] Evaluar persistir el último filtro de variante/color en la tienda para acelerar compras repetidas.
 - [ ] Considerar una pantalla de gestión de variantes separada si algunos productos superan 8-10 combinaciones.

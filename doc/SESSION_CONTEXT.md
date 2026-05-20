@@ -389,17 +389,6 @@
   - desktop: layout 3 columnas `[features izq | imagen | features der]` con conectores direccionales
   - mobile: imagen compacta + grid 1-2 col de tarjetas con acento lima izquierdo
   - lint ESLint: 0 errores, 0 warnings
-- [X] Configuración de subdominios y proxy en VPS:
-  - Modificado `proxy.ts` para excluir rutas de autenticación global (`/login`, `/registro`, `/recuperar`, `/post-login`) del proxy de subdominios, previniendo bucles 404 en subdominios.
-  - Recreado el contenedor `starfeet-web` en Docker Compose para regenerar rutas de Traefik y aplicar las variables de sesión wildcard de NextAuth (cookies seguras bajo `.starfeet.ar`).
-- [X] Limpieza de URLs de la tienda (eliminación del prefijo /tienda):
-  - Cambiadas las referencias de `/tienda/producto/` a `/producto/` en `ProductCard.tsx` y `app/tienda/page.tsx`.
-  - Corregido el redireccionamiento de checkout en `ProductDetail.tsx` y `app/tienda/carrito/agregar/page.tsx` para apuntar directamente a `/checkout` en lugar de `/tienda/checkout`.
-  - Modificado el botón volver en `ShopCheckoutFlow.tsx` para regresar a la raíz `/` de la tienda.
-  - Corregida la previsualización del producto en el admin para apuntar a la URL absoluta `https://tienda.starfeet.ar/producto/[slug]`.
-- [X] Aislamiento del entorno de desarrollo de la Landing Page:
-  - Añadido el contenedor `starfeet-landing` en modo desarrollo (`npm run dev`) en el archivo `docker-compose.yml` del VPS.
-  - Expuesto el contenedor en Traefik bajo el dominio de desarrollo `dev1.starfeet.ar` para previsualizar cambios en tiempo real antes de empujar a producción en Hostinger Cloud.
 - [X] Mejoras de Validación de Formularios (Zod, Foco Dinámico, Clases Visuales):
   - Definido `lib/validation.ts` con esquemas Zod reutilizables para Login y Producto.
   - Refactorizado `LoginForm.tsx` y `ProductFormFields.tsx` para aplicar validación de Zod, focos dinámicos en el primer error, resaltado visual de bordes en rojo e inline text error, garantizando usabilidad.
@@ -411,5 +400,10 @@
   - Asegurada la propagación del contenedor `.dark` en el Shell de Backoffice (`BackofficeShell.tsx`).
   - Reforzados estados de accesibilidad (roles ARIA, tabIndex, manejo de eventos de teclado) en `ToggleSwitch.tsx` y `DropdownSelect.tsx`.
 - [X] Resolución de Pre-renderizado Estático en Next.js:
-  - Removido wrapper global de `NextIntlClientProvider` en `app/layout.tsx` y reubicado de manera aislada en `app/login/page.tsx` mediante carga directa de `es.json`. Esto resolvió el fallo de prerender de `_global-error` provocado por la colisión de next-intl con la fase estática del compilador.
-  - El linter (`npm run lint`) y compilación final pasan al 100% de manera limpia.
+  - Removido wrapper global de `NextIntlClientProvider` en `app/layout.tsx` y reubicado de manera aislada en `app/login/page.tsx` mediante carga directa de `es.json`.
+  - Diseñada una utilidad local de internacionalización `lib/i18n.ts` que carga estáticamente `es.json` y expone un hook compatible con `next-intl` (`useTranslations`), eliminando por completo el plugin de webpack `withNextIntl` y previniendo colisiones de compilación.
+  - Actualizado `app/global-error.tsx` para cargarse sin dependencias de next-intl y provisto de un fallback seguro de recarga de página si no se provee la función `reset`.
+  - Revertido `RootLayout` en `app/layout.tsx` a síncrono por ser innecesario su carácter asíncrono y causar fallos de contexto en el compilador.
+  - Identificada la incoherencia de variables de entorno de la compilación (`NODE_ENV` heredado como `development` dentro del contenedor) y corregido el script `build` en `package.json` para forzar `NODE_ENV=production`.
+  - El linter (`npm run lint`) y compilación de producción (`npm run build`) pasan al 100% de manera limpia (Exit code: 0).
+

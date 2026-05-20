@@ -8,7 +8,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
-    const productUrl = `/producto/${product.slug || product.id}`;
+    const productUrl = `/tienda/producto/${product.slug || product.id}`;
 
     return (
         <Link href={productUrl} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 block">

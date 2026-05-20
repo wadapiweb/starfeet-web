@@ -109,15 +109,15 @@ export function fromProductToForm(product: ProductRecordLike): ProductForm {
     variants:
       sortedInventories.length > 0
         ? sortedInventories.map((inventory) =>
-            createVariantRow({
-              id: inventory.id,
-              physicalSize: inventory.physicalSize,
-              color: inventory.color,
-              stock: String(inventory.stock),
-              lowStockThreshold: String(inventory.lowStockThreshold),
-              isActive: inventory.isActive,
-            }),
-          )
+          createVariantRow({
+            id: inventory.id,
+            physicalSize: inventory.physicalSize,
+            color: inventory.color,
+            stock: String(inventory.stock),
+            lowStockThreshold: String(inventory.lowStockThreshold),
+            isActive: inventory.isActive,
+          }),
+        )
         : [createVariantRow()],
   };
 }
@@ -152,51 +152,38 @@ export function buildProductPayload(form: ProductForm) {
   };
 }
 
-import { ProductFormSchema } from "@/lib/validation";
-
 export function validateProductForm(form: ProductForm): ProductFormErrors {
-  const result = ProductFormSchema.safeParse(form);
-  if (result.success) {
-    return {};
-  }
-
   const errors: ProductFormErrors = {};
+  const normalizedSlug = normalizeSlugCandidate(form.slug.trim());
+  if (form.slug.trim() && !SLUG_PATTERN.test(normalizedSlug)) {
+    errors.slug = "Usá minúsculas, números y guiones. El sistema lo normaliza al guardar.";
+  }
+  if (!form.name.trim()) errors.name = "El nombre es obligatorio.";
+  if (!(Number(form.priceArs) > 0)) errors.priceArs = "Precio ARS debe ser mayor a 0.";
+  if (!(Number(form.priceUsd) > 0)) errors.priceUsd = "Precio USD debe ser mayor a 0.";
+
   const variantErrors: ProductVariantError[] = [];
-
-  result.error.issues.forEach((err) => {
-    const path = err.path;
-    const key = err.message;
-    let msg = "";
-
-    // Map Zod keys to Spanish validation messages
-    if (key === "required") msg = "El nombre es obligatorio.";
-    else if (key === "pricePositive") msg = "El precio debe ser mayor a 0.";
-    else if (key === "slugInvalid") msg = "Usá minúsculas, números y guiones. El sistema lo normaliza al guardar.";
-    else if (key === "variantRequired") msg = "Agregá al menos una variante con talle, color y stock.";
-    else if (key === "colorRequired") msg = "El color es obligatorio.";
-    else if (key === "sizeRequired") msg = "El talle es obligatorio.";
-    else if (key === "stockInvalid") msg = "Stock válido requerido.";
-    else if (key === "thresholdInvalid") msg = "Umbral válido requerido.";
-    else msg = key;
-
-    if (path[0] === "variants") {
-      if (path.length === 1) {
-        errors.variants = [{ color: msg }];
-      } else {
-        const index = path[1] as number;
-        const subField = path[2] as keyof ProductVariantError;
-        if (!variantErrors[index]) {
-          variantErrors[index] = {};
-        }
-        variantErrors[index][subField] = msg;
-      }
-    } else {
-      const fieldKey = path[0] as "slug" | "name" | "priceArs" | "priceUsd";
-      errors[fieldKey] = msg;
+  let hasValidVariant = false;
+  form.variants.forEach((variant, index) => {
+    const rowErrors: ProductVariantError = {};
+    const isBlank = !variant.color.trim() && String(variant.stock).trim() === "" && Number(variant.stock) === 0;
+    if (isBlank) {
+      variantErrors[index] = rowErrors;
+      return;
     }
+    hasValidVariant = true;
+    if (!variant.color.trim()) rowErrors.color = "El color es obligatorio.";
+    if (!variant.physicalSize) rowErrors.physicalSize = "El talle es obligatorio.";
+    if (String(variant.stock).trim() === "" || Number(variant.stock) < 0) rowErrors.stock = "Stock válido requerido.";
+    if (String(variant.lowStockThreshold).trim() === "" || Number(variant.lowStockThreshold) < 0) {
+      rowErrors.lowStockThreshold = "Umbral válido requerido.";
+    }
+    variantErrors[index] = rowErrors;
   });
 
-  if (variantErrors.length > 0) {
+  if (!hasValidVariant) {
+    errors.variants = [{ color: "Agregá al menos una variante con talle, color y stock." }];
+  } else if (variantErrors.some((row) => Object.keys(row).length > 0)) {
     errors.variants = variantErrors;
   }
 
@@ -231,19 +218,12 @@ function VariantEditor({
   onRemove: () => void;
   error?: ProductVariantError;
 }) {
-  const inputClass = (errVal?: string) => [
-    "mt-1 w-full rounded-xl border px-3 py-2 text-sm outline-none transition focus:ring-2 disabled:opacity-60 disabled:cursor-not-allowed",
-    errVal
-      ? "border-red-500 bg-red-50 focus:ring-red-500/30 dark:border-red-500 dark:bg-red-950/20 dark:focus:ring-red-500/20 text-red-900 dark:text-red-200"
-      : "border-gray-300 bg-white focus:ring-starfeet-blue/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-sky-300/30",
-  ].join(" ");
-
   return (
-    <article className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm">
+    <article className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Variante {index + 1}</p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Definí talle, color, stock y si la variante se vende o no.</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-600">Variante {index + 1}</p>
+          <p className="mt-1 text-xs text-gray-500">Definí talle, color, stock y si la variante se vende o no.</p>
         </div>
         <div className="flex items-center gap-2">
           <ToggleSwitch
@@ -254,7 +234,7 @@ function VariantEditor({
           />
           <button
             type="button"
-            className="rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
+            className="rounded-xl border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
             onClick={onRemove}
           >
             Quitar
@@ -264,7 +244,7 @@ function VariantEditor({
 
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-4">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Talle</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Talle</span>
           <DropdownSelect
             value={variant.physicalSize}
             onChange={(value) => onChange({ ...variant, physicalSize: value as ProductSizeValue })}
@@ -275,44 +255,41 @@ function VariantEditor({
               { value: "L", label: "L" },
             ]}
             className="mt-1"
-            buttonClassName="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-starfeet-blue/30 dark:focus:ring-sky-300/30"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />
-          {error?.physicalSize ? <span className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{error.physicalSize}</span> : null}
+          {error?.physicalSize ? <span className="mt-1 block text-xs font-semibold text-red-700">{error.physicalSize}</span> : null}
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Color</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Color</span>
           <input
-            className={inputClass(error?.color)}
+            className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${error?.color ? "border-red-500 bg-red-50" : "border-gray-300"}`}
             value={variant.color}
             onChange={(e) => onChange({ ...variant, color: e.target.value })}
             placeholder="Negro"
-            aria-invalid={!!error?.color}
           />
-          {error?.color ? <span className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{error.color}</span> : null}
+          {error?.color ? <span className="mt-1 block text-xs font-semibold text-red-700">{error.color}</span> : null}
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Stock</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Stock</span>
           <input
-            className={inputClass(error?.stock)}
+            className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${error?.stock ? "border-red-500 bg-red-50" : "border-gray-300"}`}
             type="number"
             min={0}
             value={variant.stock}
             onChange={(e) => onChange({ ...variant, stock: e.target.value })}
-            aria-invalid={!!error?.stock}
           />
-          {error?.stock ? <span className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{error.stock}</span> : null}
+          {error?.stock ? <span className="mt-1 block text-xs font-semibold text-red-700">{error.stock}</span> : null}
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Bajo stock</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Bajo stock</span>
           <input
-            className={inputClass(error?.lowStockThreshold)}
+            className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm ${error?.lowStockThreshold ? "border-red-500 bg-red-50" : "border-gray-300"}`}
             type="number"
             min={0}
             value={variant.lowStockThreshold}
             onChange={(e) => onChange({ ...variant, lowStockThreshold: e.target.value })}
-            aria-invalid={!!error?.lowStockThreshold}
           />
-          {error?.lowStockThreshold ? <span className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{error.lowStockThreshold}</span> : null}
+          {error?.lowStockThreshold ? <span className="mt-1 block text-xs font-semibold text-red-700">{error.lowStockThreshold}</span> : null}
         </label>
       </div>
     </article>
@@ -398,10 +375,7 @@ export function ProductFormFields({
   uploadSuccess: string | null;
 }) {
   const fieldClass = (name: keyof ProductFormErrors) =>
-    `mt-1 w-full rounded-xl border px-3 py-2 text-sm outline-none transition focus:ring-2 disabled:opacity-60 disabled:cursor-not-allowed ${
-      fieldErrors[name]
-        ? "border-red-500 bg-red-50 focus:ring-red-500/30 dark:border-red-500 dark:bg-red-950/20 dark:focus:ring-red-500/20 text-red-900 dark:text-red-200"
-        : "border-gray-300 bg-white focus:ring-starfeet-blue/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-sky-300/30"
+    `mt-1 w-full rounded-xl border px-3 py-2 text-sm ${fieldErrors[name] ? "border-red-500 bg-red-50" : "border-gray-300"
     }`;
 
   const slugPreview = resolveProductSlugPreview(form);
@@ -418,37 +392,33 @@ export function ProductFormFields({
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Slug</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Slug</span>
           <input
             className={fieldClass("slug")}
             value={form.slug}
             onChange={(e) => onChange((prev) => ({ ...prev, slug: e.target.value }))}
             placeholder="zapatilla-run-01"
-            aria-invalid={!!fieldErrors.slug}
-            aria-describedby={fieldErrors.slug ? "slug-error" : undefined}
           />
-          <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-400">Si lo dejás vacío, se genera a partir del nombre.</p>
-          {slugPreview ? <p className="mt-1 text-[11px] font-semibold text-starfeet-blue dark:text-sky-400">/producto/{slugPreview}</p> : null}
-          {fieldErrors.slug ? <span id="slug-error" className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{fieldErrors.slug}</span> : null}
+          <p className="mt-1 text-[11px] text-gray-500">Si lo dejás vacío, se genera a partir del nombre.</p>
+          {slugPreview ? <p className="mt-1 text-[11px] font-semibold text-starfeet-blue">/tienda/producto/{slugPreview}</p> : null}
+          {fieldErrors.slug ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.slug}</span> : null}
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Nombre</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Nombre</span>
           <input
             className={fieldClass("name")}
             value={form.name}
             onChange={(e) => onChange((prev) => ({ ...prev, name: e.target.value }))}
             required
-            aria-invalid={!!fieldErrors.name}
-            aria-describedby={fieldErrors.name ? "name-error" : undefined}
           />
-          {fieldErrors.name ? <span id="name-error" className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{fieldErrors.name}</span> : null}
+          {fieldErrors.name ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.name}</span> : null}
         </label>
       </div>
 
       <label className="block">
-        <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Descripción</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Descripción</span>
         <textarea
-          className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-starfeet-blue/30 dark:focus:ring-sky-300/30"
+          className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           rows={3}
           value={form.description}
           onChange={(e) => onChange((prev) => ({ ...prev, description: e.target.value }))}
@@ -457,7 +427,7 @@ export function ProductFormFields({
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Tipo</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Tipo</span>
           <DropdownSelect
             value={form.type}
             onChange={(value) => onChange((prev) => ({ ...prev, type: value as ProductTypeValue }))}
@@ -468,11 +438,11 @@ export function ProductFormFields({
               { value: "OTHER", label: getProductTypeLabel("OTHER") },
             ]}
             className="mt-1"
-            buttonClassName="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-starfeet-blue/30 dark:focus:ring-sky-300/30"
+            buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Precio ARS</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio ARS</span>
           <input
             className={fieldClass("priceArs")}
             type="number"
@@ -481,13 +451,11 @@ export function ProductFormFields({
             value={form.priceArs}
             onChange={(e) => onChange((prev) => ({ ...prev, priceArs: e.target.value }))}
             required
-            aria-invalid={!!fieldErrors.priceArs}
-            aria-describedby={fieldErrors.priceArs ? "priceArs-error" : undefined}
           />
-          {fieldErrors.priceArs ? <span id="priceArs-error" className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{fieldErrors.priceArs}</span> : null}
+          {fieldErrors.priceArs ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceArs}</span> : null}
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Precio USD</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Precio USD</span>
           <input
             className={fieldClass("priceUsd")}
             type="number"
@@ -496,18 +464,16 @@ export function ProductFormFields({
             value={form.priceUsd}
             onChange={(e) => onChange((prev) => ({ ...prev, priceUsd: e.target.value }))}
             required
-            aria-invalid={!!fieldErrors.priceUsd}
-            aria-describedby={fieldErrors.priceUsd ? "priceUsd-error" : undefined}
           />
-          {fieldErrors.priceUsd ? <span id="priceUsd-error" className="mt-1 block text-xs font-semibold text-red-700 dark:text-red-400">{fieldErrors.priceUsd}</span> : null}
+          {fieldErrors.priceUsd ? <span className="mt-1 block text-xs font-semibold text-red-700">{fieldErrors.priceUsd}</span> : null}
         </label>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Comparativo ARS</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Comparativo ARS</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-starfeet-blue/30 dark:focus:ring-sky-300/30"
+            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
             type="number"
             min={0}
             step="0.01"
@@ -516,9 +482,9 @@ export function ProductFormFields({
           />
         </label>
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Comparativo USD</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Comparativo USD</span>
           <input
-            className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-starfeet-blue/30 dark:focus:ring-sky-300/30"
+            className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
             type="number"
             min={0}
             step="0.01"
@@ -528,13 +494,13 @@ export function ProductFormFields({
         </label>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-4">
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Imágenes del producto</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Arrastrá para reordenar. También podés subir archivos al servidor.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-600">Imágenes del producto</p>
+            <p className="mt-1 text-xs text-gray-500">Arrastrá para reordenar. También podés subir archivos al servidor.</p>
           </div>
-          <label className="inline-flex cursor-pointer items-center rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900">
+          <label className="inline-flex cursor-pointer items-center rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/avif"
@@ -549,12 +515,12 @@ export function ProductFormFields({
             {uploading ? "Subiendo..." : "Subir imágenes"}
           </label>
         </div>
-        {uploadError ? <p className="mt-2 text-xs font-semibold text-red-700 dark:text-red-400">{uploadError}</p> : null}
-        {uploadSuccess ? <p className="mt-2 text-xs font-semibold text-green-700 dark:text-green-400">{uploadSuccess}</p> : null}
+        {uploadError ? <p className="mt-2 text-xs font-semibold text-red-700">{uploadError}</p> : null}
+        {uploadSuccess ? <p className="mt-2 text-xs font-semibold text-green-700">{uploadSuccess}</p> : null}
         {form.imageUrls.length > 0 ? (
           <ImageReorderGrid images={form.imageUrls} onChange={(next) => onChange((prev) => ({ ...prev, imageUrls: next }))} />
         ) : (
-          <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">Todavía no hay imágenes cargadas.</p>
+          <p className="mt-3 text-xs text-gray-500">Todavía no hay imágenes cargadas.</p>
         )}
       </div>
 
@@ -564,18 +530,18 @@ export function ProductFormFields({
           onChange={(checked) => onChange((prev) => ({ ...prev, isActive: checked }))}
           ariaLabel="Producto activo"
         />
-        <span className="text-sm text-gray-700 dark:text-slate-200">Producto activo</span>
+        <span className="text-sm text-gray-700">Producto activo</span>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-4">
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">Variantes y stock</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Cada línea representa un talle + color con su stock y estado.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-600">Variantes y stock</p>
+            <p className="mt-1 text-xs text-gray-500">Cada línea representa un talle + color con su stock y estado.</p>
           </div>
           <button
             type="button"
-            className="rounded-xl bg-starfeet-blue dark:bg-sky-400 dark:text-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-starfeet-blue/95 dark:hover:bg-sky-300"
+            className="rounded-xl bg-starfeet-blue px-3 py-2 text-xs font-bold text-white"
             onClick={addVariant}
           >
             Agregar variante
@@ -607,7 +573,7 @@ export function ProductFormFields({
         </div>
 
         {fieldErrors.variants?.[0]?.color ? (
-          <p className="mt-2 text-xs font-semibold text-red-700 dark:text-red-400">{fieldErrors.variants[0].color}</p>
+          <p className="mt-2 text-xs font-semibold text-red-700">{fieldErrors.variants[0].color}</p>
         ) : null}
       </div>
     </form>

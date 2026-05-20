@@ -450,7 +450,7 @@ export function ShopCheckoutFlow({
                       onClick={async () => {
                         const result = await addItem(product.id, selectedVariant?.id || undefined, selectedVariant?.physicalSize);
                         if (result) {
-                          router.push("/checkout");
+                          router.push("/tienda/checkout");
                         }
                       }}
                       disabled={loading || activeVariants.length === 0}
@@ -476,7 +476,7 @@ export function ShopCheckoutFlow({
           {compactCheckout ? (
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/tienda")}
               className="rounded-full border border-gray-300 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-gray-600 transition hover:border-starfeet-blue hover:text-starfeet-blue"
             >
               Volver
@@ -544,14 +544,14 @@ export function ShopCheckoutFlow({
               paymentProviders.length === 0
                 ? []
                 : paymentProviders.map((provider) => ({
-                    value: provider,
-                    label:
-                      provider === "MERCADOPAGO"
-                        ? "MercadoPago"
-                        : provider === "TRANSFERENCIA"
-                          ? "Transferencia bancaria"
-                          : "PayPal",
-                  }))
+                  value: provider,
+                  label:
+                    provider === "MERCADOPAGO"
+                      ? "MercadoPago"
+                      : provider === "TRANSFERENCIA"
+                        ? "Transferencia bancaria"
+                        : "PayPal",
+                }))
             }
             className="mt-1"
             buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100"
