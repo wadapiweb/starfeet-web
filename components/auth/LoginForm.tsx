@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
-  const roleCallbackUrl = "/post-login";
+  const searchParams = useSearchParams();
+  const originCallback = searchParams.get("callbackUrl");
+
+  const roleCallbackUrl = originCallback
+    ? `/post-login?callbackUrl=${encodeURIComponent(originCallback)}`
+    : "/post-login";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

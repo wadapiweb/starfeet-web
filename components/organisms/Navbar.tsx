@@ -17,6 +17,8 @@ export const Navbar = () => {
   const [isPlatformHost, setIsPlatformHost] = useState(false);
   const [panelHref, setPanelHref] = useState("/");
   const [signOutUrl, setSignOutUrl] = useState("/");
+  const [loginUrl, setLoginUrl] = useState("/login");
+  const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
     const host = window.location.hostname;
@@ -31,10 +33,37 @@ export const Navbar = () => {
     setPanelHref(absoluteDashboard);
 
     // Sign-out redirects to /login on the correct subdomain.
-    // e.g. KINESIOLOGO on tienda.starfeet.ar → kine.starfeet.ar/login
     const base = absoluteDashboard.replace(/\/$/, "");
     setSignOutUrl(`${base}/login`);
-  }, [session?.user?.role]);
+
+    // Greeting string calculation based on user's timezone/hour
+    if (session?.user?.name) {
+      const hour = new Date().getHours();
+      let greetStr = "Buenos días";
+      if (hour >= 12 && hour < 20) {
+        greetStr = "Buenas tardes";
+      } else if (hour >= 20 || hour < 6) {
+        greetStr = "Buenas noches";
+      }
+      setGreeting(`¡Hola ${session.user.name} ${greetStr}!`);
+    }
+
+    // Build absolute login URL pointing to dashboard.starfeet.ar/login?callbackUrl=...
+    const parts = host.split(":");
+    const cleanHost = parts[0];
+    const port = parts[1] ? `:${parts[1]}` : "";
+    let baseDomain = cleanHost;
+    
+    if (baseDomain.startsWith("tienda.")) baseDomain = baseDomain.replace(/^tienda\./, "");
+    else if (baseDomain.startsWith("kine.")) baseDomain = baseDomain.replace(/^kine\./, "");
+    else if (baseDomain.startsWith("dashboard.")) baseDomain = baseDomain.replace(/^dashboard\./, "");
+    else if (baseDomain.startsWith("www.")) baseDomain = baseDomain.replace(/^www\./, "");
+
+    const protocol = cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1") ? "http" : "https";
+    const targetLogin = `${protocol}://dashboard.${baseDomain}${port}/login`;
+    const currentUrl = window.location.href;
+    setLoginUrl(`${targetLogin}?callbackUrl=${encodeURIComponent(currentUrl)}`);
+  }, [session?.user?.role, session?.user?.name]);
 
   // Hide on platform subdomains OR on internal backoffice paths
   const isBackoffice =
@@ -68,13 +97,29 @@ export const Navbar = () => {
         <div className="flex items-center gap-2 md:gap-3">
           {session ? (
             <>
-              {/* Panel link → absolute URL on the correct subdomain */}
+              {/* Hola (nombre) Buenos días, tardes, noches */}
+              {greeting && (
+                <span className="text-xs font-bold uppercase tracking-wider text-starfeet-blue/75 pr-1 md:pr-2 select-none">
+                  {greeting}
+                </span>
+              )}
+
+              {/* User Icon -> links to their panel (absolute subdomain) */}
               <Link href={panelHref}>
-                <Button variant="outline" size="sm" className="h-11 !px-5">
-                  Panel
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-11 w-11 !px-0"
+                  aria-label="Panel"
+                  title="Panel"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                  </svg>
                 </Button>
               </Link>
-              {/* Sign-out → /login on the correct subdomain for the role */}
+
+              {/* Sign-out -> /login on the correct subdomain for the role */}
               <Button
                 variant="outline"
                 size="sm"
@@ -92,7 +137,8 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/login">
+              {/* User Icon when not logged in -> links to dashboard.starfeet.ar/login */}
+              <Link href={loginUrl}>
                 <Button
                   variant="outline"
                   size="sm"

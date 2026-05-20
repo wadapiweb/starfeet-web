@@ -5,6 +5,8 @@ import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
+import { Suspense } from "react";
+
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) {
@@ -18,7 +20,9 @@ export default async function LoginPage() {
       title="Ingresar"
       subtitle="Accede con email y contraseña o con Google."
     >
-      <LoginForm />
+      <Suspense fallback={<div className="text-sm text-gray-500">Cargando formulario...</div>}>
+        <LoginForm />
+      </Suspense>
     </AuthShell>
   );
 }
