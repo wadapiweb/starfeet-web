@@ -55,6 +55,8 @@ export const Navbar = () => {
     if (baseDomain.startsWith("tienda.")) baseDomain = baseDomain.replace(/^tienda\./, "");
     else if (baseDomain.startsWith("kine.")) baseDomain = baseDomain.replace(/^kine\./, "");
     else if (baseDomain.startsWith("dashboard.")) baseDomain = baseDomain.replace(/^dashboard\./, "");
+    else if (baseDomain.startsWith("dev1.")) baseDomain = baseDomain.replace(/^dev1\./, "");
+    else if (baseDomain.startsWith("dev.")) baseDomain = baseDomain.replace(/^dev\./, "");
     else if (baseDomain.startsWith("www.")) baseDomain = baseDomain.replace(/^www\./, "");
 
     const protocol = cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1") ? "http" : "https";
