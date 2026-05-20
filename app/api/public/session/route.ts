@@ -2,7 +2,13 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const cookieHeader = request.headers.get("cookie") || "";
+  console.log("=== PUBLIC SESSION ENDPOINT ===");
+  console.log("Cookies received:", cookieHeader);
+
   const session = await auth();
+  console.log("Session resolved:", session);
+
   const origin = request.headers.get("origin");
 
   // We fetch the base domain dynamically or list the trusted origins

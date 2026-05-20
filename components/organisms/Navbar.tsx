@@ -11,7 +11,7 @@ import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 const PLATFORM_SUBDOMAINS = ["kine.", "dashboard."];
 
 export const Navbar = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
 
   const [isPlatformHost, setIsPlatformHost] = useState(false);
@@ -92,8 +92,11 @@ export const Navbar = () => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
-          {session ? (
+        <div className="flex items-center gap-2 md:gap-3 min-w-[120px] justify-end">
+          {status === "loading" ? (
+            // Loading skeleton to avoid layouts flashes/shifts
+            <div className="h-11 w-20 animate-pulse rounded-xl bg-starfeet-blue/5" />
+          ) : session ? (
             <>
               {/* Greeting in lowercase and two lines */}
               {userName && (
