@@ -94,10 +94,10 @@ export const Navbar = () => {
 
         <div className="flex items-center gap-2 md:gap-3 min-w-[120px] justify-end">
           {status === "loading" ? (
-            // Pulsing outline placeholders matching User Icon + Compra button footprints
+            // Pulsing placeholders: Large on the left, Small icon outline on the right
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="h-11 w-11 animate-pulse rounded-xl bg-starfeet-blue/5 border border-starfeet-blue/10" />
               <div className="h-11 w-[90px] animate-pulse rounded-xl bg-starfeet-blue/5 md:w-[108px]" />
+              <div className="h-11 w-11 animate-pulse rounded-xl bg-starfeet-blue/5 border border-starfeet-blue/10" />
             </div>
           ) : session ? (
             <>
