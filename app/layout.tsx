@@ -29,11 +29,17 @@ export const metadata: Metadata = {
   description: "Starfeet E-commerce",
 };
 
-export default function RootLayout({
+import { headers } from "next/headers";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const isPlatform = host.startsWith("kine.") || host.startsWith("dashboard.");
+
   return (
     <html lang="es">
       <body
@@ -41,7 +47,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SmoothScrollProvider>
-            <Navbar />
+            {!isPlatform && <Navbar />}
             {children}
           </SmoothScrollProvider>
         </AuthProvider>
