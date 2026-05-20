@@ -75,12 +75,13 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed left-0 top-0 z-50 w-full px-3 pt-3 md:px-6 md:pt-4">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl border border-starfeet-blue/15 bg-white/85 px-3 shadow-[0_8px_28px_rgba(9,34,75,0.12)] backdrop-blur-xl md:h-[74px] md:px-5">
+      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl border border-starfeet-blue/15 bg-white/85 px-3 shadow-[0_8px_28px_rgba(9,34,75,0.12)] backdrop-blur-xl md:h-[74px] md:px-5">
         <Link href="/" className="flex shrink-0 items-center rounded-xl px-1 py-1">
           <BrandLogo className="h-8 w-auto text-starfeet-blue md:h-10" />
         </Link>
 
-        <div className="hidden items-center gap-8 xl:flex">
+        {/* Absolute Centering to prevent links shifting when actions change width */}
+        <div className="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8 xl:flex">
           <Link href="/tienda" className="font-condensed text-sm font-bold uppercase tracking-[0.16em] text-starfeet-blue/70 transition-colors hover:text-starfeet-blue">
             Tienda
           </Link>
@@ -94,10 +95,10 @@ export const Navbar = () => {
 
         <div className="flex items-center gap-2 md:gap-3 min-w-[120px] justify-end">
           {status === "loading" ? (
-            // Pulsing placeholders: Large on the left, Small icon outline on the right
+            // Pulsing placeholders: Large on the left, round outline icon on the right
             <div className="flex items-center gap-2 md:gap-3">
               <div className="h-11 w-[90px] animate-pulse rounded-xl bg-starfeet-blue/5 md:w-[108px]" />
-              <div className="h-11 w-11 animate-pulse rounded-xl bg-starfeet-blue/5 border border-starfeet-blue/10" />
+              <div className="h-11 w-11 animate-pulse rounded-full bg-starfeet-blue/5 border border-starfeet-blue/10" />
             </div>
           ) : session ? (
             <>
