@@ -94,8 +94,11 @@ export const Navbar = () => {
 
         <div className="flex items-center gap-2 md:gap-3 min-w-[120px] justify-end">
           {status === "loading" ? (
-            // Loading skeleton to avoid layouts flashes/shifts
-            <div className="h-11 w-20 animate-pulse rounded-xl bg-starfeet-blue/5" />
+            // Pulsing outline placeholders matching User Icon + Compra button footprints
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="h-11 w-11 animate-pulse rounded-xl bg-starfeet-blue/5 border border-starfeet-blue/10" />
+              <div className="h-11 w-[90px] animate-pulse rounded-xl bg-starfeet-blue/5 md:w-[108px]" />
+            </div>
           ) : session ? (
             <>
               {/* Greeting in lowercase and two lines */}
