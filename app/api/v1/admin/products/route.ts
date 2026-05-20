@@ -4,9 +4,11 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError, requireRole } from "@/lib/authz";
 import { ProductType } from "@prisma/client";
 import { generateUniqueProductSlug } from "@/lib/slug";
+import { getAdminCommerceSettings } from "@/lib/admin-settings.server";
 
 type CreateProductBody = {
   name: string;
+  slug?: string | null;
   description?: string;
   type: ProductType;
   imageUrls?: string[];
@@ -15,12 +17,37 @@ type CreateProductBody = {
   compareAtPriceArs?: number | null;
   compareAtPriceUsd?: number | null;
   isActive?: boolean;
-  inventories?: Array<{
+  variants?: Array<{
+    id?: string | null;
     physicalSize: "S" | "M" | "L";
     stock: number;
+    color?: string;
+    isActive?: boolean;
     lowStockThreshold?: number;
+    sortOrder?: number;
+  }>;
+  inventories?: Array<{
+    id?: string | null;
+    physicalSize: "S" | "M" | "L";
+    stock: number;
+    color?: string;
+    isActive?: boolean;
+    lowStockThreshold?: number;
+    sortOrder?: number;
   }>;
 };
+
+function normalizeVariantEntries(body: CreateProductBody) {
+  const source = (body.variants?.length ? body.variants : body.inventories) ?? [];
+  return source.map((variant, index) => ({
+    physicalSize: variant.physicalSize,
+    color: variant.color?.trim() || "Negro",
+    stock: Math.max(0, Number(variant.stock) || 0),
+    isActive: variant.isActive ?? true,
+    lowStockThreshold: Math.max(0, Number(variant.lowStockThreshold) || 5),
+    sortOrder: variant.sortOrder ?? index,
+  }));
+}
 
 export async function GET(request: Request) {
   try {
@@ -93,12 +120,21 @@ export async function POST(request: Request) {
       throw new ApiError(400, "Los precios deben ser mayores a 0");
     }
 
-    const slug = await generateUniqueProductSlug(body.name);
-    const inventoryPayload = body.inventories ?? [
-      { physicalSize: "S", stock: 0, lowStockThreshold: 5 },
-      { physicalSize: "M", stock: 0, lowStockThreshold: 5 },
-      { physicalSize: "L", stock: 0, lowStockThreshold: 5 },
-    ];
+    const slug = await generateUniqueProductSlug(body.slug?.trim() || body.name);
+    const commerceSettings = await getAdminCommerceSettings();
+    const variantPayload =
+      normalizeVariantEntries(body).length > 0
+        ? normalizeVariantEntries(body)
+        : [
+            {
+              physicalSize: "S" as const,
+              color: "Negro",
+              stock: 0,
+              isActive: true,
+              lowStockThreshold: commerceSettings.defaultLowStockThreshold,
+              sortOrder: 0,
+            },
+          ];
 
     const product = await prisma.product.create({
       data: {
@@ -113,11 +149,20 @@ export async function POST(request: Request) {
         compareAtPriceUsd: body.compareAtPriceUsd ? Number(body.compareAtPriceUsd) : null,
         isActive: body.isActive ?? true,
         inventories: {
-          create: inventoryPayload.map((inventory) => ({
-            physicalSize: inventory.physicalSize,
-            stock: Math.max(0, Number(inventory.stock) || 0),
-            lowStockThreshold: Math.max(0, Number(inventory.lowStockThreshold) || 5),
-            sku: `${slug}-${inventory.physicalSize}`.toUpperCase(),
+          create: variantPayload.map((variant) => ({
+            physicalSize: variant.physicalSize,
+            color: variant.color,
+            stock: variant.stock,
+            lowStockThreshold: variant.lowStockThreshold,
+            isActive: variant.isActive,
+            sortOrder: variant.sortOrder,
+            sku: `${slug}-${variant.physicalSize}-${variant.color}`
+              .normalize("NFKD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")
+              .toUpperCase(),
           })),
         },
       },
@@ -141,8 +186,11 @@ export async function POST(request: Request) {
             id: true,
             sku: true,
             physicalSize: true,
+            color: true,
             stock: true,
             lowStockThreshold: true,
+            isActive: true,
+            sortOrder: true,
           },
         },
       },

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getProductTypeLabel } from "@/lib/product-types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -183,7 +184,7 @@ export default async function AdminSaleDetailPage({ params }: AdminSaleDetailPag
               {order.orderItems.map((item) => (
                 <tr key={item.id} className="border-t border-gray-200 text-gray-700">
                   <td className="px-3 py-2 font-semibold text-starfeet-blue">{item.product.name}</td>
-                  <td className="px-3 py-2">{item.product.type}</td>
+                  <td className="px-3 py-2">{getProductTypeLabel(item.product.type as "STARFEET" | "SLIPPER" | "OTHER")}</td>
                   <td className="px-3 py-2">{item.adminResolvedSize ?? item.inventory?.physicalSize ?? item.userSelectedSize}</td>
                   <td className="px-3 py-2">{item.quantity}</td>
                   <td className="px-3 py-2">{order.currency} {money.format(Number(item.unitPrice))}</td>

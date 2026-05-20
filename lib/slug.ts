@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 
-function normalizeBaseSlug(input: string): string {
+export function normalizeSlugCandidate(input: string): string {
   const clean = input
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -14,14 +14,14 @@ function normalizeBaseSlug(input: string): string {
 
 function buildUserSlugBase(name: string | null | undefined, email: string): string {
   if (name && name.trim().length > 0) {
-    return normalizeBaseSlug(name);
+    return normalizeSlugCandidate(name);
   }
   const localPart = email.split("@")[0] ?? email;
-  return normalizeBaseSlug(localPart);
+  return normalizeSlugCandidate(localPart);
 }
 
 function buildSlugBaseFromLabel(label: string) {
-  return normalizeBaseSlug(label);
+  return normalizeSlugCandidate(label);
 }
 
 async function reserveUniqueSlug(
@@ -99,15 +99,24 @@ export async function generateUniqueCouponSlug(code: string) {
   );
 }
 
-export async function generateUniqueProductSlug(name: string) {
-  const base = buildSlugBaseFromLabel(name);
-  return reserveUniqueSlug(
-    async (slug) => {
-      const found = await prisma.product.findUnique({ where: { slug }, select: { id: true } });
-      return Boolean(found);
-    },
-    base,
-  );
+export async function generateUniqueProductSlug(source: string, excludeId?: string) {
+  const base = buildSlugBaseFromLabel(source);
+  let candidate = base;
+  let suffix = 2;
+
+  while (true) {
+    const found = await prisma.product.findUnique({ where: { slug: candidate }, select: { id: true } });
+    if (!found || (excludeId && found.id === excludeId)) {
+      return candidate;
+    }
+
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+
+    if (candidate.length > 80) {
+      candidate = `${base.slice(0, 70)}-${suffix}`;
+    }
+  }
 }
 
 export async function generateUniquePatientSlug(name: string | null | undefined, email: string) {

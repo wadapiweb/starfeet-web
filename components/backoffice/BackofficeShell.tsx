@@ -14,6 +14,7 @@ type BackofficeShellProps = {
   navItems: BackofficeNavItem[];
   userName?: string | null;
   userEmail?: string | null;
+  themeMode?: "light" | "dark";
   children: React.ReactNode;
 };
 
@@ -23,16 +24,22 @@ export function BackofficeShell({
   navItems,
   userName,
   userEmail,
+  themeMode = "light",
   children,
 }: BackofficeShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const sectionTitle = resolveSectionTitle(pathname, navItems, title);
+  const isDark = themeMode === "dark";
 
   return (
-    <div className="min-h-screen bg-[#f3f5f9] text-gray-900">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-gray-200 bg-white px-4 py-5 lg:flex lg:flex-col">
+    <div className={isDark ? "min-h-screen bg-slate-950 text-slate-100" : "min-h-screen bg-[#f3f5f9] text-gray-900"}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 hidden w-72 border-r px-4 py-5 lg:flex lg:flex-col ${
+          isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
+        }`}
+      >
         <SidebarContent
           area={area}
           navItems={navItems}
@@ -40,6 +47,7 @@ export function BackofficeShell({
           onNavigate={() => undefined}
           userName={userName}
           userEmail={userEmail}
+          themeMode={themeMode}
         />
       </aside>
 
@@ -51,7 +59,11 @@ export function BackofficeShell({
             className="absolute inset-0 bg-black/45"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 w-72 border-r border-gray-200 bg-white px-4 py-5">
+          <aside
+            className={`absolute inset-y-0 left-0 w-72 border-r px-4 py-5 ${
+              isDark ? "border-slate-800 bg-slate-900" : "border-gray-200 bg-white"
+            }`}
+          >
             <SidebarContent
               area={area}
               navItems={navItems}
@@ -59,32 +71,49 @@ export function BackofficeShell({
               onNavigate={() => setMobileOpen(false)}
               userName={userName}
               userEmail={userEmail}
+              themeMode={themeMode}
             />
           </aside>
         </div>
       ) : null}
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:px-6">
+        <header
+          className={`sticky top-0 z-30 border-b px-4 py-3 backdrop-blur md:px-6 ${
+            isDark ? "border-slate-800 bg-slate-950/90" : "border-gray-200 bg-white/95"
+          }`}
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
                 aria-label="Volver"
                 onClick={() => router.back()}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 transition hover:bg-gray-100"
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition ${
+                  isDark
+                    ? "border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+                }`}
               >
                 <IconChevronLeft className="h-7 w-7" aria-hidden="true" strokeWidth={2.5} />
               </button>
 
-              <h1 className="truncate font-condensed text-2xl font-black uppercase tracking-tight text-starfeet-blue md:text-3xl">
+              <h1
+                className={`truncate font-condensed text-2xl font-black uppercase tracking-tight md:text-3xl ${
+                  isDark ? "text-sky-300" : "text-starfeet-blue"
+                }`}
+              >
                 {sectionTitle}
               </h1>
 
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-gray-700 lg:hidden"
+                className={`rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] lg:hidden ${
+                  isDark
+                    ? "border-slate-700 bg-slate-900 text-slate-200"
+                    : "border-gray-300 bg-white text-gray-700"
+                }`}
               >
                 <span className="inline-flex items-center gap-1.5">
                   <IconMenu className="h-4 w-4" aria-hidden="true" />
@@ -99,15 +128,28 @@ export function BackofficeShell({
                 <input
                   type="search"
                   placeholder="Buscar órdenes, cupones o pacientes"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 pl-9 text-sm text-gray-900 shadow-sm outline-none transition focus:border-starfeet-blue/50 focus:ring-2 focus:ring-starfeet-blue/15"
+                  className={`w-full rounded-xl border px-3 py-2 pl-9 text-sm shadow-sm outline-none transition ${
+                    isDark
+                      ? "border-slate-700 bg-slate-900 text-slate-100 placeholder:text-slate-400 focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/15"
+                      : "border-gray-300 bg-white text-gray-900 focus:border-starfeet-blue/50 focus:ring-2 focus:ring-starfeet-blue/15"
+                  }`}
                 />
-                <IconSearch className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-gray-500" aria-hidden="true" />
+                <IconSearch
+                  className={`pointer-events-none absolute left-3 top-2.5 h-4 w-4 ${
+                    isDark ? "text-slate-400" : "text-gray-500"
+                  }`}
+                  aria-hidden="true"
+                />
               </label>
 
               <button
                 type="button"
                 aria-label="Notificaciones"
-                className="relative rounded-xl border border-gray-300 bg-white p-2 text-gray-700 transition hover:bg-gray-100"
+                className={`relative rounded-xl border p-2 transition ${
+                  isDark
+                    ? "border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+                }`}
               >
                 <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   3
@@ -119,7 +161,13 @@ export function BackofficeShell({
         </header>
 
         <main className="px-4 py-4 md:px-6 md:py-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">{children}</div>
+          <div
+            className={`rounded-2xl border p-4 shadow-sm md:p-5 ${
+              isDark ? "border-slate-800 bg-slate-900 text-slate-100" : "border-gray-200 bg-white"
+            }`}
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>
@@ -133,17 +181,23 @@ type SidebarContentProps = {
   onNavigate: () => void;
   userName?: string | null;
   userEmail?: string | null;
+  themeMode: "light" | "dark";
 };
 
-function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEmail }: SidebarContentProps) {
+function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEmail, themeMode }: SidebarContentProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const profileHref = area === "ADMIN" ? "/admin/profile" : "/kinesio/profile";
   const settingsHref = area === "ADMIN" ? "/admin/settings" : "/kinesio/settings";
   const helpHref = area === "ADMIN" ? "/admin/help" : "/kinesio/help";
+  const isDark = themeMode === "dark";
 
   return (
     <>
-      <Link href="/" className="flex items-center rounded-xl px-2 py-1 text-starfeet-blue hover:bg-gray-50" onClick={onNavigate}>
+      <Link
+        href="/"
+        className={`flex items-center rounded-xl px-2 py-1 ${isDark ? "text-sky-300 hover:bg-slate-800" : "text-starfeet-blue hover:bg-gray-50"}`}
+        onClick={onNavigate}
+      >
         <BrandLogo className="h-9 w-auto" />
       </Link>
 
@@ -163,8 +217,12 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
               onClick={onNavigate}
               className={`block rounded-xl border px-3 py-3 transition ${
                 active
-                  ? "border-starfeet-blue bg-starfeet-blue text-white"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-starfeet-blue/40"
+                  ? isDark
+                    ? "border-sky-300 bg-sky-300 text-slate-950"
+                    : "border-starfeet-blue bg-starfeet-blue text-white"
+                  : isDark
+                    ? "border-slate-700 bg-slate-900 text-slate-200 hover:border-sky-300/40"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-starfeet-blue/40"
               }`}
             >
               <p className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.1em]">
@@ -180,30 +238,41 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
         <button
           type="button"
           onClick={() => setMenuOpen((current) => !current)}
-          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm"
+          className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm ${
+            isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-gray-50"
+          }`}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
         >
           <span className="min-w-0">
-            <span className="block truncate font-semibold text-starfeet-blue">{userName ?? "Usuario"}</span>
-            <span className="block truncate text-xs text-gray-500">{userEmail ?? "Sin email"}</span>
+            <span className={`block truncate font-semibold ${isDark ? "text-sky-300" : "text-starfeet-blue"}`}>
+              {userName ?? "Usuario"}
+            </span>
+            <span className={`block truncate text-xs ${isDark ? "text-slate-400" : "text-gray-500"}`}>{userEmail ?? "Sin email"}</span>
           </span>
           {menuOpen ? (
-            <IconChevronUp className="h-4 w-4 text-gray-500" aria-hidden="true" />
+            <IconChevronUp className={`h-4 w-4 ${isDark ? "text-slate-400" : "text-gray-500"}`} aria-hidden="true" />
           ) : (
-            <IconChevronDown className="h-4 w-4 text-gray-500" aria-hidden="true" />
+            <IconChevronDown className={`h-4 w-4 ${isDark ? "text-slate-400" : "text-gray-500"}`} aria-hidden="true" />
           )}
         </button>
 
         {menuOpen ? (
-          <div className="absolute bottom-full left-0 right-0 z-50 mb-2 rounded-xl border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+          <div
+            className={`absolute bottom-full left-0 right-0 z-50 mb-2 rounded-xl border p-1 shadow-lg ${
+              isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-white"
+            }`}
+            role="menu"
+          >
             <Link
               href={profileHref}
               onClick={() => {
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
+                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+              }`}
               role="menuitem"
             >
               <IconUser className="h-4 w-4" aria-hidden="true" />
@@ -215,7 +284,9 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
+                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+              }`}
               role="menuitem"
             >
               <IconSettings className="h-4 w-4" aria-hidden="true" />
@@ -227,7 +298,9 @@ function SidebarContent({ area, navItems, pathname, onNavigate, userName, userEm
                 setMenuOpen(false);
                 onNavigate();
               }}
-              className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className={`inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
+                isDark ? "text-slate-200 hover:bg-slate-800" : "text-gray-700 hover:bg-gray-50"
+              }`}
               role="menuitem"
             >
               <IconCircleHelp className="h-4 w-4" aria-hidden="true" />

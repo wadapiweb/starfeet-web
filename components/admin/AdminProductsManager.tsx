@@ -8,6 +8,17 @@ import { EntityActionsMenu } from "@/components/atoms/EntityActionsMenu";
 import { EntityFormModal } from "@/components/atoms/EntityFormModal";
 import { DropdownSelect } from "@/components/atoms/DropdownSelect";
 import { ToggleSwitch } from "@/components/atoms/ToggleSwitch";
+import { getProductTypeLabel } from "@/lib/product-types";
+import {
+  ProductForm as AdminEditorForm,
+  ProductFormErrors as AdminEditorFormErrors,
+  ProductFormFields as AdminSharedProductFormFields,
+  buildProductPayload as buildAdminProductPayload,
+  buildProductUploadKey as buildAdminProductUploadKey,
+  createEmptyProductForm as createAdminEmptyProductForm,
+  fromProductToForm as fromAdminProductToForm,
+  validateProductForm as validateAdminProductForm,
+} from "@/components/admin/ProductFormFields";
 
 type ProductTypeValue = "STARFEET" | "SLIPPER" | "OTHER";
 type ModalMode = "create" | "view" | "edit";
@@ -28,8 +39,11 @@ type Product = {
     id: string;
     sku: string;
     physicalSize: "S" | "M" | "L";
+    color: string;
     stock: number;
     lowStockThreshold: number;
+    isActive: boolean;
+    sortOrder: number;
   }>;
 };
 
@@ -128,20 +142,23 @@ function validateProductForm(form: ProductForm): ProductFormErrors {
 export function AdminProductsManager({ initialEdit = null }: { initialEdit?: string | null }) {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [createForm, setCreateForm] = useState<ProductForm>(initialForm);
-  const [editForm, setEditForm] = useState<ProductForm>(initialForm);
+  const [createForm, setCreateForm] = useState<AdminEditorForm>(createAdminEmptyProductForm());
+  const [editForm, setEditForm] = useState<AdminEditorForm>(createAdminEmptyProductForm());
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [productPendingDelete, setProductPendingDelete] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | ProductTypeValue>("all");
   const [initialEditHandled, setInitialEditHandled] = useState(false);
-  const [createErrors, setCreateErrors] = useState<ProductFormErrors>({});
-  const [editErrors, setEditErrors] = useState<ProductFormErrors>({});
+  const [createErrors, setCreateErrors] = useState<AdminEditorFormErrors>({});
+  const [editErrors, setEditErrors] = useState<AdminEditorFormErrors>({});
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? null,
@@ -185,26 +202,69 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
   }, [initialEdit, initialEditHandled, products]);
 
   function openCreateModal() {
-    setCreateForm(initialForm);
+    setCreateForm(createAdminEmptyProductForm());
     setCreateErrors({});
+    setUploadError(null);
+    setUploadSuccess(null);
     setSelectedProductId(null);
     setModalMode("create");
   }
 
   function openEditModal(product: Product) {
     setSelectedProductId(product.id);
-    setEditForm(fromProductToForm(product));
+    setEditForm(fromAdminProductToForm(product));
     setEditErrors({});
+    setUploadError(null);
+    setUploadSuccess(null);
     setModalMode("edit");
   }
 
   function closeModal() {
     setModalMode(null);
     setSelectedProductId(null);
+    setUploadError(null);
+    setUploadSuccess(null);
+  }
+
+  async function handleUploadFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+
+    const targetForm = modalMode === "edit" ? editForm : createForm;
+    const targetSetter = modalMode === "edit" ? setEditForm : setCreateForm;
+    setUploadingImages(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("productId", buildAdminProductUploadKey(targetForm));
+      Array.from(files).forEach((file) => formData.append("files", file));
+
+      const res = await fetch("/api/v1/admin/products/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.error ?? "No se pudieron subir las imágenes");
+      }
+
+      const urls: string[] = Array.isArray(payload?.urls) ? payload.urls : [];
+      if (urls.length === 0) {
+        throw new Error("No se obtuvieron URLs de las imágenes");
+      }
+
+      targetSetter((prev) => ({ ...prev, imageUrls: [...new Set([...prev.imageUrls, ...urls])] }));
+      setUploadSuccess(`Imágenes subidas: ${urls.length}`);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "No se pudieron subir las imágenes");
+    } finally {
+      setUploadingImages(false);
+    }
   }
 
   async function onCreate() {
-    const validationErrors = validateProductForm(createForm);
+    const validationErrors = validateAdminProductForm(createForm);
     setCreateErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0 || !canCreate) return;
     setLoading(true);
@@ -214,13 +274,13 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
       const res = await fetch("/api/v1/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toPayload(createForm)),
+        body: JSON.stringify(buildAdminProductPayload(createForm)),
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo crear el producto");
 
       closeModal();
-      setCreateForm(initialForm);
+      setCreateForm(createAdminEmptyProductForm());
       setSuccess("Producto creado correctamente.");
       await loadProducts();
     } catch (e) {
@@ -231,7 +291,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
   }
 
   async function onSaveEdit() {
-    const validationErrors = validateProductForm(editForm);
+    const validationErrors = validateAdminProductForm(editForm);
     setEditErrors(validationErrors);
     if (!selectedProduct || Object.keys(validationErrors).length > 0 || !canEdit) return;
 
@@ -242,7 +302,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
       const res = await fetch(`/api/v1/admin/products/${selectedProduct.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toPayload(editForm)),
+        body: JSON.stringify(buildAdminProductPayload(editForm)),
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.error ?? "No se pudo actualizar el producto");
@@ -297,7 +357,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
         onView={() => router.push(`/admin/products/${selectedProduct.slug ?? selectedProduct.id}`)}
         onEdit={() => openEditModal(selectedProduct)}
         onDelete={() => requestDeleteProduct(selectedProduct)}
-        viewAsUserHref={`/tienda/producto/${selectedProduct.slug ?? selectedProduct.id}`}
+        viewAsUserHref={`https://tienda.starfeet.ar/producto/${selectedProduct.slug ?? selectedProduct.id}`}
       />
     ) : undefined;
 
@@ -353,9 +413,9 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
               ariaLabel="Filtrar por tipo"
               options={[
                 { value: "all", label: "Todos los tipos" },
-                { value: "STARFEET", label: "STARFEET" },
-                { value: "SLIPPER", label: "SLIPPER" },
-                { value: "OTHER", label: "OTHER" },
+                { value: "STARFEET", label: getProductTypeLabel("STARFEET") },
+                { value: "SLIPPER", label: getProductTypeLabel("SLIPPER") },
+                { value: "OTHER", label: getProductTypeLabel("OTHER") },
               ]}
               buttonClassName="rounded-xl border border-gray-300 px-3 py-2 text-sm"
             />
@@ -393,7 +453,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
                       </Link>
                     </td>
                     <td className="px-3 py-2 text-gray-600">{product.slug ?? "-"}</td>
-                    <td className="px-3 py-2">{product.type}</td>
+                    <td className="px-3 py-2">{getProductTypeLabel(product.type)}</td>
                     <td className="px-3 py-2">{Number(product.priceArs).toFixed(2)}</td>
                     <td className="px-3 py-2">{Number(product.priceUsd).toFixed(2)}</td>
                     <td className="px-3 py-2">
@@ -414,7 +474,7 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
                           onView={() => router.push(`/admin/products/${product.slug ?? product.id}`)}
                           onEdit={() => openEditModal(product)}
                           onDelete={() => requestDeleteProduct(product)}
-                          viewAsUserHref={`/tienda/producto/${product.slug ?? product.id}`}
+                          viewAsUserHref={`https://tienda.starfeet.ar/producto/${product.slug ?? product.id}`}
                         />
                       </div>
                     </td>
@@ -436,10 +496,14 @@ export function AdminProductsManager({ initialEdit = null }: { initialEdit?: str
         onSubmit={modalMode === "create" ? onCreate : modalMode === "edit" ? onSaveEdit : undefined}
         submitLabel={modalMode === "create" ? "Crear producto" : "Editar producto"}
       >
-        <ProductFormFields
+        <AdminSharedProductFormFields
           form={modalMode === "create" ? createForm : editForm}
           onChange={modalMode === "create" ? setCreateForm : setEditForm}
           fieldErrors={modalMode === "create" ? createErrors : editErrors}
+          onUploadFiles={handleUploadFiles}
+          uploading={uploadingImages}
+          uploadError={uploadError}
+          uploadSuccess={uploadSuccess}
         />
       </EntityFormModal>
 
@@ -499,11 +563,11 @@ function ProductFormFields({
             value={form.type}
             onChange={(value) => onChange((prev) => ({ ...prev, type: value as ProductTypeValue }))}
             ariaLabel="Tipo de producto"
-            options={[
-              { value: "STARFEET", label: "STARFEET" },
-              { value: "SLIPPER", label: "SLIPPER" },
-              { value: "OTHER", label: "OTHER" },
-            ]}
+              options={[
+                { value: "STARFEET", label: getProductTypeLabel("STARFEET") },
+                { value: "SLIPPER", label: getProductTypeLabel("SLIPPER") },
+                { value: "OTHER", label: getProductTypeLabel("OTHER") },
+              ]}
             className="mt-1"
             buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
           />

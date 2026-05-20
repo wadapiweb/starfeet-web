@@ -153,7 +153,7 @@ async function main() {
       },
     });
 
-    const createdOrders: Array<{ id: string; transactionId: string }> = [];
+    const createdOrders: Array<{ id: string; transactionId: string | null }> = [];
 
     for (const patientSeed of patients) {
       const linkedUser = patientSeed.linkedUserEmail

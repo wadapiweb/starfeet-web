@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
-import { getDashboardRouteForRole } from "@/lib/role-redirect";
+import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export default async function PostLoginPage() {
   const session = await auth();
@@ -9,5 +10,9 @@ export default async function PostLoginPage() {
     redirect("/login");
   }
 
-  redirect(getDashboardRouteForRole(session.user.role));
+  const headersList = await headers();
+  const host = headersList.get("host") || "starfeetoficial.com";
+
+  redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));
 }
+

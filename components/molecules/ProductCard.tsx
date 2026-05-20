@@ -1,20 +1,24 @@
 import React from "react";
 import { Product } from "@prisma/client";
+import { getProductTypeLabel } from "@/lib/product-types";
+import Link from "next/link";
 
 interface ProductCardProps {
     product: Product;
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+    const productUrl = `/producto/${product.slug || product.id}`;
+
     return (
-        <div className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+        <Link href={productUrl} className="group relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 block">
             {/* IMAGE PLACEHOLDER FOR NOW */}
             <div className="aspect-square bg-gray-50 flex items-center justify-center p-8 relative overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-gray-100 to-white rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-700">
                     {/* Abstract shape representing the product type */}
-                    <div className={`w-24 h-24 ${product.type === 'STARFEET' ? 'bg-starfeet-blue' : 'bg-starfeet-lime'} opacity-20 blur-2xl absolute`}></div>
+                    <div className={`w-24 h-24 ${product.type === "STARFEET" ? "bg-starfeet-blue" : "bg-starfeet-lime"} opacity-20 blur-2xl absolute`}></div>
                     <span className="font-condensed font-black text-6xl text-starfeet-blue/10 uppercase select-none group-hover:text-starfeet-lime/20 transition-colors">
-                        {product.type}
+                        {getProductTypeLabel(product.type)}
                     </span>
                 </div>
 
@@ -32,7 +36,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                         {product.name}
                     </h3>
                     <span className="font-sans text-[10px] font-black text-gray-300 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded">
-                        {product.type}
+                        {getProductTypeLabel(product.type)}
                     </span>
                 </div>
 
@@ -52,13 +56,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                         </span>
                     </div>
 
-                    <button className="w-10 h-10 bg-starfeet-blue text-white rounded-full flex items-center justify-center hover:bg-starfeet-lime hover:text-starfeet-blue transition-all group-hover:scale-110">
+                    <div className="w-10 h-10 bg-starfeet-blue text-white rounded-full flex items-center justify-center hover:bg-starfeet-lime hover:text-starfeet-blue transition-all group-hover:scale-110">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
-                    </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 };

@@ -1,7 +1,8 @@
-export const CART_TTL_MS = 2 * 60 * 60 * 1000;
+export const CART_TTL_MINUTES = 120;
+export const CART_TTL_MS = CART_TTL_MINUTES * 60 * 1000;
 
-export function cartExpirationFrom(base: Date): Date {
-  return new Date(base.getTime() + CART_TTL_MS);
+export function cartExpirationFrom(base: Date, ttlMinutes = CART_TTL_MINUTES): Date {
+  return new Date(base.getTime() + ttlMinutes * 60 * 1000);
 }
 
 export function isCartExpired(expiresAt: Date, now = new Date()): boolean {

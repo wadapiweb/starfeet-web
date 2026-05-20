@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/authz";
 import { hashAccessCode } from "@/lib/access-codes";
 import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/audit";
+import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 type Body = {
   email: string;
@@ -20,9 +21,13 @@ export async function POST(request: Request) {
     const email = body.email?.toLowerCase().trim();
     const code = body.code?.trim();
     const password = body.password?.trim();
+    const securitySettings = await getAdminSecuritySettings();
 
-    if (!email || !code || !password || password.length < 6) {
-      throw new ApiError(400, "Datos inválidos.");
+    if (!email || !code || !password || password.length < securitySettings.minPasswordLength) {
+      throw new ApiError(
+        400,
+        `Datos inválidos. La contraseña debe tener al menos ${securitySettings.minPasswordLength} caracteres.`,
+      );
     }
 
     const rateLimit = consumeRateLimit(`auth:reset-password:${ip}:${email}`, {

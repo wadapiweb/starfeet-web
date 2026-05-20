@@ -4,13 +4,14 @@ import { parseJson, jsonError } from "@/lib/api";
 import { requireRole, ApiError } from "@/lib/authz";
 import { DiscountType } from "@prisma/client";
 import { generateUniqueCouponSlug } from "@/lib/slug";
+import { getAdminCommerceSettings } from "@/lib/admin-settings.server";
 
 type CreateCouponBody = {
   code: string;
   discountValue: number;
   discountType: DiscountType;
   maxUses: number;
-  expiresAt: string;
+  expiresAt?: string;
   isStackable?: boolean;
   commissionType: DiscountType;
   commissionValue: number;
@@ -58,13 +59,16 @@ export async function POST(request: Request) {
   try {
     const admin = await requireRole(["ADMIN"]);
     const body = await parseJson<CreateCouponBody>(request);
+    const commerceSettings = await getAdminCommerceSettings();
 
     if (!body.code || body.discountValue <= 0 || body.maxUses <= 0 || body.commissionValue < 0) {
       throw new ApiError(400, "Parámetros inválidos para crear cupón");
     }
 
-    const expiresAt = new Date(body.expiresAt);
-    if (Number.isNaN(expiresAt.getTime())) {
+    const expiresAt = body.expiresAt
+      ? new Date(body.expiresAt)
+      : new Date(Date.now() + commerceSettings.defaultCouponValidityDays * 24 * 60 * 60 * 1000);
+    if (body.expiresAt && Number.isNaN(expiresAt.getTime())) {
       throw new ApiError(400, "expiresAt inválido");
     }
 

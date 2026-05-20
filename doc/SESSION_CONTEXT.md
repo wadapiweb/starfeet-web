@@ -5,15 +5,10 @@
 - Stack: Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 + Prisma ORM + next-auth v5 + next-intl + Framer Motion + Zustand
 
 ## Estado de sesión
-- Fecha: 2026-04-21
+- Fecha: 2026-05-13
 - Rama activa: main
-- Objetivo del bloque: Instalación y configuración del Senior Staged Delivery Workflow.
-- Consulta operativa: inventario actual de `users` leído desde la base local para soporte de credenciales.
-- Bloque actual: mejora del panel `/admin/finance` para mostrar caja, pipeline abierto, comisiones, cupones y liquidaciones con datos reales.
-- Bloque actual: auditoría y refuerzo de labels/aria-label en filtros y selectores de `admin` y `kinesio`.
-- Bloque actual: normalización de labels de estados visibles a español en CRM, ventas, finanzas y kinesio.
-- Bloque actual: panel `/admin/settings` convertido en editor con tabs y persistencia real por categoría (`SystemSetting`).
-- Bloque actual: wiring de settings a carrito, checkout, stock, cupones, seguridad y pasarela por defecto.
+- Objetivo del bloque: Refactorización y segregación arquitectónica de componentes bajo normativas de Diseño Atómico.
+- Bloque actual: Extracción de sección scrollytelling `Manifesto` desde el interior de `Hero` hacia su propio organismo independiente.
 
 ## Cambios implementados
 - [X] Copiado del template `workflow_1.zip` al root del proyecto.
@@ -331,3 +326,66 @@
   - 1 paciente vinculado a usuario registrado y 4 pacientes invitados
   - 5 órdenes, 5 redenciones y 5 enlaces de paciente actualizados en dashboard
   - script operativo agregado en `scripts/ops/create_demo_kinesio_patients.ts`
+- [X] Formularios de producto en admin actualizados para flujo senior:
+  - contrato compartido en `components/admin/ProductFormFields.tsx`
+  - slug editable con preview y autogeneración por nombre
+  - imágenes subidas al servidor con previews y eliminación individual
+  - `ProductSingleActions` y `AdminProductsManager` usan el mismo contrato
+  - gallery visible en `/admin/products/[slug]` y `/tienda/producto/[slug]`
+  - `/inicio2` normalizado con imports absolutos para no romper el build
+- [X] Variantes de producto y orden de imágenes endurecidos:
+  - `ProductInventory` ahora modela `color`, `isActive` y `sortOrder`
+  - el formulario de producto permite agregar variantes por fila con talle, color, stock y toggle activo
+  - el formulario permite drag & drop para reordenar imágenes antes de guardar
+  - la tienda muestra y permite elegir variantes activas con stock
+  - el checkout exige variante cuando el producto tiene variantes activas
+- [X] Labels de tipo de producto centralizados:
+  - `SLIPPER` ahora se muestra como `Pantufla` en admin, tienda y detalle
+  - el label se resolvió con un helper compartido en `lib/product-types.ts`
+  - se mantuvo el enum técnico `ProductTypeValue` intacto para API/DB
+- [X] Flujo de compra/carrito conectado desde el single:
+  - el detalle de producto ahora selecciona variante real por stock activo
+  - `Comprar ahora` y `Agregar al carrito` crean o reutilizan carrito persistido
+  - `cartId` y email se guardan en `localStorage` para sobrevivir al salto a `/tienda`
+  - la tienda muestra líneas del carrito con variante y limpia la sesión al confirmar checkout
+- [X] Conversión de talles por género configurada desde admin:
+  - nueva categoría `Talles` en `admin/settings` con tabs Mujer/Hombre y filas 35–45
+  - cada número puede mapearse a `S`, `M`, `L` o `-` para ocultarlo en el frontend
+  - el single de producto calcula la talla física desde ese mapeo y muestra stock activo o sin stock
+  - `cartItem` y `orderItem` preservan `gender` y `size` para no perder contexto de compra
+- [X] Bug de editor de talles corregido:
+  - el `textarea` de configuración ahora se parsea como JSON antes de pintar el editor
+  - el select cambia y persiste porque ya no se reinyecta siempre el mapeo por defecto
+- [X] Repair de esquema en `product_inventories`:
+  - la DB viva estaba atrasada respecto al schema y faltaban `color`, `isActive` y `sortOrder`
+  - se agregó migración explícita en `prisma/migrations/20260422000000_add_product_inventory_color_sortorder/migration.sql`
+  - se aplicó el `ALTER TABLE` en `starfeet-db` y `/tienda/producto/[slug]` volvió a responder `200`
+- [X] Single de producto simplificado:
+  - la grilla de talles ahora muestra sólo el número visible
+  - se eliminó el texto de talle letra y el texto de stock del frontend
+  - la disponibilidad sigue resolviéndose internamente para bloquear números sin stock
+- [X] Flujo de compra/carrito reforzado:
+  - carrito con acciones reales de cantidad, quitar ítem y refresh desde API
+  - catálogo con CTA dual `Agregar` y `Comprar`
+  - checkout compacto en `/tienda?mode=checkout` sin mezclar catálogo y resumen
+  - resumen del carrito con preview, cantidades editables y total por línea
+  - navegación interna del checkout sin hard reload
+- [X] `/tienda` convertido en catálogo puro:
+  - la página pública ahora lista productos como cards y enlaza al detalle
+  - el checkout se movió a `/tienda/checkout`
+  - `Comprar ahora` desde el single redirige al checkout dedicado
+- [X] UI de carrito reforzada en checkout:
+  - el detalle de cada ítem muestra género, talle numérico y color
+  - el botón `Quitar` se reemplazó por icono de cesto para reducir ruido visual
+  - el resumen sigue permitiendo ajustar cantidades y borrar ítems sin recargar la página
+- [X] Segregación arquitectónica de componentes Organism implementada:
+  - extracción de sección scrollytelling a pantalla completa interna en `Hero` hacia su propio organismo `Manifesto`
+  - cumplimiento formal de *Rules of Hooks* aislando renderizado de caracteres animados en subcomponente funcional `RevealCharacter`
+  - limpieza de responsabilidad única en `Hero` acotándolo al primer viewport de impacto estático
+  - reestructuración secuencial limpia en `app/page.tsx` (`Hero` → `Manifesto` → `Productos`)
+- [X] Sección `Technology` creada como organismo independiente:
+  - imagen central del producto con dots lima superpuestos en los puntos técnicos clave
+  - 4 callouts con título/subtítulo/descripción conectados por dot + línea lima
+  - desktop: layout 3 columnas `[features izq | imagen | features der]` con conectores direccionales
+  - mobile: imagen compacta + grid 1-2 col de tarjetas con acento lima izquierdo
+  - lint ESLint: 0 errores, 0 warnings

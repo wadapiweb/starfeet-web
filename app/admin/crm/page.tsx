@@ -34,8 +34,8 @@ export default async function AdminCrmPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Total de leads" value={totalLeads.toString()} bg="bg-blue-50" text="text-starfeet-blue" />
         <StatCard title="Nuevos" value={(stats.NEW_LEAD || 0).toString()} bg="bg-gray-100" text="text-gray-800" />
-        <StatCard title="En proceso" value={((stats.CONTACTED || 0) + (stats.QUALIFIED || 0) + (stats.PROPOSAL_SENT || 0)).toString()} bg="bg-amber-100" text="text-amber-800" />
-        <StatCard title="Ganados" value={(stats.WON || 0).toString()} bg="bg-green-100" text="text-green-800" />
+        <StatCard title="En proceso" value={((stats.CONTACTED || 0) + (stats.QUALIFIED || 0) + (stats.PROPOSAL || 0) + (stats.NEGOTIATION || 0)).toString()} bg="bg-amber-100" text="text-amber-800" />
+        <StatCard title="Ganados" value={(stats.CLOSED_WON || 0).toString()} bg="bg-green-100" text="text-green-800" />
       </div>
 
       <article className="rounded-2xl border border-gray-200 bg-white">
@@ -68,8 +68,8 @@ export default async function AdminCrmPage() {
                     <td className="px-4 py-3 text-gray-600">{lead.interest || "-"}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                        lead.status === 'WON' ? "bg-green-100 text-green-800" :
-                        lead.status === 'LOST' ? "bg-red-100 text-red-800" :
+                        lead.status === 'CLOSED_WON' ? "bg-green-100 text-green-800" :
+                        lead.status === 'CLOSED_LOST' ? "bg-red-100 text-red-800" :
                         "bg-blue-100 text-starfeet-blue"
                       }`}>
                         {leadStatusLabel(lead.status)}

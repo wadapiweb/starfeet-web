@@ -10,6 +10,7 @@
 - [ ] Etapa 6 Cierre documental
 
 ## Backlog inmediato
+- [X] Etapa 1: Extracción de sección `Manifesto` del componente `Hero` hacia su propio organismo, siguiendo segregación de responsabilidades y atomicidad.
 - [X] Consulta operativa: inventario actual de usuarios/roles revisado para soporte de acceso.
 - [X] Panel `/admin/finance` expandido para caja, pipeline, comisiones, liquidaciones y top cupones con datos reales.
 - [X] Labels accesibles reforzados en filtros y selectores principales de admin/kinesio.
@@ -63,6 +64,11 @@
 - [X] Extender módulo `Profesionales` con edición/desactivación/reactivación y reseteo de contraseña inicial por admin.
 - [ ] Agregar filtros por rango de fechas en detalle de profesional para métricas y comisiones (hoy muestra visión global + recientes).
 - [ ] Aplicar cambios de esquema en DB (`npx prisma db push`) en cada entorno y validar creación de tablas faltantes (`coupon_assignments`, etc.).
+- [ ] Alinear el resto de entornos con la migración nueva de `product_inventories` para evitar drift entre schema y DB.
+- [ ] Si el negocio quiere más claridad visual, agregar un estado no textual para talles sin stock en el single y mantener sólo el número como label.
+- [X] Convertir el checkout compacto en una ruta dedicada `/tienda/checkout` y dejar `/tienda` como catálogo puro.
+- [ ] Considerar persistir el carrito en cookie httpOnly si el flujo debe sobrevivir mejor entre dispositivos o sesiones largas.
+- [ ] Si el catálogo crece, evaluar resumir aún más la tarjeta de carrito con chips compactos para género/talle/color.
 - [ ] Ejecutar `npm run backfill:slugs` en cada entorno para poblar slugs históricos y luego migrar rutas públicas por slug en módulos restantes.
 - [X] Extender módulo de productos con gestión de inventario por talle (S/M/L) y edición de `ProductInventory` desde admin.
 - [X] Estandarizar acciones de listado admin (`Agregar/Ver/Editar/Eliminar`) para productos, profesionales y cupones.
@@ -70,6 +76,10 @@
 - [ ] Agregar variante de `ConfirmDialog` con input de confirmación textual para borrados críticos (ej. productos con historial).
 - [ ] Extraer `EntityFormModal`/`EntityActionsMenu` a un patrón documentado de backoffice (props contract + ejemplos) para nuevos módulos admin.
 - [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
+- [ ] Considerar migrar otros enums visibles a labels centralizados en `lib/` para evitar textos técnicos en UI.
+- [ ] Evaluar mover la sesión de carrito de `localStorage` a cookie/httpOnly si se quiere persistencia más robusta entre dispositivos.
+- [ ] Usar la conversión de talles en otros puntos del frontend público para evitar duplicar lógica de display en futuras fichas o campañas.
+- [ ] Si aparece complejidad con variantes múltiples por talla/color, extraer un selector de variantes dedicado en el single.
 - [ ] Migrar edición de productos por slug en endpoint (`PATCH /api/v1/admin/products/[slug]`) y quitar fallback por id.
 - [ ] Forzar selección de talle en tienda para eliminar fallback legacy sin `inventoryId` en checkout.
 - [X] Validación de formularios admin por campo: borde rojo + mensaje inline + bloqueo de submit en errores (productos/profesionales/cupones en listado y single).
@@ -78,3 +88,9 @@
 - [X] Sanear `app/admin/page.tsx` para evitar el error de `patientId` nulo y dejar `/admin` estable bajo Prisma regenerado.
 - [X] Reemplazar checkboxes booleanos de admin por toggles reutilizables (`ToggleSwitch`) para unificar la UX de settings y formularios.
 - [X] Reducir ruido en `admin/settings`: quitar KPI cards, sumar tabs con iconos y persistir tema claro/oscuro del backoffice.
+- [ ] Evaluar migrar el preview de imágenes a un uploader con drag & drop y reordenamiento, si el catálogo empieza a manejar más de 4-5 imágenes por producto.
+- [ ] Definir si el slug editable debe bloquearse cuando ya existan URLs públicas indexadas o campañas activas.
+- [ ] Si se necesita backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
+- [ ] Evaluar persistir el último filtro de variante/color en la tienda para acelerar compras repetidas.
+- [ ] Considerar una pantalla de gestión de variantes separada si algunos productos superan 8-10 combinaciones.
+- [ ] Agregar validación visual de duplicados talle+color si el negocio necesita impedir variantes repetidas.

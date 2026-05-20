@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { cartExpirationFrom, isCartExpired } from "@/lib/cart";
+import { getAdminCommerceSettings } from "@/lib/admin-settings.server";
 
 type Body = {
   code: string;
@@ -35,19 +36,20 @@ export async function POST(request: Request, context: Params) {
     if (!coupon || !coupon.isActive) {
       throw new ApiError(404, "Cupón inválido o inactivo");
     }
-    if (coupon.expiresAt.getTime() <= Date.now()) {
+    if (!coupon.expiresAt || coupon.expiresAt.getTime() <= Date.now()) {
       throw new ApiError(409, "Cupón vencido");
     }
     if (coupon.usageCount >= coupon.maxUses) {
       throw new ApiError(409, "Cupón sin usos disponibles");
     }
 
+    const commerceSettings = await getAdminCommerceSettings();
     const updated = await prisma.cart.update({
       where: { id },
       data: {
         couponId: coupon.id,
         lastActivityAt: new Date(),
-        expiresAt: cartExpirationFrom(new Date()),
+        expiresAt: cartExpirationFrom(new Date(), commerceSettings.cartTtlMinutes),
       },
     });
 

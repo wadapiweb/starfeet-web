@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/authz";
 import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/audit";
 import { generateUniqueUserSlug } from "@/lib/slug";
+import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 type Body = {
   email: string;
@@ -34,8 +35,9 @@ export async function POST(request: Request) {
     const email = body.email?.toLowerCase().trim();
     const password = body.password?.trim();
     const name = body.name?.trim() || null;
+    const securitySettings = await getAdminSecuritySettings();
 
-    if (!email || !password || password.length < 6) {
+    if (!email || !password || password.length < securitySettings.minPasswordLength) {
       auditSecurityEvent({
         action: "REGISTER_REJECTED",
         email,
@@ -43,7 +45,10 @@ export async function POST(request: Request) {
         route: "/api/auth/register",
         reason: "invalid_payload",
       });
-      throw new ApiError(400, "Datos inválidos. La contraseña debe tener al menos 6 caracteres.");
+      throw new ApiError(
+        400,
+        `Datos inválidos. La contraseña debe tener al menos ${securitySettings.minPasswordLength} caracteres.`,
+      );
     }
 
     const hashed = await bcrypt.hash(password, 10);

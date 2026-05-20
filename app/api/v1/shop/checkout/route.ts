@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/authz";
 import { isCartExpired } from "@/lib/cart";
 import { auth } from "@/auth";
 import { generateUniquePatientSlug } from "@/lib/slug";
+import { getAdminPaymentSettings, getAdminCommerceSettings } from "@/lib/admin-settings.server";
 
 type CheckoutBody = {
   cartId: string;
@@ -21,6 +22,12 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
+    const commerceSettings = await getAdminCommerceSettings();
+    const paymentSettings = await getAdminPaymentSettings();
+
+    if (!commerceSettings.guestCheckoutEnabled && !session?.user?.id) {
+      throw new ApiError(403, "El checkout invitado está deshabilitado");
+    }
 
     const cart = await prisma.cart.findUnique({
       where: { id: body.cartId },
@@ -42,7 +49,7 @@ export async function POST(request: Request) {
 
     let discountAmount = 0;
     if (cart.coupon) {
-      if (!cart.coupon.isActive || cart.coupon.expiresAt.getTime() <= Date.now()) {
+      if (!cart.coupon.isActive || !cart.coupon.expiresAt || cart.coupon.expiresAt.getTime() <= Date.now()) {
         throw new ApiError(409, "El cupón aplicado ya no es válido");
       }
       if (cart.coupon.usageCount >= cart.coupon.maxUses) {
@@ -66,6 +73,17 @@ export async function POST(request: Request) {
 
     const total = subtotal - discountAmount;
     const patientSlug = await generateUniquePatientSlug(body.clientName, cart.customerEmail);
+    const defaultPaymentProvider = paymentSettings.providers.includes(paymentSettings.defaultPaymentProvider)
+      ? paymentSettings.defaultPaymentProvider
+      : paymentSettings.providers[0];
+    const selectedPaymentProvider =
+      body.paymentProvider && paymentSettings.providers.includes(body.paymentProvider)
+        ? body.paymentProvider
+        : defaultPaymentProvider;
+
+    if (!selectedPaymentProvider) {
+      throw new ApiError(503, "No hay pasarelas de pago activas");
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       const now = new Date();
@@ -98,7 +116,7 @@ export async function POST(request: Request) {
           snapshotClientName: body.clientName,
           snapshotClientEmail: cart.customerEmail,
           snapshotClientPhone: body.clientPhone,
-          paymentProvider: body.paymentProvider,
+          paymentProvider: selectedPaymentProvider,
           userId: session?.user?.id ?? null,
           patientId: patient.id,
           couponId: cart.couponId,
@@ -106,8 +124,8 @@ export async function POST(request: Request) {
             create: cart.items.map((item) => ({
               quantity: item.quantity,
               unitPrice: item.unitPrice,
-              userSelectedGender: "UNISEX",
-              userSelectedSize: "N/A",
+              userSelectedGender: item.gender ?? "UNISEX",
+              userSelectedSize: item.size ?? "N/A",
               productId: item.productId,
               inventoryId: item.inventoryId,
             })),
@@ -178,9 +196,9 @@ export async function POST(request: Request) {
         for (const assignment of assignments) {
           await tx.patientKinesioLink.upsert({
             where: {
-              patientId_kinesioUserId: {
-                patientId: patient.id,
+              kinesioUserId_patientId: {
                 kinesioUserId: assignment.kinesioUserId,
+                patientId: patient.id,
               },
             },
             update: {},

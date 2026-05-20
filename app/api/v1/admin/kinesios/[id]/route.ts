@@ -4,6 +4,7 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError, requireRole } from "@/lib/authz";
 import bcrypt from "bcryptjs";
 import { generateUniqueUserSlug } from "@/lib/slug";
+import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -22,6 +23,7 @@ export async function PATCH(request: Request, context: Params) {
     await requireRole(["ADMIN"]);
     const { id } = await context.params;
     const body = await parseJson<PatchProfessionalBody>(request);
+    const securitySettings = await getAdminSecuritySettings();
 
     const professional = await prisma.user.findFirst({
       where: { id, role: "KINESIOLOGO" },
@@ -63,8 +65,11 @@ export async function PATCH(request: Request, context: Params) {
 
     if (body.password !== undefined) {
       const password = body.password.trim();
-      if (password.length < 8) {
-        throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
+      if (password.length < securitySettings.minPasswordLength) {
+        throw new ApiError(
+          400,
+          `La contraseña debe tener al menos ${securitySettings.minPasswordLength} caracteres`,
+        );
       }
       data.password = await bcrypt.hash(password, 10);
     }

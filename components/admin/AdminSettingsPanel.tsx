@@ -11,6 +11,14 @@ import {
   type AdminSettingDefinition,
   type AdminSettingValue,
 } from "@/lib/admin-settings";
+import {
+  createDefaultProductSizingMatrix,
+  PRODUCT_SIZING_NUMBERS,
+  parseProductSizingGenderMap,
+  type ProductGender,
+  type ProductSizingMatrix,
+  type ProductSizingSlot,
+} from "@/lib/product-sizing";
 import { useState } from "react";
 
 type AdminSettingsState = Record<AdminSettingCategory, Record<string, AdminSettingValue>>;
@@ -118,6 +126,12 @@ function TabIcon({ category, active }: { category: AdminSettingCategory; active:
           <circle cx="18" cy="19" r="1.5" fill="currentColor" />
         </svg>
       );
+    case "sizing":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+          <path d="M4 7h16M7 7v10M17 7v10M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
     case "payments":
       return (
         <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
@@ -153,6 +167,93 @@ function TabIcon({ category, active }: { category: AdminSettingCategory; active:
     default:
       return null;
   }
+}
+
+function SizingMatrixEditor({
+  value,
+  onChange,
+}: {
+  value: AdminSettingsState["sizing"];
+  onChange: (next: AdminSettingsState["sizing"]) => void;
+}) {
+  const [activeGender, setActiveGender] = useState<ProductGender>("mujer");
+  const parsedMatrix: ProductSizingMatrix = {
+    mujer: parseProductSizingGenderMap(String(value.womenSizeMapJson)) ?? createDefaultProductSizingMatrix().mujer,
+    hombre: parseProductSizingGenderMap(String(value.menSizeMapJson)) ?? createDefaultProductSizingMatrix().hombre,
+  };
+
+  function updateCell(gender: ProductGender, number: number, slot: ProductSizingSlot) {
+    const nextMatrix: ProductSizingMatrix = {
+      mujer: { ...parsedMatrix.mujer },
+      hombre: { ...parsedMatrix.hombre },
+    };
+    nextMatrix[gender][String(number)] = slot;
+    onChange({
+      ...value,
+      womenSizeMapJson: JSON.stringify(nextMatrix.mujer, null, 2),
+      menSizeMapJson: JSON.stringify(nextMatrix.hombre, null, 2),
+    });
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+      <div className="flex items-center gap-2">
+        {(["mujer", "hombre"] as const).map((gender) => {
+          const active = activeGender === gender;
+          return (
+            <button
+              key={gender}
+              type="button"
+              onClick={() => setActiveGender(gender)}
+              className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition ${
+                active ? "bg-starfeet-blue text-white" : "bg-white text-gray-700 ring-1 ring-gray-200"
+              }`}
+            >
+              {gender === "mujer" ? "Mujer" : "Hombre"}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 overflow-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[420px] text-left text-sm">
+          <thead className="bg-gray-50 text-xs uppercase tracking-[0.14em] text-gray-600">
+            <tr>
+              <th className="px-3 py-2">Número</th>
+              <th className="px-3 py-2">Talle</th>
+            </tr>
+          </thead>
+          <tbody>
+            {PRODUCT_SIZING_NUMBERS.map((number) => {
+              const selectedValue = parsedMatrix[activeGender][String(number)] ?? "-";
+              return (
+                <tr key={`${activeGender}-${number}`} className="border-t border-gray-200">
+                  <td className="px-3 py-2 font-bold text-starfeet-blue">{number}</td>
+                  <td className="px-3 py-2">
+                    <DropdownSelect
+                      value={selectedValue}
+                      onChange={(next) => updateCell(activeGender, number, next as ProductSizingSlot)}
+                      ariaLabel={`Talle ${number} ${activeGender}`}
+                      options={[
+                        { value: "S", label: "S" },
+                        { value: "M", label: "M" },
+                        { value: "L", label: "L" },
+                        { value: "-", label: "- Sin talla" },
+                      ]}
+                      buttonClassName="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-xs text-gray-500">
+        Usa `-` cuando ese número no existe para esa tabla. El front sólo mostrará los números que tengan un talle asignado.
+      </p>
+    </div>
+  );
 }
 
 export function AdminSettingsPanel({ initialSettings }: Props) {
@@ -307,16 +408,28 @@ export function AdminSettingsPanel({ initialSettings }: Props) {
           </div>
         ) : null}
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {activeDefinitions.map((definition) => (
-            <SettingsField
-              key={definition.key}
-              definition={definition}
-              value={activeSettings[definition.key] ?? activeDefaults[definition.key]}
-              onChange={(value) => updateField(activeCategory, definition.key, value)}
-            />
-          ))}
-        </div>
+        {activeCategory === "sizing" ? (
+          <SizingMatrixEditor
+            value={activeSettings as AdminSettingsState["sizing"]}
+            onChange={(next) => {
+              setDrafts((current) => ({
+                ...current,
+                sizing: next,
+              }));
+            }}
+          />
+        ) : (
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {activeDefinitions.map((definition) => (
+              <SettingsField
+                key={definition.key}
+                definition={definition}
+                value={activeSettings[definition.key] ?? activeDefaults[definition.key]}
+                onChange={(value) => updateField(activeCategory, definition.key, value)}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

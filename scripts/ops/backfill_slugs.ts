@@ -45,7 +45,7 @@ async function run() {
   });
 
   for (const patient of patients) {
-    const slug = await generateUniquePatientSlug(patient.name, patient.email);
+    const slug = await generateUniquePatientSlug(patient.name, patient.email ?? patient.id);
     await prisma.patientProfile.update({ where: { id: patient.id }, data: { slug } });
   }
 

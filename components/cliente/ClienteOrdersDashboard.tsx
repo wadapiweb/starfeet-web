@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getProductTypeLabel } from "@/lib/product-types";
 
 type OrderListItem = {
   id: string;
@@ -188,7 +189,7 @@ export function ClienteOrdersDashboard() {
                   <article key={item.id} className="rounded-lg border border-gray-200 p-2">
                     <p className="font-bold text-starfeet-blue">{item.product.name}</p>
                     <p className="text-xs text-gray-500">
-                      {item.product.type} · Qty {item.quantity} · {currencyFormat(Number(item.unitPrice), selectedOrder.currency)}
+                      {getProductTypeLabel(item.product.type as "STARFEET" | "SLIPPER" | "OTHER")} · Qty {item.quantity} · {currencyFormat(Number(item.unitPrice), selectedOrder.currency)}
                     </p>
                     <p className="text-xs text-gray-500">
                       Selección: {item.userSelectedGender} / {item.userSelectedSize}

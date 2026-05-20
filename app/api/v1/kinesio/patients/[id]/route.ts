@@ -14,9 +14,9 @@ export async function GET(_request: Request, context: Params) {
 
     const link = await prisma.patientKinesioLink.findUnique({
       where: {
-        patientId_kinesioUserId: {
-          patientId: id,
+        kinesioUserId_patientId: {
           kinesioUserId: user.id,
+          patientId: id,
         },
       },
     });

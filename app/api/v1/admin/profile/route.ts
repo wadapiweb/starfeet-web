@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { parseJson, jsonError } from "@/lib/api";
 import { requireSessionUser, ApiError } from "@/lib/authz";
 import bcrypt from "bcryptjs";
+import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 type PatchProfileBody = {
   name?: string;
@@ -38,6 +39,7 @@ export async function PATCH(request: Request) {
   try {
     const userSession = await requireSessionUser();
     const body = await parseJson<PatchProfileBody>(request);
+    const securitySettings = await getAdminSecuritySettings();
 
     const currentUser = await prisma.user.findUnique({ where: { id: userSession.id } });
     if (!currentUser) throw new ApiError(404, "Usuario no encontrado");
@@ -55,8 +57,11 @@ export async function PATCH(request: Request) {
       const isValid = await bcrypt.compare(body.currentPassword, currentUser.password);
       if (!isValid) throw new ApiError(400, "La contraseña actual es incorrecta");
 
-      if (body.newPassword.length < 8) {
-        throw new ApiError(400, "La nueva contraseña debe tener al menos 8 caracteres");
+      if (body.newPassword.length < securitySettings.minPasswordLength) {
+        throw new ApiError(
+          400,
+          `La nueva contraseña debe tener al menos ${securitySettings.minPasswordLength} caracteres`,
+        );
       }
 
       data.password = await bcrypt.hash(body.newPassword, 10);

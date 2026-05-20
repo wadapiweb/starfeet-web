@@ -4,6 +4,7 @@ import { jsonError } from "@/lib/api";
 import { ApiError, requireRole } from "@/lib/authz";
 import bcrypt from "bcryptjs";
 import { generateUniqueUserSlug } from "@/lib/slug";
+import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 export async function GET() {
   try {
@@ -31,6 +32,7 @@ type CreateProfessionalBody = {
 export async function POST(request: Request) {
   try {
     await requireRole(["ADMIN"]);
+    const securitySettings = await getAdminSecuritySettings();
 
     const body = (await request.json()) as CreateProfessionalBody;
     const email = body.email?.toLowerCase().trim();
@@ -41,8 +43,11 @@ export async function POST(request: Request) {
     if (!email) {
       throw new ApiError(400, "Email requerido");
     }
-    if (!password || password.length < 8) {
-      throw new ApiError(400, "La contraseña debe tener al menos 8 caracteres");
+    if (!password || password.length < securitySettings.minPasswordLength) {
+      throw new ApiError(
+        400,
+        `La contraseña debe tener al menos ${securitySettings.minPasswordLength} caracteres`,
+      );
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });

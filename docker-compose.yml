@@ -44,7 +44,7 @@ services:
       - "traefik.enable=true"
       
       # Routers para HTTPS con Let's Encrypt (HTTP es manejado globalmente por Traefik)
-      - "traefik.http.routers.starfeet-web-https.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.starfeet-web-https.rule=Host(`tienda.${DOMAIN}`) || Host(`kine.${DOMAIN}`) || Host(`dashboard.${DOMAIN}`)"
       - "traefik.http.routers.starfeet-web-https.entrypoints=websecure"
       - "traefik.http.routers.starfeet-web-https.tls=true"
       - "traefik.http.routers.starfeet-web-https.tls.certresolver=myresolver"

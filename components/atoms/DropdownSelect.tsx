@@ -32,6 +32,7 @@ export function DropdownSelect({
   menuClassName = "",
 }: DropdownSelectProps) {
   const [open, setOpen] = useState(false);
+  const [direction, setDirection] = useState<"up" | "down">("down");
   const rootRef = useRef<HTMLDivElement>(null);
   const selected = useMemo(() => options.find((option) => option.value === value) ?? null, [options, value]);
 
@@ -54,6 +55,23 @@ export function DropdownSelect({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  // Lógica "Senior" de posicionamiento inteligente
+  useEffect(() => {
+    if (open && rootRef.current) {
+      const rect = rootRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const menuHeight = 260; // Max-h-60 (240px) + padding/border
+
+      if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+        setDirection("up");
+      } else {
+        setDirection("down");
+      }
+    }
+  }, [open]);
 
   function choose(nextValue: string) {
     onChange(nextValue);
@@ -83,6 +101,7 @@ export function DropdownSelect({
         className={[
           "flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-sm outline-none transition focus:ring-2",
           disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+          open ? "border-starfeet-blue ring-1 ring-starfeet-blue" : "border-gray-200",
           buttonClassName,
         ].join(" ")}
       >
@@ -104,7 +123,9 @@ export function DropdownSelect({
           role="listbox"
           aria-label={ariaLabel}
           className={[
-            "absolute z-30 mt-2 max-h-60 w-full overflow-auto rounded-xl border bg-white p-1 shadow-lg",
+            "absolute z-50 w-full overflow-auto rounded-xl border bg-white p-1 shadow-2xl",
+            direction === "up" ? "bottom-full mb-2" : "top-full mt-2",
+            "max-h-60", // 240px
             menuClassName,
           ].join(" ")}
         >

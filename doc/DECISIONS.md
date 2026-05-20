@@ -1,5 +1,20 @@
 # DECISIONS
 
+## 2026-05-13 — Segregación de responsabilidades en componentes Organism (Hero y Manifesto)
+
+### Decisión
+Extraer la sección de scrollytelling a pantalla completa contenida dentro del componente `Hero` hacia un nuevo organismo independiente llamado `Manifesto`.
+
+### Motivo
+- **Diseño Atómico:** Un organismo debe representar un módulo funcional cohesivo con responsabilidad única.
+- **Mantenibilidad:** La lógica compleja de monitoreo de scroll global (`useScroll`) y animaciones en cascada contaminaban al componente Hero principal.
+- **Semántica HTML:** Representan dos secciones de contenido completamente diferenciadas para la experiencia del usuario final.
+
+### Consecuencia
+- El componente `Hero` queda estrictamente acotado al primer viewport (impacto inicial, CTA e imagen principal).
+- El componente `Manifesto` encapsula de manera aislada y tipada su propia lógica de revelado con Framer Motion, respetando de forma formal las *Rules of Hooks* en el renderizado de caracteres.
+- Se habilita la reutilización independiente de la sección Manifesto en otras páginas (ej. `nosotros` / `tecnologia`) sin acoplamiento.
+
 ## 2026-04-21 — Settings admin como fuente real de configuración
 
 ### Decisión

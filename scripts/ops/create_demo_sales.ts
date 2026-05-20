@@ -67,6 +67,29 @@ async function ensureProduct() {
   return { product, inventory };
 }
 
+async function ensurePatient() {
+  const email = "cliente.demo.ventas@starfeet.ar";
+  const existing = await prisma.patientProfile.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  return prisma.patientProfile.create({
+    data: {
+      slug: "cliente-demo-ventas",
+      email,
+      name: "Cliente Demo Ventas",
+      phone: "+54 11 5000 0000",
+      source: "WEB",
+    },
+    select: { id: true },
+  });
+}
+
 async function upsertOrder(params: {
   marker: string;
   status: OrderStatus;
@@ -75,6 +98,7 @@ async function upsertOrder(params: {
   paymentProvider: string | null;
   transactionId: string;
   userId: string;
+  patientId: string;
   productId: string;
   inventoryId: string;
   createdAt: Date;
@@ -98,6 +122,7 @@ async function upsertOrder(params: {
         paymentProvider: params.paymentProvider,
         transactionId: params.transactionId,
         userId: params.userId,
+        patientId: params.patientId,
         shippingDetails: {
           address: "Calle Demo 123",
           city: "Buenos Aires",
@@ -133,6 +158,7 @@ async function upsertOrder(params: {
       paymentProvider: params.paymentProvider,
       transactionId: params.transactionId,
       userId: params.userId,
+      patientId: params.patientId,
       shippingDetails: {
         address: "Calle Demo 123",
         city: "Buenos Aires",
@@ -159,6 +185,7 @@ async function upsertOrder(params: {
 async function main() {
   const user = await ensureClientUser();
   const { product, inventory } = await ensureProduct();
+  const patient = await ensurePatient();
 
   const now = new Date();
   const oneDayMs = 24 * 60 * 60 * 1000;
@@ -171,6 +198,7 @@ async function main() {
     paymentProvider: "MERCADOPAGO",
     transactionId: "trx-demo-pending-001",
     userId: user.id,
+    patientId: patient.id,
     productId: product.id,
     inventoryId: inventory.id,
     createdAt: new Date(now.getTime() - oneDayMs * 2),
@@ -184,6 +212,7 @@ async function main() {
     paymentProvider: "MERCADOPAGO",
     transactionId: "trx-demo-paid-001",
     userId: user.id,
+    patientId: patient.id,
     productId: product.id,
     inventoryId: inventory.id,
     createdAt: new Date(now.getTime() - oneDayMs),
@@ -197,6 +226,7 @@ async function main() {
     paymentProvider: "TRANSFERENCIA",
     transactionId: "trx-demo-delivered-001",
     userId: user.id,
+    patientId: patient.id,
     productId: product.id,
     inventoryId: inventory.id,
     createdAt: now,

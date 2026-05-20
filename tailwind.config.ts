@@ -11,7 +11,7 @@ const config: Config = {
         extend: {
             colors: {
                 starfeet: {
-                    blue: "#001A49", // Color institucional
+                    blue: "#10295F", // Color institucional
                     lime: "#D4FD23", // Color de acento
                     dark: {
                         100: "#545453", // Fondo modo oscuro secundario
