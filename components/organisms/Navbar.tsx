@@ -1,17 +1,46 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "../atoms/BrandLogo";
 import { Button } from "../atoms/Button";
-import { getDashboardRouteForRole } from "@/lib/role-redirect";
+import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
+
+// Platform subdomains — the Navbar must never appear here
+const PLATFORM_SUBDOMAINS = ["kine.", "dashboard."];
 
 export const Navbar = () => {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const panelHref = getDashboardRouteForRole(session?.user?.role);
-  const isBackoffice = pathname.startsWith("/admin") || pathname.startsWith("/kinesio");
+
+  const [isPlatformHost, setIsPlatformHost] = useState(false);
+  const [panelHref, setPanelHref] = useState("/");
+  const [signOutUrl, setSignOutUrl] = useState("/");
+
+  useEffect(() => {
+    const host = window.location.hostname;
+    const isPlatform = PLATFORM_SUBDOMAINS.some((sub) => host.startsWith(sub));
+    setIsPlatformHost(isPlatform);
+
+    // Absolute URL to the user's dashboard on the correct subdomain
+    const absoluteDashboard = getAbsoluteDashboardRouteForRole(
+      session?.user?.role,
+      host
+    );
+    setPanelHref(absoluteDashboard);
+
+    // Sign-out redirects to /login on the correct subdomain.
+    // e.g. KINESIOLOGO on tienda.starfeet.ar → kine.starfeet.ar/login
+    const base = absoluteDashboard.replace(/\/$/, "");
+    setSignOutUrl(`${base}/login`);
+  }, [session?.user?.role]);
+
+  // Hide on platform subdomains OR on internal backoffice paths
+  const isBackoffice =
+    isPlatformHost ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/kinesio");
 
   if (isBackoffice) {
     return null;
@@ -39,15 +68,17 @@ export const Navbar = () => {
         <div className="flex items-center gap-2 md:gap-3">
           {session ? (
             <>
+              {/* Panel link → absolute URL on the correct subdomain */}
               <Link href={panelHref}>
                 <Button variant="outline" size="sm" className="h-11 !px-5">
                   Panel
                 </Button>
               </Link>
+              {/* Sign-out → /login on the correct subdomain for the role */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut({ callbackUrl: signOutUrl })}
                 className="h-11 w-11 !px-0"
                 aria-label="Cerrar sesión"
                 title="Cerrar sesión"
