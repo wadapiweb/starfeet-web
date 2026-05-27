@@ -72,8 +72,10 @@ export const Footer = () => {
   return (
     <footer className="relative bg-starfeet-blue text-white overflow-hidden border-t border-white/10 z-30">
       {/* Visual Design Background Accent */}
-      <div className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none opacity-5">
-        <span className="font-condensed font-black text-[250px] leading-none text-white">SF</span>
+      <div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/4 pointer-events-none select-none opacity-5 w-full text-center">
+        <span className="font-condensed font-black text-[180px] sm:text-[250px] xl:text-[350px] leading-none text-white uppercase whitespace-nowrap">
+          {t("brandName")}
+        </span>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-20 relative z-10">
