@@ -13,8 +13,11 @@ Componentes puramente visuales y de presentación para la Landing Page:
 | Organisms | `Manifesto` | Propuesta de valor a pantalla completa con scrollytelling. | Activo |
 | Organisms | `Technology` | Sección de tecnología del producto con dots y líneas interactivas. | Activo |
 | Organisms | `ProductStages` | Sección explicativa de las 3 etapas del producto. | Activo |
+| Organisms | `CuandoPisasBien` | Banner de transición a pantalla completa con marquesina y efecto parallax. | Activo |
+| Organisms | `HealthSolution` | Sección explicativa de soluciones de salud (dolor, recuperación, sobrecarga, pisada). | Activo |
 | Organisms | `UnerValidation` | Sección de comprobación científica basada en el informe de la UNER. | Activo |
 | Organisms | `Navbar` | Barra de navegación estática con enlaces absolutos a la tienda. | Activo |
+| Organisms | `Footer` | Pie de página moderno e interactivo con animaciones y firma Sumak. | Activo |
 | Molecules | `ProductCard` | Tarjeta de producto con enlace absoluto de compra rápida. | Activo |
 
 ### 2. Repositorio `starfeet-web` (Plataforma Core / VPS)

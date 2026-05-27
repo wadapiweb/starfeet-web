@@ -90,11 +90,9 @@
 - [X] Reducir ruido en `admin/settings`: quitar KPI cards, sumar tabs con iconos y persistir tema claro/oscuro del backoffice.
 - [ ] Evaluar migrar el preview de imágenes a un uploader con drag & drop y reordenamiento, si el catálogo empieza a manejar más de 4-5 imágenes por producto.
 - [ ] Definir si el slug editable debe bloquearse cuando ya existan URLs públicas indexadas o campañas activas.
-- [ ] Si se necesita backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
+- [ ] Si se necesitan backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
 - [ ] Evaluar persistir el último filtro de variante/color en la tienda para acelerar compras repetidas.
 - [ ] Considerar una pantalla de gestión de variantes separada si algunos productos superan 8-10 combinaciones.
 - [ ] Agregar validación visual de duplicados talle+color si el negocio necesita impedir variantes repetidas.
-- [ ] Si se necesita backoffice más robusto, extraer el contrato de `ProductFormFields` a un módulo compartido de forms admin.
-- [ ] Evaluar persistir el último filtro de variante/color en la tienda para acelerar compras repetidas.
-- [ ] Considerar una pantalla de gestión de variantes separada si algunos productos superan 8-10 combinaciones.
-- [ ] Agregar validación visual de duplicados talle+color si el negocio necesita impedir variantes repetidas.
+- [X] Crear nueva sección CuandoPisasBien debajo de ProductStages con marquesina y efecto parallax.
+- [X] Crear Footer moderno con fondo azul institucional, firma Sumak y efecto interactivo de corazones flotantes.

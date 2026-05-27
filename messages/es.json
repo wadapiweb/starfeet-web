@@ -15,5 +15,38 @@
   "UnerValidation": {
     "title": "COMPROBADO\nCIENTÍFICAMENTE",
     "description": "En 2019 realizamos un exhaustivo estudio*, donde a través\nde tecnología de vanguardia, cámaras infrarrojas y\nsensores de movimiento, se evaluaron los cambios\nproducidos en los tobillos, las rodillas y la columna a partir\nde mejorar la forma de pisar con Starfeet... y los resultados\nfueron increíbles."
+  },
+  "HealthSolution": {
+    "title": "UNA SOLUCIÓN\nPENSADA PARA\nTU SALUD",
+    "item1_title": "SI SENTÍS DOLOR",
+    "item1_desc": "en los pies\npor alteraciones o desequilibrios",
+    "item2_title": "BUSCÁS UNA RECUPERACIÓN\nCOMPLETA",
+    "item2_desc": "post entrenamiento (recovery)",
+    "item3_title": "SUFRÍS SOBRECARGA\nEN TUS PIES",
+    "item3_desc": "(pasás muchas horas parado, utilizás\ncalzado inadecuado)",
+    "item4_title": "QUERÉS MEJORAR TU PISADA\nO FORTALECER TUS PIES",
+    "item4_desc": "(pasás muchas horas parado, utilizás\ncalzado inadecuado)"
+  },
+  "CuandoPisasBien": {
+    "marquee": "CUANDO PISAS BIEN"
+  },
+  "Footer": {
+    "description": "Reeducación biomecánica y calzado premium de última generación para potenciar tu pisada y cuidar tu salud postural.",
+    "shopTitle": "Tienda",
+    "shopCalzado": "Calzado",
+    "shopDevices": "Dispositivos",
+    "shopAccessories": "Accesorios",
+    "shopFaq": "Preguntas Frecuentes",
+    "professionalsTitle": "Profesionales",
+    "professionalsPortal": "Portal de Kinesiólogos",
+    "professionalsRegister": "Registrarse",
+    "professionalsSupport": "Soporte Clínico",
+    "supportTitle": "Soporte",
+    "supportContact": "Contacto",
+    "supportShipping": "Envíos y Devoluciones",
+    "supportTerms": "Términos y Condiciones",
+    "supportPrivacy": "Políticas de Privacidad",
+    "copyright": "© 2026 Starfeet Tech. Buenos Aires, Argentina.",
+    "by": "by"
   }
 }

@@ -34,6 +34,18 @@ def copy_files():
         os.path.join(landing_dir, "components/organisms/UnerValidation.tsx")
     )
 
+    print("Copying HealthSolution component...")
+    shutil.copy2(
+        os.path.join(source_dir, "components/organisms/HealthSolution.tsx"),
+        os.path.join(landing_dir, "components/organisms/HealthSolution.tsx")
+    )
+
+    print("Copying Footer component...")
+    shutil.copy2(
+        os.path.join(source_dir, "components/organisms/Footer.tsx"),
+        os.path.join(landing_dir, "components/organisms/Footer.tsx")
+    )
+
     print("Copying asset: logo_SF.svg...")
     shutil.copy2(
         os.path.join(source_dir, "public/images/logo_SF.svg"),
@@ -58,6 +70,18 @@ def copy_files():
         os.path.join(landing_dir, "public/images/video_etapa3.webm")
     )
 
+    print("Copying CuandoPisasBien component...")
+    shutil.copy2(
+        os.path.join(source_dir, "components/organisms/CuandoPisasBien.tsx"),
+        os.path.join(landing_dir, "components/organisms/CuandoPisasBien.tsx")
+    )
+
+    print("Copying asset: cuando_pisas_bien1.webp...")
+    shutil.copy2(
+        os.path.join(source_dir, "public/images/cuando_pisas_bien1.webp"),
+        os.path.join(landing_dir, "public/images/cuando_pisas_bien1.webp")
+    )
+
 def patch_landing_page():
     page_path = os.path.join(landing_dir, "app/page.tsx")
     print(f"Patching {page_path}...")
@@ -80,7 +104,28 @@ def patch_landing_page():
             'import { ProductStages } from "../components/organisms/ProductStages";',
             'import { ProductStages } from "../components/organisms/ProductStages";\n' + import_uner_str
         )
+
+    import_health_str = 'import { HealthSolution } from "../components/organisms/HealthSolution";'
+    if import_health_str not in content:
+        content = content.replace(
+            'import { ProductStages } from "../components/organisms/ProductStages";',
+            'import { ProductStages } from "../components/organisms/ProductStages";\n' + import_health_str
+        )
         
+    import_cuando_str = 'import { CuandoPisasBien } from "../components/organisms/CuandoPisasBien";'
+    if import_cuando_str not in content:
+        content = content.replace(
+            'import { ProductStages } from "../components/organisms/ProductStages";',
+            'import { ProductStages } from "../components/organisms/ProductStages";\n' + import_cuando_str
+        )
+
+    import_footer_str = 'import { Footer } from "../components/organisms/Footer";'
+    if import_footer_str not in content:
+        content = content.replace(
+            'import { ProductStages } from "../components/organisms/ProductStages";',
+            'import { ProductStages } from "../components/organisms/ProductStages";\n' + import_footer_str
+        )
+
     # Insert component if not present
     component_tag = "<ProductStages />"
     if component_tag not in content:
@@ -89,11 +134,32 @@ def patch_landing_page():
             "<Technology />\n      <ProductStages />"
         )
 
+    cuando_tag = "<CuandoPisasBien />"
+    if cuando_tag not in content:
+        content = content.replace(
+            "<ProductStages />",
+            "<ProductStages />\n      <CuandoPisasBien />"
+        )
+
+    health_tag = "<HealthSolution />"
+    if health_tag not in content:
+        content = content.replace(
+            "<ProductStages />",
+            "<ProductStages />\n      <HealthSolution />"
+        )
+
     uner_tag = "<UnerValidation />"
     if uner_tag not in content:
         content = content.replace(
-            "<ProductStages />",
-            "<ProductStages />\n      <UnerValidation />"
+            "<HealthSolution />",
+            "<HealthSolution />\n      <UnerValidation />"
+        )
+
+    footer_tag = "<Footer />"
+    if footer_tag not in content:
+        content = content.replace(
+            "      </section>\n    </main>",
+            "      </section>\n      <Footer />\n    </main>"
         )
         
     with open(page_path, "w", encoding="utf-8") as f:

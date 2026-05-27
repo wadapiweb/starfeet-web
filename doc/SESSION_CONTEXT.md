@@ -445,5 +445,18 @@
   - Registrado el componente en el mapa de arquitectura atómica `PROJECT_MAP.md`.
   - Refactorizada la altura de las secciones `UnerValidation` y `ProductStages` para ocupar el alto de pantalla (`min-h-screen`) y centrar verticalmente su contenido.
   - Modificado el grid de `UnerValidation` a `items-stretch` y ajustada la imagen con `object-top`, un margen negativo de `lg:-mt-28` y una altura calculada de `lg:h-[calc(100%+112px)]` de modo que su altura se estire y acople exactamente al borde superior absoluto de la sección (comenzando pegada arriba) y a la altura final del texto izquierdo (final de la grilla).
+- [X] Creación de la sección CuandoPisasBien:
+  - Creado el nuevo organismo `CuandoPisasBien.tsx` en `starfeet-web` y propagado a `starfeet-landing` a través de `update-landing.py`.
+  - Configurado fondo a pantalla completa (`h-screen`) utilizando la imagen `cuando_pisas_bien1.webp` con efecto parallax dinámico animado mediante `framer-motion` (`scrollYProgress` a `yBg` de `-12%` a `12%`).
+  - Incorporada marquesina horizontal desplazándose de derecha a izquierda conforme el usuario realiza scroll, utilizando exactamente la misma tipografía y tamaño de la marquesina `"REEDUCÁ TU PISADA"` de la sección `Technology.tsx` (`font-condensed font-black text-[260px] xl:text-[380px] text-white/20`).
+  - Cumplida la política de "Zero Hardcoding" mapeando `"CUANDO PISAS BIEN"` a través del namespace `"CuandoPisasBien.marquee"` en el archivo `es.json`.
+- [X] Rediseño y creación del Footer Moderno:
+  - Creado el nuevo organismo `Footer.tsx` en `starfeet-web` y propagado a `starfeet-landing` a través de `update-landing.py`.
+  - Configurado con fondo azul institucional (`#10295F`), texto claro y detalles en color lima de acento (`#D4FD23`).
+  - Diseño responsive y mobile-first con columnas para la descripción de marca, enlaces de Tienda, Profesionales, y sección de Soporte/Políticas.
+  - Integrada la iconografía social (Instagram, Facebook, LinkedIn) con efectos de hover de escala y color lima interactivo con resplandor.
+  - Diseñado efecto de micro-animación en la firma: al hacer clic en el emoji de corazón `❤️`, se generan y despliegan de forma interactiva múltiples corazones flotantes de tamaño, rotación y trayectoria aleatoria usando `framer-motion` y `AnimatePresence`.
+  - Registrado en `PROJECT_MAP.md` e integrado en `inicio2/page.tsx` y en el index de `starfeet-landing`.
+
 
 

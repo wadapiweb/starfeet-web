@@ -1,6 +1,8 @@
 import prisma from "@/lib/prisma";
 import { Hero } from "@/components/organisms/Hero";
 import { ProductStages } from "@/components/organisms/ProductStages";
+import { CuandoPisasBien } from "@/components/organisms/CuandoPisasBien";
+import { Footer } from "@/components/organisms/Footer";
 import { ProductCard } from "@/components/molecules/ProductCard";
 import { Product } from "@prisma/client";
 import { Button } from "@/components/atoms/Button";
@@ -21,6 +23,7 @@ export default async function Inicio2Page() {
     <main className="min-h-screen bg-white">
       <Hero />
       <ProductStages />
+      <CuandoPisasBien />
 
       <section className="relative z-20 border-t border-gray-100 bg-white px-6 py-32">
         <div className="mx-auto max-w-7xl">
@@ -70,16 +73,7 @@ export default async function Inicio2Page() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-100 bg-gray-50 py-20">
-        <div className="mx-auto max-w-7xl px-6 text-center">
-          <div className="mb-6 font-condensed text-3xl font-black tracking-tighter text-starfeet-blue opacity-20">
-            STARFEET
-          </div>
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">
-            © 2026 Starfeet Tech • Buenos Aires, Argentina
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
