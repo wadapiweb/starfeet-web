@@ -29,8 +29,8 @@ export const UnerValidation = () => {
           </p>
         </motion.div>
 
-        {/* LADO DERECHO: IMAGEN SIN EFECTOS DE APARICIÓN (ESTÁTICA) */}
-        <div className="lg:col-span-5 relative w-full h-[320px] lg:h-auto min-h-[300px] z-0">
+        {/* LADO DERECHO: IMAGEN SIN EFECTOS DE APARICIÓN (ESTÁTICA) - PEGADA ARRIBA Y HASTA EL FINAL DEL TEXTO */}
+        <div className="lg:col-span-5 relative w-full h-[360px] lg:h-[calc(100%+112px)] lg:-mt-28 z-0">
           <Image
             src="/images/comprobacion_uner-1.webp"
             alt="Comprobación científica de pisada UNER"

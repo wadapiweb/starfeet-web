@@ -444,6 +444,6 @@
   - Agregado efecto de entrada (aparición) en el texto (título y descripción) usando `framer-motion` (`initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}`), manteniendo la imagen estática (sin efectos) tal como fue solicitado.
   - Registrado el componente en el mapa de arquitectura atómica `PROJECT_MAP.md`.
   - Refactorizada la altura de las secciones `UnerValidation` y `ProductStages` para ocupar el alto de pantalla (`min-h-screen`) y centrar verticalmente su contenido.
-  - Modificado el grid de `UnerValidation` a `items-stretch` y ajustada la imagen con `object-top` y `lg:h-auto` de modo que su altura se estire y acople exactamente al borde superior y a la altura del bloque de texto izquierdo.
+  - Modificado el grid de `UnerValidation` a `items-stretch` y ajustada la imagen con `object-top`, un margen negativo de `lg:-mt-28` y una altura calculada de `lg:h-[calc(100%+112px)]` de modo que su altura se estire y acople exactamente al borde superior absoluto de la sección (comenzando pegada arriba) y a la altura final del texto izquierdo (final de la grilla).
 
 
