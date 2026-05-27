@@ -1,0 +1,19 @@
+{
+  "Stages": {
+    "transform_title": "TRANSFORMÁ\nTU PISADA\nEN 3 PASOS",
+    "ver_mas": "Ver mas... >",
+    "etapa1_title": "ETAPA 1",
+    "etapa1_subtitle": "uso pasivo",
+    "etapa1_description": "Liberás las tensiones y\ncompresiones acumuladas",
+    "etapa2_title": "ETAPA 2",
+    "etapa2_subtitle": "uso activo",
+    "etapa2_description": "Desarrollás una nueva forma\nde pisar",
+    "etapa3_title": "ETAPA 3",
+    "etapa3_subtitle": "fortalecimiento",
+    "etapa3_description": "Tonificás los músculos de tus\npies y mejorás la dinámica de\nla marcha"
+  },
+  "UnerValidation": {
+    "title": "COMPROBADO\nCIENTÍFICAMENTE",
+    "description": "En 2019 realizamos un exhaustivo estudio*, donde a través\nde tecnología de vanguardia, cámaras infrarrojas y\nsensores de movimiento, se evaluaron los cambios\nproducidos en los tobillos, las rodillas y la columna a partir\nde mejorar la forma de pisar con Starfeet... y los resultados\nfueron increíbles."
+  }
+}

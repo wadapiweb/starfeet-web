@@ -436,5 +436,12 @@
   - Implementado un set de productos de contingencia (`FALLBACK_PRODUCTS`) en la landing page para degradación elegante y evitar fallos visuales/errores si el backend o la base de datos no están disponibles.
   - Modificado `components/molecules/ProductCard.tsx` para resolver dinámicamente el enlace a la tienda para cada producto.
   - Removido el badge con texto "Hostinger Cloud" del logotipo en el header de la landing page.
+- [X] Creación de la sección UnerValidation (Comprobación Científica):
+  - Creado el nuevo organismo `UnerValidation.tsx` en `starfeet-web` y propagado a `starfeet-landing` a través de `update-landing.py`.
+  - Agregadas las traducciones correspondientes en `es.json` con los cortes de oraciones exactos del texto provisto por el usuario.
+  - Implementada una estructura grid responsiva de 12 columnas: columna de texto a la izquierda (`col-span-7`) y columna de imagen a la derecha (`col-span-5`).
+  - Fondo de la sección configurado en color azul marino (`bg-[#09224b]`), lo que permite que la imagen transparente `comprobacion_uner-1.webp` se fusione armónicamente.
+  - Agregado efecto de entrada (aparición) en el texto (título y descripción) usando `framer-motion` (`initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}`), manteniendo la imagen estática (sin efectos) tal como fue solicitado.
+  - Registrado el componente en el mapa de arquitectura atómica `PROJECT_MAP.md`.
 
 

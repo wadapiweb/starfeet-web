@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { Hero } from "@/components/organisms/Hero";
+import { ProductStages } from "@/components/organisms/ProductStages";
 import { ProductCard } from "@/components/molecules/ProductCard";
 import { Product } from "@prisma/client";
 import { Button } from "@/components/atoms/Button";
@@ -19,6 +20,7 @@ export default async function Inicio2Page() {
   return (
     <main className="min-h-screen bg-white">
       <Hero />
+      <ProductStages />
 
       <section className="relative z-20 border-t border-gray-100 bg-white px-6 py-32">
         <div className="mx-auto max-w-7xl">

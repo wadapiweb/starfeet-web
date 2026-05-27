@@ -111,7 +111,9 @@ export const Technology = () => {
     });
 
     // Fade out texts & SVG overlays as scroll begins
-    const fadeOutOpacity = useTransform(scrollYProgress, [0.01, 0.08], [1, 0]);
+    const fadeOutOpacity = useTransform(scrollYProgress, [0.01, 0.06], [1, 0]);
+    // Force visibility to hidden when blue background starts to rise to ensure they are never seen over the blue background
+    const elementsVisibility = useTransform(scrollYProgress, (pos) => pos >= 0.07 ? "hidden" : "visible");
     // Slide up blue background layer
     const blueBgTop = useTransform(scrollYProgress, [0.08, 0.15], ["100%", "0%"]);
     // Translate text horizontally starting with 'RE' peeking out, and ending with final 'A' visible during exit overlap
@@ -298,7 +300,7 @@ export const Technology = () => {
                     <div className="relative z-20 max-w-7xl mx-auto px-6 w-full flex flex-col justify-center h-full py-12">
                         
                         {/* FADING HEADER & DESCRIPTIONS LAYER */}
-                        <motion.div style={{ opacity: fadeOutOpacity }} className="absolute inset-x-6 top-12 left-0 right-0 z-30 pointer-events-none">
+                        <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="absolute inset-x-6 top-12 left-0 right-0 z-30 pointer-events-none">
                             {/* Header */}
                             <div className="text-center">
                                 <div className="mb-5 flex justify-center">
@@ -322,7 +324,7 @@ export const Technology = () => {
                             className="grid grid-cols-[1fr_500px_1fr] xl:grid-cols-[1fr_620px_1fr] gap-8 items-stretch relative min-h-[500px] w-full mt-24"
                         >
                             {/* FADING SVG CANVAS OVERLAY */}
-                            <motion.svg style={{ opacity: fadeOutOpacity, overflow: 'visible' }} className="absolute inset-0 w-full h-full pointer-events-none z-30">
+                            <motion.svg style={{ opacity: fadeOutOpacity, visibility: elementsVisibility, overflow: 'visible' }} className="absolute inset-0 w-full h-full pointer-events-none z-30">
                                 {lines.map((line) => (
                                     <React.Fragment key={line.id}>
                                         <motion.path
@@ -354,7 +356,7 @@ export const Technology = () => {
                             </motion.svg>
 
                             {/* 1. Left Texts Column (Fading) */}
-                            <motion.div style={{ opacity: fadeOutOpacity }} className="flex flex-col justify-center gap-24 py-12 pr-4 xl:pr-8 z-20 pointer-events-auto">
+                            <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="flex flex-col justify-center gap-24 py-12 pr-4 xl:pr-8 z-20 pointer-events-auto">
                                 {leftFeatures.map((f, i) => (
                                     <div key={`static-text-${f.id}`} id={`static-text-${f.id}`} className="w-full max-w-[320px] ml-auto text-left">
                                         <motion.div
@@ -391,7 +393,7 @@ export const Technology = () => {
                                     </div>
 
                                     {/* FADING DOTS */}
-                                    <motion.div style={{ opacity: fadeOutOpacity }} className="absolute inset-0 pointer-events-none z-40">
+                                    <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="absolute inset-0 pointer-events-none z-40">
                                         {/* Dots sobre la imagen usando Wrappers Estáticos */}
                                         {[...leftFeatures, ...rightFeatures].map((f, i) => (
                                             <div
@@ -438,7 +440,7 @@ export const Technology = () => {
                             </div>
 
                             {/* 3. Right Texts Column (Fading) */}
-                            <motion.div style={{ opacity: fadeOutOpacity }} className="flex flex-col justify-center gap-24 py-12 pl-4 xl:pl-8 z-20 pointer-events-auto">
+                            <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="flex flex-col justify-center gap-24 py-12 pl-4 xl:pl-8 z-20 pointer-events-auto">
                                 {rightFeatures.map((f, i) => (
                                     <div key={`static-text-${f.id}`} id={`static-text-${f.id}`} className="w-full max-w-[320px] text-left">
                                         <motion.div

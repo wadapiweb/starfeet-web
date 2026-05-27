@@ -411,3 +411,21 @@ Convertir `kinesio` en un entorno operable real:
 - Se centraliza la UX de kinesio en componentes reutilizables y datos reales.
 - El panel puede evolucionar con auto refresh, densidad visual y filtros persistentes por usuario.
 - Queda abierta una futura migración a una tabla de preferencias dedicada si la granularidad por usuario crece.
+
+---
+
+## 2026-05-22 — Internacionalización estática local para componentes compartidos
+
+### Decisión
+Diseñar una utilidad local de internacionalización `lib/i18n.ts` que carga estáticamente el JSON de traducciones `/messages/es.json` y expone un hook compatible con la API de next-intl (`useTranslations`).
+
+### Motivo
+- **Estabilidad de Compilación:** Evitar colisiones de compilación con el plugin de webpack de next-intl en despliegues estáticos y SSR.
+- **Portabilidad:** Permitir que los componentes sean compartidos entre proyectos (como `starfeet-web` y `starfeet-landing`) de manera transparente, sin requerir reconfiguración de middlewares o routers.
+- **Cumplimiento de Reglas:** Cumplir estrictamente con la regla de cero hardcoding sin introducir overhead de enrutamiento localizado.
+
+### Consecuencia
+- Los componentes pueden importar `@/lib/i18n` y usar `useTranslations` idénticamente a `next-intl`.
+- No hay dependencias complejas ni configuración de rutas localizadas requeridas en el middleware de Next.js.
+- Facilita la sincronización instantánea de layouts compartidos entre la plataforma core y la landing page.
+
