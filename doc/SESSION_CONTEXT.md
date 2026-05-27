@@ -405,5 +405,35 @@
   - Actualizado `app/global-error.tsx` para cargarse sin dependencias de next-intl y provisto de un fallback seguro de recarga de página si no se provee la función `reset`.
   - Revertido `RootLayout` en `app/layout.tsx` a síncrono por ser innecesario su carácter asíncrono y causar fallos de contexto en el compilador.
   - Identificada la incoherencia de variables de entorno de la compilación (`NODE_ENV` heredado como `development` dentro del contenedor) y corregido el script `build` en `package.json` para forzar `NODE_ENV=production`.
-  - El linter (`npm run lint`) y compilación de producción (`npm run build`) pasan al 100% de manera limpia (Exit code: 0).
+- [X] Mejora interactiva en Sección de Etapas (`ProductStages`):
+  - Agregado fondo SVG (`logo_SF.svg`) estilizado, desplazado hacia la izquierda con traslación negativa (`-translate-x-[18%]`) e incrementado a escala `scale-[2.1]` para lograr mayor impacto visual y encuadre descentrado.
+  - Centrado el contenido visual y título del lado izquierdo envolviéndolos en un contenedor de ancho máximo limitado (`max-w-[480px]`) centrado dentro de su columna del grid.
+  - Desplazado el título inicial "TRANSFORMÁ TU PISADA EN 3 PASOS" hacia la derecha dentro de su contenedor usando padding dinámico (`lg:pl-[16%]`) para lograr la superposición exacta con la diagonal del logo "SF" (como en la Imagen 2).
+  - Alineado el bloque de cada etapa hacia la derecha del grid (`lg:ml-auto` con `max-w-md`) para que en pantallas de escritorio se encuadren de forma limpia contra el borde derecho del sitio (alineados con el menú superior).
+  - Título inicial con fade-out suave al hacer hover en cualquiera de las etapas.
+  - Implementado hover interactivo con un único elemento de vídeo webm controlado por ref y effect para reproducción instantánea y libre de errores en hover.
+  - Corregido título de la Etapa 3 en las traducciones para mostrar "ETAPA 3" en lugar de "ETAPA 1".
+  - Agregado enlace dinámico "Ver mas... >" posicionado en línea (inline) al final de la descripción de cada etapa cuando se activa por hover.
+  - Asegurada accesibilidad completa mediante roles ARIA, tabindex para navegación con teclado y listeners de eventos en foco/teclado.
+  - Mantenido el color de fondo claro (`bg-[#f4f4f5]`) en ambos temas para asegurar contraste legible y visibilidad del SVG de fondo.
+  - Modificado el script de sincronización `update-landing.py` para copiar las imágenes (`logo_SF.svg`) y los vídeos (`video_etapa1.webm`, `video_etapa2.webm`) a la carpeta pública de la landing page, eliminando errores 404 de recursos.
+  - Aumentado el tamaño del título de la sección (`"TRANSFORMÁ TU PISADA EN 3 PASOS"`) a `text-[70px] md:text-[110px]` con interlineado `leading-[0.9]` y espaciado de letras `tracking-normal` para que tenga exactamente la misma jerarquía visual y estilo tipográfico que el Hero.
+  - Removidos los paddings a la izquierda (`pl-[5%] sm:pl-[8%]...`) en el título para alinearlo directamente al borde izquierdo de la columna de contenido, igual que en el Hero.
+  - Modificado el ancho del título de `w-full` a `w-max` para evitar que el navegador genere un salto de línea automático en la palabra "PASOS" y forzar a que "EN 3 PASOS" se muestre en el mismo renglón.
+  - Ajustada la alineación del contenedor visual izquierdo a `lg:justify-start` y posicionado el título con `left-1/2 -translate-x-1/2 lg:left-0 lg:translate-x-0` para centrar en mobile y alinear perfectamente al borde izquierdo de la cuadrícula en pantallas de escritorio.
+  - Corregida la estructura de contenedores eliminando el padding lateral del contenedor general (`section`) y moviéndolo a la rejilla interna (`max-w-7xl mx-auto px-6`) para que la alineación de la columna coincida exactamente con la del Hero y la del resto del sitio.
+  - Actualizada la Etapa 3 en `ProductStages.tsx` para cargar su video específico (`video_etapa3.webm`) en lugar del fallback de la etapa 1.
+  - Modificado el script de sincronización `update-landing.py` para incluir la copia de `video_etapa3.webm` hacia la carpeta pública del repositorio `starfeet-landing`.
+  - Verificado el correcto build de Next.js y type-check de TypeScript en ambos repositorios.
+- [X] Ajuste en sección de Tecnología (`Technology`):
+  - Modificado el rango de fade out (`[0.01, 0.06]`) para ocultar los elementos de texto, títulos y dots completamente antes de que empiece a subir la capa azul.
+  - Implementada la propiedad `visibility` mapeada dinámicamente (`elementsVisibility`) para forzar un estado `visibility: hidden` cuando el progreso del scroll es `>= 0.07`. Esto garantiza de manera absoluta que ningún elemento secundario quede renderizado o visible por encima del fondo azul de la marquesina, solucionando problemas de superposición y legibilidad.
+  - Sincronizado el archivo `Technology.tsx` con el repositorio `starfeet-landing`.
+- [X] Resolución de errores TypeError: Failed to fetch en la landing page:
+  - Creada una utilidad centralizada `lib/urls.ts` en `starfeet-landing` para resolver dinámicamente las URLs de la tienda, dashboard y kine en base a `window.location.host` (corrigiendo el bug de hostname sin puerto).
+  - Modificado `components/organisms/Navbar.tsx` para usar la resolución de URL dinámica y envolver el fetch de sesión en un bloque `try/catch` robusto con logging tipo warning en lugar de error en caso de fallo de conexión.
+  - Modificado `app/page.tsx` para usar la resolución de URL dinámica en lugar de hardcodear la URL de producción y para envolver el fetch de productos en un bloque `try/catch`.
+  - Implementado un set de productos de contingencia (`FALLBACK_PRODUCTS`) en la landing page para degradación elegante y evitar fallos visuales/errores si el backend o la base de datos no están disponibles.
+  - Modificado `components/molecules/ProductCard.tsx` para resolver dinámicamente el enlace a la tienda para cada producto.
+
 
