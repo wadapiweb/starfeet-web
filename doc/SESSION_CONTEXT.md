@@ -435,5 +435,6 @@
   - Modificado `app/page.tsx` para usar la resolución de URL dinámica en lugar de hardcodear la URL de producción y para envolver el fetch de productos en un bloque `try/catch`.
   - Implementado un set de productos de contingencia (`FALLBACK_PRODUCTS`) en la landing page para degradación elegante y evitar fallos visuales/errores si el backend o la base de datos no están disponibles.
   - Modificado `components/molecules/ProductCard.tsx` para resolver dinámicamente el enlace a la tienda para cada producto.
+  - Removido el badge con texto "Hostinger Cloud" del logotipo en el header de la landing page.
 
 
