@@ -1,4 +1,7 @@
+import { DOMAINS } from "@/lib/domains";
+
 export default function AdminHelpPage() {
+  const supportEmail = DOMAINS.supportEmail;
   return (
     <div className="space-y-6 max-w-4xl">
       <header>
@@ -39,7 +42,7 @@ export default function AdminHelpPage() {
           Si hay algún problema en el panel, errores al cobrar o caídas del servicio, puedes reportarlo al equipo técnico.
         </p>
         <p className="text-sm font-bold text-gray-900 border-t border-blue-200 pt-4 mt-2">
-          Email soporte: <a href="mailto:soporte@starfeet.ar" className="text-starfeet-blue hover:underline">soporte@starfeet.ar</a>
+          Email soporte: <a href={`mailto:${supportEmail}`} className="text-starfeet-blue hover:underline">{supportEmail}</a>
         </p>
         <p className="text-sm font-bold text-gray-900 mt-1">
           WhatsApp Guardia (SLA 2h): <span className="text-starfeet-blue">+54 9 11 0000-0000</span>

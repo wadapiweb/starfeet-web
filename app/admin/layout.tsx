@@ -5,6 +5,7 @@ import { adminNavItems } from "@/lib/backoffice-navigation";
 import { getAdminSettingsSnapshot } from "@/lib/admin-settings.server";
 import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 import { headers } from "next/headers";
+import { DOMAINS } from "@/lib/domains";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -14,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   if (session.user.role !== "ADMIN") {
     const headersList = await headers();
-    const host = headersList.get("host") || "starfeet.ar";
+    const host = headersList.get("host") || DOMAINS.root;
     redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));
   }
   const settings = await getAdminSettingsSnapshot().catch(() => null);

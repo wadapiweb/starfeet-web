@@ -1,3 +1,5 @@
+import { DOMAINS } from "@/lib/domains";
+
 export type AppRole = "ADMIN" | "KINESIOLOGO" | "CLIENTE" | "MARKETING" | null | undefined;
 
 export function getDashboardRouteForRole(role: AppRole): string {
@@ -47,10 +49,8 @@ export function getAbsoluteDashboardRouteForRole(role: AppRole, host: string): s
     if (envMarketingUrl) {
       return envMarketingUrl;
     }
-    if (cleanHost.includes("dev1") || cleanHost.includes("dev") || cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1")) {
-      return `${protocol}://dev1.starfeet.ar${port}/marketing-admin`;
-    }
-    return `${protocol}://${baseDomain}${port}/marketing-admin`;
+    // Use the configured marketing URL from env (avoids hardcoded subdomains)
+    return DOMAINS.marketing;
   }
   // CLIENTE
   return `${protocol}://${prefix}tienda.${baseDomain}${port}`;

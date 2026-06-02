@@ -4,16 +4,17 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-
+import { DOMAINS } from "@/lib/domains";
 import { Suspense } from "react";
 
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) {
     const headersList = await headers();
-    const host = headersList.get("host") || "starfeet.ar";
+    const host = headersList.get("host") || DOMAINS.root;
     redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));
   }
+
 
   return (
     <AuthShell

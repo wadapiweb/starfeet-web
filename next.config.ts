@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
+// Domain resolution — edit .env to change, no code changes needed
 const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || ".starfeet.ar";
-const cleanBase = baseDomain.startsWith(".") ? baseDomain.slice(1) : baseDomain;
+const cleanBase = process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
+  (baseDomain.startsWith(".") ? baseDomain.slice(1) : baseDomain);
 
 const nextConfig: NextConfig = {
   output: "standalone",
