@@ -457,6 +457,50 @@
   - Integrada la iconografía social (Instagram, Facebook, LinkedIn) con efectos de hover de escala y color lima interactivo con resplandor.
   - Diseñado efecto de micro-animación en la firma: al hacer clic en el emoji de corazón `❤️`, se generan y despliegan de forma interactiva múltiples corazones flotantes de tamaño, rotación y trayectoria aleatoria usando `framer-motion` y `AnimatePresence`.
   - Registrado en `PROJECT_MAP.md` e integrado en `inicio2/page.tsx` y en el index de `starfeet-landing`.
+- [X] Rediseño y refactorización de ProductStages:
+  - Rediseñada la estructura de la sección de etapas para mover los círculos de imagen animada al lado derecho de cada bloque de etapa.
+  - El título de la sección izquierda ahora se mantiene fijo de fondo (no se oculta al hacer hover) y los textos se conservan en el mismo tamaño original.
+  - Los vídeos de los círculos se muestran en pausa (estáticos) por defecto, y se reproducen fluidamente al hacer hover sobre la respectiva etapa, regresando a la primera posición al retirar el mouse.
+- [X] Implementación del Módulo de Administración de Marketing:
+  - Agregado el rol `MARKETING` en el enum `Role` en `prisma/schema.prisma` y sincronizado en PostgreSQL (`prisma db push`).
+  - Configurado redirección por rol `MARKETING` en `lib/role-redirect.ts` y `/post-login` para derivar al panel de marketing en el dominio correspondiente.
+  - Expuesto el rol en la sesión en `auth.ts`, `next-auth.d.ts` y en la API pública de sesión `/app/api/public/session/route.ts`.
+  - Configurado Prisma ORM en el proyecto `starfeet-landing` apuntando a la base de datos MySQL en Hostinger Cloud.
+  - Automatizada la generación de cliente Prisma y migración de tablas en el build script (`package.json`) con fallback ante fallas de red offline en dev.
+  - Creados endpoints API en la landing para consulta y actualización en lote de textos (`/api/marketing/texts`), testimonios (`/api/marketing/testimonials`, `/api/marketing/testimonials/[id]`), auto-traducción por IA (`/api/translate`) y revalidación de caché bajo token seguro (`/api/revalidate`).
+  - Creada la interfaz premium de administración de marketing (`/marketing-admin`) con panel de traducción paralela ES/EN, auto-traductor integrado, y grilla de testimonios multimedia.
+  - Creado el organismo de presentación de testimonios (`Testimonials.tsx`) con diseño responsivo de tarjetas 9:16, reproducción autoplay en hover para videos y reproductor interactivo con soundwave animado para audios.
+  - Integrada la sección de testimonios en la página principal entre la validación de la UNER y la grilla de productos destacados.
+  - Solucionado el crash del compilador Next.js forzando `NODE_ENV=production` en el build del contenedor de desarrollo.
+  - Configurado `MARKETING_URL` en `.env` y propagado vía `docker-compose.yml` para posibilitar la redirección dinámica y transparente del rol `MARKETING` a la landing de desarrollo (`dev1.starfeet.ar`) o producción según el entorno.
+  - Ocultado el Navbar general de la landing page en `/marketing-admin` para evitar duplicidad de cabeceras.
+  - Implementado chequeo seguro de tipo (Array.isArray) en el panel administrativo ante errores del fetch de la base de datos MySQL (por ejemplo, por falta de conexión local a MySQL o DATABASE_URL ausente), previniendo el crash de renderizado `data.find is not a function`.
+  - Añadido soporte de feedback visual y alertas detalladas en el guardado de textos y testimonios, previniendo fallos silenciosos ante desconexión de base de datos.
+  - Reemplazados los emojis de toda la interfaz administrativa en `/marketing-admin` por iconos vectoriales (SVG) estilizados y profesionales.
+  - Creada plantilla de entorno `.env` en la landing para configurar la conexión Hostinger MySQL localmente y propagar las credenciales.
+- [X] Desactivación del cacheo estático y sincronización dinámica i18n:
+  - Añadido `export const dynamic = "force-dynamic"` en los endpoints `/api/marketing/texts` y `/api/marketing/testimonials` para evitar que Next.js los cachee estáticamente en la compilación de producción, garantizando actualizaciones en tiempo real desde la DB.
+  - Implementado `TranslationProvider` de React Context en `/lib/i18n.tsx` y envuelta la raíz del layout en `/app/layout.tsx`. El hook `useTranslations` ahora consulta y prioriza las traducciones guardadas en base de datos, recurriendo a `messages/es.json` como fallback seguro si no existe clave personalizada o hay error de base de datos.
+  - Migrado `lib/i18n.ts` a `lib/i18n.tsx` para soportar sintaxis JSX de forma nativa sin generar advertencias o errores del compilador TypeScript.
+  - Modificado el componente de portada `Hero.tsx` para consumir dinámicamente sus textos (`title_main`, `description`) desde base de datos e i18n, eliminando las cadenas estáticas hardcodeadas.
+  - Rediseñada la maquetación del Hero para otorgar a la columna de texto un ancho de `md:w-[50%]` (anteriormente 40%) e imagen de `md:w-[50%]`, posicionando el texto por encima con `z-10` y la imagen en `z-0` a escala natural para maximizar legibilidad y espacio horizontal.
+  - Refactorizada la sección del Manifiesto / Historia (`Manifesto.tsx`) para usar el hook de internacionalización `useTranslations("Manifesto")`, integrando sus cuatro líneas de scroll reveal al panel administrativo (`/marketing-admin`) mediante la declaración de nuevas claves dinámicas de categoría `manifesto` en `DEFAULT_TEXT_KEYS` y `messages/es.json`.
+  - Verificada la compilación completa libre de errores en Next.js y reiniciados los contenedores.
+  - Registrado y commiteado todo el conjunto de cambios en Git.
+  - Removido el botón "Volver al Core" y el indicador "| Connected to MySQL" de la interfaz de `/marketing-admin`.
+  - Simplificada la descripción del panel por `"Edita los textos globales y gestiona los testimonios"`.
+  - Reemplazado el icono de cohete del botón "Publicar en vivo" por un icono moderno de carga en la nube (Cloud Upload) para mayor claridad visual.
+  - Removidas del menú de categorías las pestañas no utilizadas: "Solución de Salud" y "Pie de Página (Footer)".
+  - Registrado y confirmado en Git el nuevo commit con estas correcciones visuales.
+  - Modificado el subtítulo estático de la sección de Testimonios (`Testimonials.tsx`) en español para cambiar el texto de usuarios diarios a la marca Starfeet.
+  - Registrado y confirmado en Git el nuevo commit con esta actualización de texto.
+  - Habilitada la edición dinámica de los títulos y subtítulos de la sección de Testimonios (`Testimonials.tsx`) mediante `useTranslations` y la nueva categoría "Testimonios (Títulos)" en el Panel de Marketing.
+  - Registrado y confirmado en Git el nuevo commit con la integración de los títulos y subtítulos en el panel administrativo.
+
+
+
+
+
 
 
 

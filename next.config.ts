@@ -1,14 +1,20 @@
 import type { NextConfig } from "next";
 
+const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || ".starfeet.ar";
+const cleanBase = baseDomain.startsWith(".") ? baseDomain.slice(1) : baseDomain;
+
 const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: [
-    "starfeet.ar",
-    "dev.starfeet.ar",
-    "dev1.starfeet.ar",
-    "tienda.starfeet.ar",
-    "kine.starfeet.ar",
-    "dashboard.starfeet.ar",
+    cleanBase,
+    `dev.${cleanBase}`,
+    `dev1.${cleanBase}`,
+    `tienda.${cleanBase}`,
+    `kine.${cleanBase}`,
+    `dashboard.${cleanBase}`,
+    `dev-tienda.${cleanBase}`,
+    `dev-kine.${cleanBase}`,
+    `dev-dashboard.${cleanBase}`,
     "localhost:3000",
     "127.0.0.1:3000",
   ],

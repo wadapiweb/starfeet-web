@@ -1,4 +1,4 @@
-export type AppRole = "ADMIN" | "KINESIOLOGO" | "CLIENTE" | null | undefined;
+export type AppRole = "ADMIN" | "KINESIOLOGO" | "CLIENTE" | "MARKETING" | null | undefined;
 
 export function getDashboardRouteForRole(role: AppRole): string {
   if (role === "ADMIN") {
@@ -6,6 +6,9 @@ export function getDashboardRouteForRole(role: AppRole): string {
   }
   if (role === "KINESIOLOGO") {
     return "/kinesio";
+  }
+  if (role === "MARKETING") {
+    return "/marketing-admin";
   }
   return "/cliente";
 }
@@ -16,6 +19,14 @@ export function getAbsoluteDashboardRouteForRole(role: AppRole, host: string): s
   const port = parts[1] ? `:${parts[1]}` : "";
 
   let baseDomain = cleanHost;
+  let prefix = "";
+
+  // Extract env prefix like 'dev-' or 'dev1-' if present before the subdomain
+  const prefixMatch = baseDomain.match(/^([a-zA-Z0-9]+-)/);
+  if (prefixMatch) {
+    prefix = prefixMatch[1];
+    baseDomain = baseDomain.substring(prefix.length);
+  }
   
   // Strip subdomains if they are present in the host we logged in from
   if (baseDomain.startsWith("tienda.")) baseDomain = baseDomain.replace(/^tienda\./, "");
@@ -26,12 +37,22 @@ export function getAbsoluteDashboardRouteForRole(role: AppRole, host: string): s
   const protocol = cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1") ? "http" : "https";
 
   if (role === "ADMIN") {
-    return `${protocol}://dashboard.${baseDomain}${port}`;
+    return `${protocol}://${prefix}dashboard.${baseDomain}${port}`;
   }
   if (role === "KINESIOLOGO") {
-    return `${protocol}://kine.${baseDomain}${port}`;
+    return `${protocol}://${prefix}kine.${baseDomain}${port}`;
+  }
+  if (role === "MARKETING") {
+    const envMarketingUrl = process.env.MARKETING_URL || process.env.NEXT_PUBLIC_MARKETING_URL;
+    if (envMarketingUrl) {
+      return envMarketingUrl;
+    }
+    if (cleanHost.includes("dev1") || cleanHost.includes("dev") || cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1")) {
+      return `${protocol}://dev1.starfeet.ar${port}/marketing-admin`;
+    }
+    return `${protocol}://${baseDomain}${port}/marketing-admin`;
   }
   // CLIENTE
-  return `${protocol}://tienda.${baseDomain}${port}`;
+  return `${protocol}://${prefix}tienda.${baseDomain}${port}`;
 }
 

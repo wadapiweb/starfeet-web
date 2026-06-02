@@ -3,11 +3,11 @@
 ## Etapas
 - [x] Etapa 0 Diagnóstico
 - [x] Etapa 1 Implementación
-- [x] Etapa 2 Quality gate
-- [x] Etapa 3 Smoke
-- [x] Etapa 4 Staging
-- [x] Etapa 5 Merge/Release
-- [x] Etapa 6 Cierre documental
+- [x] Etapa 2 Quality gate (Local)
+- [x] Etapa 3 Smoke (Local)
+- [ ] Etapa 4 Staging (Deploy Hostinger)
+- [ ] Etapa 5 Merge/Release
+- [x] Etapa 6 Cierre documental (Local)
 
 ## Backlog inmediato
 - [X] Etapa 1: Extracción de sección `Manifesto` del componente `Hero` hacia su propio organismo, siguiendo segregación de responsabilidades y atomicidad.
@@ -96,3 +96,7 @@
 - [ ] Agregar validación visual de duplicados talle+color si el negocio necesita impedir variantes repetidas.
 - [X] Crear nueva sección CuandoPisasBien debajo de ProductStages con marquesina y efecto parallax.
 - [X] Crear Footer moderno con fondo azul institucional, firma Sumak y efecto interactivo de corazones flotantes.
+- [X] Rediseñar la sección ProductStages para colocar los círculos con vídeo interactivo en el lado derecho de cada etapa.
+- [X] Etapa 4: Configurar `DATABASE_URL` y `REVALIDATION_SECRET` en las variables de entorno de la landing para conexión a MySQL Hostinger y revalidación ISR.
+- [X] Etapa 5: Realizar un merge limpio y sincronización de cambios al entorno de pruebas `dev1.starfeet.ar`.
+- [ ] Etapa 2: Validar el correcto funcionamiento de la auto-traducción e interfaz de edición de textos en múltiples dispositivos móviles y de escritorio.

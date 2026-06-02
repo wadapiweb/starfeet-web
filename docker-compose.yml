@@ -29,6 +29,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+      - MARKETING_URL=${MARKETING_URL}
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
       - .:/app

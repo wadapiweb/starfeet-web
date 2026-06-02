@@ -165,7 +165,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
         async session({ session, token }) {
             if (token && session.user) {
-                session.user.role = token.role as "CLIENTE" | "KINESIOLOGO" | "ADMIN"
+                session.user.role = token.role as "CLIENTE" | "KINESIOLOGO" | "ADMIN" | "MARKETING"
                 session.user.isActive = token.isActive as boolean
                 if (token.sub) {
                     session.user.id = token.sub

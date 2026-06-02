@@ -429,3 +429,20 @@ Diseñar una utilidad local de internacionalización `lib/i18n.ts` que carga est
 - No hay dependencias complejas ni configuración de rutas localizadas requeridas en el middleware de Next.js.
 - Facilita la sincronización instantánea de layouts compartidos entre la plataforma core y la landing page.
 
+---
+
+## 2026-06-02 — Internacionalización dinámica e integración con base de datos en Marketing Admin
+
+### Decisión
+Implementar un `TranslationProvider` de React Context en `lib/i18n.tsx` que consulta dinámicamente `/api/marketing/texts` para alimentar el hook `useTranslations` con traducciones desde la base de datos MySQL, y desactivar el almacenamiento en caché estático de Next.js (`export const dynamic = "force-dynamic"`) en los endpoints GET de textos y testimonios.
+
+### Motivo
+- **Persistencia en Vivo:** Los administradores necesitan ver reflejadas de inmediato en la landing page pública las ediciones de textos hechas en el panel administrativo.
+- **Evitar API Caching:** Por defecto, Next.js compila las rutas GET sin parámetros como estáticas en tiempo de compilación. Añadir `force-dynamic` asegura la obtención de datos en tiempo real desde la DB.
+- **Robustez y Fallback:** Si un texto no está personalizado en la base de datos o si la conexión remota con Hostinger falla, el sistema recurre al fallback local de `messages/es.json`.
+
+### Consecuencia
+- Los componentes `Hero` y `Manifesto` ahora muestran textos completamente editables y sincronizados con MySQL.
+- El panel de administración puede gestionar dinámicamente textos sin requerir despliegues ni recompilaciones de código.
+- Los cambios realizados en el panel administrativo impactan directamente al refrescar el frontend.
+

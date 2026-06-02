@@ -9,22 +9,22 @@ export async function GET(request: Request) {
   const session = await auth();
   console.log("Session resolved:", session);
 
-  const origin = request.headers.get("origin");
+  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || ".starfeet.ar";
+  const cleanBase = baseDomain.startsWith(".") ? baseDomain.slice(1) : baseDomain;
 
-  // We fetch the base domain dynamically or list the trusted origins
-  const allowedOrigins = [
-    "https://starfeet.ar",
-    "https://dev.starfeet.ar",
-    "https://dev1.starfeet.ar",
-    "http://localhost:3000",
-    "http://localhost:3001"
-  ];
+  const origin = request.headers.get("origin");
+  const isAllowed = origin && (
+    origin.endsWith(cleanBase) ||
+    origin === "http://localhost:3000" ||
+    origin === "http://localhost:3001" ||
+    origin.startsWith("http://localhost:")
+  );
 
   const headers: Record<string, string> = {
     "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
   };
 
-  if (origin && allowedOrigins.some(o => origin.startsWith(o) || o.startsWith(origin))) {
+  if (origin && isAllowed) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Access-Control-Allow-Credentials"] = "true";
     headers["Access-Control-Allow-Methods"] = "GET, OPTIONS";

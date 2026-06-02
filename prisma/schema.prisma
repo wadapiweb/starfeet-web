@@ -13,6 +13,7 @@ enum Role {
   CLIENTE
   KINESIOLOGO
   ADMIN
+  MARKETING
 }
 
 enum DiscountType {

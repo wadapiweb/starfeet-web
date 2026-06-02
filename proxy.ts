@@ -55,17 +55,17 @@ export function proxy(request: NextRequest) {
   const cleanHost = host.split(":")[0];
 
   // Map subdomains to their respective App Router folders
-  if (cleanHost.startsWith("tienda.")) {
+  if (cleanHost.startsWith("tienda.") || cleanHost.startsWith("dev-tienda.") || cleanHost.includes(".tienda.")) {
     url.pathname = `/tienda${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
   }
 
-  if (cleanHost.startsWith("kine.")) {
+  if (cleanHost.startsWith("kine.") || cleanHost.startsWith("dev-kine.") || cleanHost.includes(".kine.")) {
     url.pathname = `/kinesio${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
   }
 
-  if (cleanHost.startsWith("dashboard.")) {
+  if (cleanHost.startsWith("dashboard.") || cleanHost.startsWith("dev-dashboard.") || cleanHost.includes(".dashboard.")) {
     url.pathname = `/admin${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
   }
