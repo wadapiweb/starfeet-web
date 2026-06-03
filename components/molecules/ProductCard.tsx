@@ -48,11 +48,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                     <div className="flex flex-col">
                         {product.compareAtPriceArs && (
                             <span className="font-sans text-[10px] text-gray-400 line-through">
-                                ${Number(product.compareAtPriceArs).toLocaleString()} ARS
+                                ${Number(product.compareAtPriceArs).toLocaleString("es-AR")} ARS
                             </span>
                         )}
                         <span className="font-condensed font-black text-2xl text-starfeet-blue leading-none">
-                            ${Number(product.priceArs).toLocaleString()} <span className="text-[10px] font-bold text-gray-400">ARS</span>
+                            ${Number(product.priceArs).toLocaleString("es-AR")} <span className="text-[10px] font-bold text-gray-400">ARS</span>
                         </span>
                     </div>
 
