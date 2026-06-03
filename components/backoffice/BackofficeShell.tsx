@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { BackofficeNavItem } from "@/lib/backoffice-navigation";
 import { BrandLogo } from "@/components/atoms/BrandLogo";
+import { DOMAINS } from "@/lib/domains";
 
 /**
  * Detects whether we are running on a dedicated subdomain (kine.* or dashboard.*)
@@ -152,6 +153,22 @@ export function BackofficeShell({
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              {area === "ADMIN" && (
+                <a
+                  href={DOMAINS.marketing}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-wider transition ${isDark
+                      ? "border-sky-500/20 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20"
+                      : "border-starfeet-blue/20 bg-starfeet-blue/5 text-starfeet-blue hover:bg-starfeet-blue/10"
+                    }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                  </svg>
+                  Editar Marketing
+                </a>
+              )}
               <label className="relative block md:w-80">
                 <span className="sr-only">Buscar en el panel</span>
                 <input
