@@ -99,4 +99,5 @@
 - [X] Rediseñar la sección ProductStages para colocar los círculos con vídeo interactivo en el lado derecho de cada etapa.
 - [X] Etapa 4: Configurar `DATABASE_URL` y `REVALIDATION_SECRET` en las variables de entorno de la landing para conexión a MySQL Hostinger y revalidación ISR.
 - [X] Etapa 5: Realizar un merge limpio y sincronización de cambios al entorno de pruebas `dev1.starfeet.ar`.
+- [X] Implementar el panel de edición dinámica de la Tienda en `/marketing-admin` y el acceso directo desde el navbar de `starfeet-web` para administradores.
 - [ ] Etapa 2: Validar el correcto funcionamiento de la auto-traducción e interfaz de edición de textos en múltiples dispositivos móviles y de escritorio.

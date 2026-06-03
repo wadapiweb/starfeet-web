@@ -496,11 +496,10 @@
   - Registrado y confirmado en Git el nuevo commit con esta actualización de texto.
   - Habilitada la edición dinámica de los títulos y subtítulos de la sección de Testimonios (`Testimonials.tsx`) mediante `useTranslations` y la nueva categoría "Testimonios (Títulos)" en el Panel de Marketing.
   - Registrado y confirmado en Git el nuevo commit con la integración de los títulos y subtítulos en el panel administrativo.
-
-
-
-
-
-
-
-
+- [X] Implementación de Tienda Oficial Dinámica en Home y Panel de Marketing:
+  - Añadida categoría de textos `tienda_header` y claves default `Tienda.title`, `Tienda.subtitle` y `Tienda.products` al panel de marketing.
+  - Implementada pestaña interactiva "Productos Home" en el panel administrativo `/marketing-admin` para crear, editar, eliminar y subir imágenes de productos, guardando el listado serializado en JSON bajo la clave `Tienda.products`.
+  - Modificada la página de inicio `app/page.tsx` de la landing para consumir `Tienda.title`, `Tienda.subtitle` y `Tienda.products` dinámicamente desde la base de datos (con fallback robusto a los 4 productos estáticos originales si no hay datos).
+  - Actualizada la card de productos `ProductCard.tsx` para renderizar imágenes cargadas por el usuario, cuotas sin interés y redirecciones a links personalizados.
+  - Agregado botón de acceso directo "Editar Marketing" en la cabecera del backoffice administrativo de `starfeet-web` para usuarios con rol `ADMIN` que abre `/marketing-admin` de manera segura.
+  - Verificados ambos repositorios localmente con compilación exitosa y reiniciados contenedores Docker.
