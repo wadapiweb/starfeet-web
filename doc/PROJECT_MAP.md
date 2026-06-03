@@ -17,6 +17,7 @@ Componentes puramente visuales y de presentación para la Landing Page:
 | Organisms | `HealthSolution` | Sección explicativa de soluciones de salud (dolor, recuperación, sobrecarga, pisada). | Activo |
 | Organisms | `UnerValidation` | Sección de comprobación científica basada en el informe de la UNER. | Activo |
 | Organisms | `Testimonials` | Sección de testimonios en formato 9:16 con soporte para Texto/Video/Audio. | Activo |
+| Organisms | `Garantia` | Sección de garantía de resultados con fondo de imagen y sello dorado. | Activo |
 | Organisms | `Navbar` | Barra de navegación estática con enlaces absolutos a la tienda. | Activo |
 | Organisms | `Footer` | Pie de página moderno e interactivo con animaciones y firma Sumak. | Activo |
 | Molecules | `ProductCard` | Tarjeta de producto con enlace absoluto de compra rápida. | Activo |
