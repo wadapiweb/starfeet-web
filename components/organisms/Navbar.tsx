@@ -3,7 +3,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { BrandLogo } from "../atoms/BrandLogo";
+import { BrandMonogram } from "../atoms/BrandMonogram";
 import { Button } from "../atoms/Button";
 import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 
@@ -20,38 +22,40 @@ export const Navbar = () => {
   const [userName, setUserName] = useState("");
   const [timeGreeting, setTimeGreeting] = useState("");
 
+  // ── Scroll-aware state ──────────────────────────────────────────
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  // ───────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const host = window.location.hostname;
     const isPlatform = PLATFORM_SUBDOMAINS.some((sub) => host.startsWith(sub));
     setIsPlatformHost(isPlatform);
 
-    // Absolute URL to the user's dashboard on the correct subdomain
     const absoluteDashboard = getAbsoluteDashboardRouteForRole(
       session?.user?.role,
       host
     );
     setPanelHref(absoluteDashboard);
 
-    // Greeting string calculation based on user's timezone/hour (in lowercase)
     if (session?.user?.name) {
       setUserName(session.user.name.toLowerCase());
-      
       const hour = new Date().getHours();
       let greetStr = "buenos días";
-      if (hour >= 12 && hour < 20) {
-        greetStr = "buenas tardes";
-      } else if (hour >= 20 || hour < 6) {
-        greetStr = "buenas noches";
-      }
+      if (hour >= 12 && hour < 20) greetStr = "buenas tardes";
+      else if (hour >= 20 || hour < 6) greetStr = "buenas noches";
       setTimeGreeting(greetStr);
     }
 
-    // Build absolute login URL pointing to dashboard.starfeet.ar/login?callbackUrl=...
     const parts = host.split(":");
     const cleanHost = parts[0];
     const port = parts[1] ? `:${parts[1]}` : "";
     let baseDomain = cleanHost;
-    
     if (baseDomain.startsWith("tienda.")) baseDomain = baseDomain.replace(/^tienda\./, "");
     else if (baseDomain.startsWith("kine.")) baseDomain = baseDomain.replace(/^kine\./, "");
     else if (baseDomain.startsWith("dashboard.")) baseDomain = baseDomain.replace(/^dashboard\./, "");
@@ -65,59 +69,93 @@ export const Navbar = () => {
     setLoginUrl(`${targetLogin}?callbackUrl=${encodeURIComponent(currentUrl)}`);
   }, [session?.user?.role, session?.user?.name]);
 
-  // Hide on platform subdomains OR on internal backoffice paths
   const isBackoffice =
     isPlatformHost ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/kinesio");
 
-  if (isBackoffice) {
-    return null;
-  }
+  if (isBackoffice) return null;
 
   return (
-    <nav className="fixed left-0 top-0 z-50 w-full px-3 pt-3 md:px-6 md:pt-4">
-      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl border border-starfeet-blue/15 bg-white/85 px-3 shadow-[0_8px_28px_rgba(9,34,75,0.12)] backdrop-blur-xl md:h-[74px] md:px-5">
+    <nav
+      className={`fixed left-0 top-0 z-50 w-full transition-all duration-500 ease-in-out ${
+        scrolled ? "px-3 pt-2 md:px-6 md:pt-2" : "px-3 pt-3 md:px-6 md:pt-4"
+      }`}
+    >
+      <div
+        className={`relative mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-starfeet-blue/15 px-3 shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl transition-all duration-500 ease-in-out md:px-5 ${
+          scrolled
+            ? "h-12 bg-white/50 shadow-[0_4px_16px_rgba(9,34,75,0.07)]"
+            : "h-16 bg-white/85 md:h-[74px]"
+        }`}
+      >
+        {/* ── LOGO: intercambia entre BrandLogo y BrandMonogram al hacer scroll ── */}
         <Link href="/" className="flex shrink-0 items-center rounded-xl px-1 py-1">
-          <BrandLogo className="h-8 w-auto text-starfeet-blue md:h-10" />
+          <AnimatePresence mode="wait" initial={false}>
+            {scrolled ? (
+              <motion.span
+                key="monogram"
+                initial={{ opacity: 0, scale: 0.75, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.75, y: -4 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+              >
+                <BrandMonogram className="h-5 w-auto text-starfeet-blue" />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="logo"
+                initial={{ opacity: 0, scale: 0.92, y: 4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 4 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+              >
+                <BrandLogo className="h-8 w-auto text-starfeet-blue md:h-10" />
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
 
-        {/* Absolute Centering to prevent links shifting when actions change width */}
-        <div className="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8 xl:flex">
-          <Link href="/tienda" className="font-condensed text-sm font-bold uppercase tracking-[0.16em] text-starfeet-blue/70 transition-colors hover:text-starfeet-blue">
-            Tienda
-          </Link>
-          <Link href="/tecnologia" className="font-condensed text-sm font-bold uppercase tracking-[0.16em] text-starfeet-blue/70 transition-colors hover:text-starfeet-blue">
-            Tecnología
-          </Link>
-          <Link href="/nosotros" className="font-condensed text-sm font-bold uppercase tracking-[0.16em] text-starfeet-blue/70 transition-colors hover:text-starfeet-blue">
-            Nosotros
-          </Link>
+        {/* ── NAV LINKS: se ocultan suavemente al hacer scroll ── */}
+        <div className="hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center xl:flex transition-all duration-300" style={{ gap: scrolled ? '1.25rem' : '2rem' }}>
+          {["Tienda", "Tecnología", "Nosotros"].map((label) => (
+            <Link
+              key={label}
+              href={`/${label.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()}`}
+              className={`font-condensed font-bold uppercase tracking-[0.16em] text-starfeet-blue/70 transition-all duration-300 hover:text-starfeet-blue ${
+                scrolled ? "text-xs" : "text-sm"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
 
+        {/* ── ACTIONS ── */}
         <div className="flex items-center gap-2 md:gap-3 min-w-[120px] justify-end">
           {status === "loading" ? (
-            // Pulsing placeholders: Large on the left, round fill icon on the right (both borderless for consistency)
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="h-11 w-[90px] animate-pulse rounded-xl bg-starfeet-blue/5 md:w-[108px]" />
-              <div className="h-11 w-11 animate-pulse rounded-full bg-starfeet-blue/5" />
+              <div className="h-9 w-[80px] animate-pulse rounded-xl bg-starfeet-blue/5 md:w-[100px]" />
+              <div className="h-9 w-9 animate-pulse rounded-full bg-starfeet-blue/5" />
             </div>
           ) : session ? (
             <>
-              {/* Greeting in lowercase and two lines */}
-              {userName && (
-                <div className="flex flex-col text-right text-[10px] font-bold leading-[1.25] text-starfeet-blue/75 pr-1.5 select-none md:pr-2">
+              {userName && !scrolled && (
+                <motion.div
+                  initial={false}
+                  animate={{ opacity: scrolled ? 0 : 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col text-right text-[10px] font-bold leading-[1.25] text-starfeet-blue/75 pr-1.5 select-none md:pr-2"
+                >
                   <span>¡hola {userName}!</span>
                   <span>{timeGreeting}</span>
-                </div>
+                </motion.div>
               )}
-
-              {/* User Icon -> links to their panel (absolute subdomain) */}
               <Link href={panelHref}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-11 w-11 !px-0"
+                  className={`!px-0 transition-all duration-300 ${scrolled ? "h-8 w-8" : "h-11 w-11"}`}
                   aria-label="Panel"
                   title="Panel"
                 >
@@ -129,12 +167,11 @@ export const Navbar = () => {
             </>
           ) : (
             <>
-              {/* User Icon when not logged in -> links to dashboard.starfeet.ar/login */}
               <Link href={loginUrl}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-11 w-11 !px-0"
+                  className={`!px-0 transition-all duration-300 ${scrolled ? "h-8 w-8" : "h-11 w-11"}`}
                   aria-label="Iniciar sesión"
                   title="Iniciar sesión"
                 >
@@ -145,7 +182,13 @@ export const Navbar = () => {
               </Link>
 
               <Link href="/tienda">
-                <Button variant="primary" size="md" className="h-11 !px-6 md:!px-8">
+                <Button
+                  variant="primary"
+                  size="md"
+                  className={`transition-all duration-300 ${
+                    scrolled ? "h-8 !px-3 !text-xs !py-0" : "h-11 !px-6 md:!px-8"
+                  }`}
+                >
                   Compra
                 </Button>
               </Link>
