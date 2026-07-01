@@ -8,9 +8,10 @@ import { BrandLogo } from "../atoms/BrandLogo";
 import { BrandMonogram } from "../atoms/BrandMonogram";
 import { Button } from "../atoms/Button";
 import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
+import { DOMAINS } from "@/lib/domains";
 
 // Platform subdomains — the Navbar must never appear here
-const PLATFORM_SUBDOMAINS = ["kine.", "dashboard."];
+const PLATFORM_SUBDOMAINS = ["kine.", "dashboard.", "dev-kine.", "dev-dashboard.", "tienda.", "dev-tienda."];
 
 export const Navbar = () => {
   const { data: session, status } = useSession();
@@ -55,16 +56,11 @@ export const Navbar = () => {
     const parts = host.split(":");
     const cleanHost = parts[0];
     const port = parts[1] ? `:${parts[1]}` : "";
-    let baseDomain = cleanHost;
-    if (baseDomain.startsWith("tienda.")) baseDomain = baseDomain.replace(/^tienda\./, "");
-    else if (baseDomain.startsWith("kine.")) baseDomain = baseDomain.replace(/^kine\./, "");
-    else if (baseDomain.startsWith("dashboard.")) baseDomain = baseDomain.replace(/^dashboard\./, "");
-    else if (baseDomain.startsWith("dev1.")) baseDomain = baseDomain.replace(/^dev1\./, "");
-    else if (baseDomain.startsWith("dev.")) baseDomain = baseDomain.replace(/^dev\./, "");
-    else if (baseDomain.startsWith("www.")) baseDomain = baseDomain.replace(/^www\./, "");
 
-    const protocol = cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1") ? "http" : "https";
-    const targetLogin = `${protocol}://dashboard.${baseDomain}${port}/login`;
+    let targetLogin = `${DOMAINS.dashboard}/login`;
+    if (cleanHost.includes("localhost") || cleanHost.includes("127.0.0.1")) {
+      targetLogin = `http://dashboard.localhost${port}/login`;
+    }
     const currentUrl = window.location.href;
     setLoginUrl(`${targetLogin}?callbackUrl=${encodeURIComponent(currentUrl)}`);
   }, [session?.user?.role, session?.user?.name]);

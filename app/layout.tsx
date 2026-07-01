@@ -38,7 +38,10 @@ export default async function RootLayout({
 }>) {
   const headersList = await headers();
   const host = headersList.get("host") || "";
-  const isPlatform = host.startsWith("kine.") || host.startsWith("dashboard.");
+  const isPlatform = 
+    host.includes("kine.") || 
+    host.includes("dashboard.") || 
+    host.includes("tienda.");
 
   return (
     <html lang="es">
