@@ -113,26 +113,31 @@ export const ProductStages = () => {
                 role="button"
                 tabIndex={0}
                 aria-expanded={isHovered}
-                className="flex flex-row items-center justify-between gap-4 sm:gap-6 cursor-pointer transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl p-5 -m-5 w-full max-w-md lg:ml-auto bg-white/30 hover:bg-white/90 hover:shadow-[0_15px_40px_-10px_rgba(9,34,75,0.08)] border border-transparent hover:border-white/60"
+                className="relative flex flex-row items-stretch cursor-pointer transition-all duration-500 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl w-full max-w-md lg:ml-auto shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl bg-white/85 hover:bg-white hover:shadow-[0_12px_36px_rgba(9,34,75,0.15)] hover:-translate-y-1 overflow-hidden"
                 style={{
                   opacity: hoveredStage === null || isHovered ? 1 : 0.5,
                 }}
               >
                 {/* TEXT CONTENT */}
-                <div className="flex-1 text-left">
+                <div className="relative z-10 w-[62.5%] flex flex-col justify-center p-5 sm:p-6 pr-8 sm:pr-12 text-left">
                   <h3 className="font-condensed font-black text-3xl sm:text-4xl text-starfeet-blue uppercase leading-none tracking-tight">
                     {stage.title}
                   </h3>
                   <div className="font-condensed font-bold text-xl sm:text-2xl text-[#c5eb1b] lowercase mt-1">
                     {stage.subtitle}
                   </div>
-                  <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 max-w-md whitespace-pre-line">
-                    {stage.description}
+                  <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 max-w-[280px]">
+                    {stage.description.split('|||').map((line: string, i: number, arr: string[]) => (
+                      <React.Fragment key={i}>
+                        {line}
+                        {i < arr.length - 1 && <br />}
+                      </React.Fragment>
+                    ))}
                   </p>
                 </div>
 
-                {/* ANIMATED CIRCLE ON THE RIGHT */}
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden flex-shrink-0 bg-white">
+                {/* ANIMATED VIDEO ON THE RIGHT CON CORTE DIAGONAL */}
+                <div className="absolute top-0 right-0 w-[45%] h-full overflow-hidden flex-shrink-0 bg-black/5 [clip-path:polygon(25%_0,100%_0,100%_100%,0_100%)] border-l border-starfeet-blue/5">
                   <StageCircleVideo src={stage.video} isHovered={isHovered} />
                 </div>
               </div>

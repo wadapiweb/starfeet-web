@@ -5,7 +5,7 @@ import { ClienteOrdersDashboard } from "@/components/cliente/ClienteOrdersDashbo
 export default async function ClientePage() {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.isActive || session.user.sessionRevoked) {
     redirect("/api/auth/signin");
   }
   if (session.user.role !== "CLIENTE") {

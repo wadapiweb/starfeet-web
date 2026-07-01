@@ -1,5 +1,13 @@
 # TODO_NEXT
 
+> [!IMPORTANT]
+> **Directivas del Entorno DEV**:
+> - **Modo**: Corre con `NODE_ENV=development`. La lentitud inicial se debe a la compilación bajo demanda (*on-demand compilation*) nativa de Next.js en desarrollo.
+> - **Warmup**: El script `dev-with-warmup.sh` ejecuta un precargado al arrancar para absorber esa compilación en rutas críticas (`/api/health`, `/login`, etc.).
+> - **Staging/Prod**: Estos ambientes deben compilarse estáticamente y correr con `npm run build && npm run start`. Nunca correr en modo desarrollo.
+> - **Credenciales Seed**: La cuenta `admin@starfeet.ar` (`123456`) es **exclusiva para desarrollo** y está terminantemente prohibida en entornos productivos.
+> - **Cookies**: Se validaron las cookies del namespace dev: `__Host-dev.authjs.csrf-token`, `__Secure-dev.authjs.callback-url`, y `__Secure-dev.authjs.session-token`.
+
 ## Etapas
 - [x] Etapa 0 Diagnóstico
 - [x] Etapa 1 Implementación
@@ -10,6 +18,18 @@
 - [x] Etapa 6 Cierre documental (Local)
 
 ## Backlog inmediato
+- [x] DEV Reorg Etapa 0: backup preventivo y confirmacion DNS `dev-*` hacia `72.60.141.77`.
+- [x] DEV Reorg Etapa 1: generar credenciales nuevas para `starfeet_dev_user`, `AUTH_SECRET`, revalidacion y upload.
+- [x] DEV Reorg Etapa 2: renombrar servicios/volumen/red Docker a sufijo `-dev`.
+- [x] DEV Reorg Etapa 3: actualizar `.env` de core y landing con dominios `dev-*`.
+- [x] DEV Reorg Etapa 4: implementar `AUTH_COOKIE_NAMESPACE=dev`.
+- [x] Correccion DEV Auth: propagar `AUTH_COOKIE_NAMESPACE`, `AUTH_URL` y URLs publicas desde `.env` hacia `starfeet-web-dev`; Auth.js emite cookies auxiliares namespaced (`__Host-dev.authjs.csrf-token`, `__Secure-dev.authjs.callback-url`) y la cookie de sesion esperada es `__Secure-dev.authjs.session-token`.
+- [x] Diagnostico Auth.js session: `curl -I` usa `HEAD` y Auth.js responde `400 UnknownAction`; el chequeo valido es `curl -k -i https://dev-dashboard.starfeet.ar/api/auth/session`, que debe responder `200`.
+- [x] DEV Reorg Etapa 5: validar routing/redirects para `dev-dashboard`, `dev-tienda`, `dev-kine`.
+- [x] DEV Reorg Etapa 6: actualizar home cloud `dev.starfeet.ar` y landing VPS `dev1` para apuntar a dominios DEV.
+- [x] DEV Reorg Etapa 7: crear DB limpia `starfeet_dev` con usuario `starfeet_dev_user`, migrar y seed.
+- [x] DEV Reorg Etapa 8: smoke completo de login, tienda, kine, landing y cookies DEV.
+- [x] DEV Reorg Etapa 9: confirmar que VPS-DEV no sirve dominios prod-like.
 - [X] Etapa 1: Extracción de sección `Manifesto` del componente `Hero` hacia su propio organismo, siguiendo segregación de responsabilidades y atomicidad.
 - [X] Consulta operativa: inventario actual de usuarios/roles revisado para soporte de acceso.
 - [X] Panel `/admin/finance` expandido para caja, pipeline, comisiones, liquidaciones y top cupones con datos reales.
@@ -38,14 +58,19 @@
 - [ ] Endurecer seguridad Auth: rate limiting en endpoints de códigos y auditoría de intentos.
 - [ ] Implementar verificación formal de email y políticas de contraseña fuerte.
 - [X] Hardening auth v1: rate limit + auditoría de intentos en auth/códigos.
-- [ ] Hardening auth v2: storage distribuido de rate limit (Redis) + lockout progresivo.
+- [X] Hardening auth v2: storage persistente de rate limit en Postgres + lockout progresivo.
 - [ ] Persistir auditoría en tabla dedicada con dashboard admin de seguridad.
-- [ ] Configurar `allowedDevOrigins` en `next.config.*` para eliminar warning cross-origin en entorno dev.
+- [X] P0 Auth/Security: proteger server-side las mutaciones de `/api/marketing/*` con rol `ADMIN/MARKETING`.
+- [X] P0 Auth/Security: eliminar `NEXT_PUBLIC_UPLOAD_SECRET`, secretos hardcodeados y proteger upload con sesión/rol.
+- [X] P0 Auth/Security: quitar logs de cookies/sesión en `/api/public/session` y corregir allowlist CORS por hostname.
+- [X] P1 Auth/Security: implementar lockout persistente real (`failedLoginAttempts`, `lockoutUntil`) y revocación por `sessionVersion`.
+- [X] P1 Auth/Security: validar `callbackUrl` de `/post-login` con allowlist de dominios/rutas.
+- [x] Configurar `allowedDevOrigins` en `next.config.*` para eliminar warning cross-origin en entorno dev.
 - [ ] Evaluar elevar memoria o optimizar módulos pesados para reducir tiempo de primera compilación en dev.
 - [ ] Investigar origen de requests `no-cors` cross-site a `/_next/*` en dev (posible tráfico externo/probe o extensión) y filtrar en proxy reverse.
-- [ ] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.
+- [x] Agregar healthcheck y warmup de rutas auth en inicio para reducir timeouts de primer acceso en dev.
 - [ ] Resolver definitivamente bloqueo cross-site `/_next/*` en dev (warning residual de Next 16).
-- [ ] Agregar endpoint `/api/health` y chequeo sintético autenticación para observabilidad del entorno dev.
+- [x] Agregar endpoint `/api/health` y chequeo sintético autenticación para observabilidad del entorno dev.
 - [ ] Crear subrutas reales de admin y kinesio (`/admin/sales`, `/admin/crm`, `/kinesio/commissions`, etc.) y conectar navegación del shell.
 - [ ] Extraer tokens visuales de backoffice (spacing, radius, typographic scale) a capa de design system por dominio.
 - [ ] Reemplazar placeholders de módulos por implementaciones reales conectadas a API en cada subruta.
@@ -76,6 +101,7 @@
 - [ ] Agregar variante de `ConfirmDialog` con input de confirmación textual para borrados críticos (ej. productos con historial).
 - [ ] Extraer `EntityFormModal`/`EntityActionsMenu` a un patrón documentado de backoffice (props contract + ejemplos) para nuevos módulos admin.
 - [ ] Agregar paginación server-side para listados admin de productos/profesionales/cupones.
+- [X] Implementar módulo `/admin/users` con listado paginado, filtros, detalle por rol, acciones sensibles auditadas y revocación de sesiones.
 - [ ] Considerar migrar otros enums visibles a labels centralizados en `lib/` para evitar textos técnicos en UI.
 - [ ] Evaluar mover la sesión de carrito de `localStorage` a cookie/httpOnly si se quiere persistencia más robusta entre dispositivos.
 - [ ] Usar la conversión de talles en otros puntos del frontend público para evitar duplicar lógica de display en futuras fichas o campañas.
@@ -100,4 +126,14 @@
 - [X] Etapa 4: Configurar `DATABASE_URL` y `REVALIDATION_SECRET` en las variables de entorno de la landing para conexión a MySQL Hostinger y revalidación ISR.
 - [X] Etapa 5: Realizar un merge limpio y sincronización de cambios al entorno de pruebas `dev1.starfeet.ar`.
 - [X] Implementar el panel de edición dinámica de la Tienda en `/marketing-admin` y el acceso directo desde el navbar de `starfeet-web` para administradores.
-- [ ] Etapa 2: Validar el correcto funcionamiento de la auto-traducción e interfaz de edición de textos en múltiples dispositivos móviles y de escritorio.
+- [X] Integrar el mapa de relieve (Bump Map) original PNG de 1024x1024 en `app/seccion3d/page.tsx` para los materiales de tela (Etiqueta_Lado, Etiqueta_Marca, Tira_velcro, Terminación_Plantilla) con escala 0.7 y repetición (8,8).
+- [X] Diseñar e integrar el Inspector de Materiales dinámico en el sidebar de `/seccion3d` con controles deslizantes (`input[type=range]`) individuales en tiempo real y badges de estado (`// --- DEBUG INSPECTOR ---`).
+- [X] Reconfigurar el esquema de iluminación (luz ambiental baja a 0.25, luz clave lateral fuerte a 2.8 en [8,5,5] y luz de relleno opuesta a 0.5 en [-8,-2,-5]) para maximizar las sombras del relieve.
+- [X] Configurar sombreado suave de alta calidad (`THREE.PCFSoftShadowMap`, resolución de 2048x2048, cámara de sombra con near/far limitados y bias = -0.0005) para erradicar el pixelado y el acné de sombra.
+- [X] Ajustar el Shadow Camera Frustum ortográfico a un rango estrecho ([-5, 5]) y habilitar un radio de desenfoque adicional (`shadow.radius = 2`) para erradicar el efecto serrucho.
+- [X] Aplicar configuración de calidad de cine a las sombras (bias = -0.0001, normalBias = 0.02 para erradicar shadow acne, frustum near/far = 0.1/20, y shadow.radius = 4 para un difuminado natural de bordes).
+- [X] Estilizar y dar relieve de tela a las mallas `Plantilla_Externa_v2` y `Plantilla_Interna_v2` con base de color `#252525`, acabado mate (roughness = 0.7) e integrarlas al Inspector del sidebar.
+- [X] Implementar texturizado avanzado PBR en `Plantilla_Externa_v2` y `Plantilla_Interna_v2` utilizando la textura `Black_Fabric_v2_Diffuse.jpg` como color base, `bump_tela.png` como normalMap, con repetición (32, 32) y soporte en el inspector.
+- [X] Estilizar las mallas de borde/unión `Separador` y `Costura` con material negro mate (#1a1a1a, roughness = 0.9, metalness = 0.0) para ocultar las uniones grises/blancas y unificar el calzado.
+- [X] Corrección de Textura PBR y unión visual en `Plantilla_Externa_v2`, `Plantilla_Interna_v2`, `Derivador_de_peso`, `Pad_Interno` y `Pad_Externa` (unificado bajo color #3a4454 y relieve bump 16x16).
+- [X] Optimizar el Inspector de Materiales del sidebar de `/seccion3d` para incluir todas las mallas de insole y pads con soporte a badges de estado.

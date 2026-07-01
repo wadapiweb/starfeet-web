@@ -29,14 +29,14 @@ export const UnerValidation = () => {
           </p>
         </motion.div>
 
-        {/* LADO DERECHO: IMAGEN SIN EFECTOS DE APARICIÓN (ESTÁTICA) - PEGADA ARRIBA Y HASTA EL FINAL DEL TEXTO */}
-        <div className="lg:col-span-5 relative w-full h-[360px] lg:h-[calc(100%+112px)] lg:-mt-28 z-0">
+        {/* LADO DERECHO: IMAGEN CON ESTILOS FIJADOS */}
+        <div className="lg:col-span-5 relative w-full h-[360px] lg:absolute lg:right-[10%] lg:top-[-200px] lg:bottom-0 lg:w-[50%] lg:h-auto lg:scale-[0.85] lg:origin-top z-0">
           <Image
-            src="/images/comprobacion_uner-1.webp"
+            src="/images/comprobacion_uner-3.webp"
             alt="Comprobación científica de pisada UNER"
             fill
-            sizes="(max-width: 1024px) 100vw, 40vw"
-            className="object-contain object-top lg:object-right-top"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-contain object-top"
             priority
           />
         </div>

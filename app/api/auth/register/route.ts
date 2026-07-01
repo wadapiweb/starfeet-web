@@ -3,8 +3,9 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
-import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
-import { auditSecurityEvent } from "@/lib/security/audit";
+import { readClientIp } from "@/lib/security/rate-limit";
+import { consumeRegisterRateLimit } from "@/lib/security/auth-rate-limit.service";
+import { auditAuthEvent } from "@/lib/security/auth-audit.service";
 import { generateUniqueUserSlug } from "@/lib/slug";
 import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
@@ -17,10 +18,11 @@ type Body = {
 export async function POST(request: Request) {
   try {
     const ip = readClientIp(request);
-    const rateLimit = consumeRateLimit(`auth:register:${ip}`, { windowMs: 15 * 60 * 1000, max: 12 });
+    const rateLimit = await consumeRegisterRateLimit(ip);
     if (!rateLimit.allowed) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "AUTH_RATE_LIMIT_BLOCKED",
+        outcome: "blocked",
         ip,
         route: "/api/auth/register",
         reason: "too_many_register_attempts",
@@ -38,8 +40,9 @@ export async function POST(request: Request) {
     const securitySettings = await getAdminSecuritySettings();
 
     if (!email || !password || password.length < securitySettings.minPasswordLength) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "REGISTER_REJECTED",
+        outcome: "failed",
         email,
         ip,
         route: "/api/auth/register",
@@ -66,8 +69,11 @@ export async function POST(request: Request) {
           isActive: true,
         },
       });
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "REGISTER_SUCCEEDED",
+        outcome: "success",
+        actorUserId: user.id,
+        actorRole: user.role,
         email,
         ip,
         route: "/api/auth/register",
@@ -76,8 +82,11 @@ export async function POST(request: Request) {
     }
 
     if (!existing.isActive) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "REGISTER_REJECTED",
+        outcome: "failed",
+        actorUserId: existing.id,
+        actorRole: existing.role,
         email,
         ip,
         route: "/api/auth/register",
@@ -87,8 +96,11 @@ export async function POST(request: Request) {
     }
 
     if (existing.password) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "REGISTER_REJECTED",
+        outcome: "failed",
+        actorUserId: existing.id,
+        actorRole: existing.role,
         email,
         ip,
         route: "/api/auth/register",
@@ -113,8 +125,11 @@ export async function POST(request: Request) {
       });
     }
 
-    auditSecurityEvent({
+    auditAuthEvent({
       action: "REGISTER_LINKED_GOOGLE",
+      outcome: "success",
+      actorUserId: user.id,
+      actorRole: user.role,
       email,
       ip,
       route: "/api/auth/register",

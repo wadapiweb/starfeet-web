@@ -4,8 +4,9 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { generateCode, getAccessCodeExpiry, hashAccessCode } from "@/lib/access-codes";
 import { sendMail } from "@/lib/mailer";
-import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
-import { auditSecurityEvent } from "@/lib/security/audit";
+import { readClientIp } from "@/lib/security/rate-limit";
+import { consumeGuestAccessRequestRateLimit } from "@/lib/security/auth-rate-limit.service";
+import { auditAuthEvent } from "@/lib/security/auth-audit.service";
 
 type Body = { email: string };
 
@@ -18,13 +19,11 @@ export async function POST(request: Request) {
       throw new ApiError(400, "Email inválido");
     }
 
-    const rateLimit = consumeRateLimit(`auth:guest-request:${ip}:${normalizedEmail}`, {
-      windowMs: 15 * 60 * 1000,
-      max: 6,
-    });
+    const rateLimit = await consumeGuestAccessRequestRateLimit(ip, normalizedEmail);
     if (!rateLimit.allowed) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "AUTH_RATE_LIMIT_BLOCKED",
+        outcome: "blocked",
         email: normalizedEmail,
         ip,
         route: "/api/auth/guest/request",
@@ -51,17 +50,29 @@ export async function POST(request: Request) {
     const codeHash = hashAccessCode(normalizedEmail, code, "GUEST_ACCESS");
     const expiresAt = getAccessCodeExpiry();
 
-    await prisma.accessCode.create({
-      data: {
-        email: normalizedEmail,
-        type: "GUEST_ACCESS",
-        codeHash,
-        expiresAt,
-      },
-    });
+    await prisma.$transaction([
+      prisma.accessCode.updateMany({
+        where: {
+          email: normalizedEmail,
+          type: "GUEST_ACCESS",
+          consumedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { consumedAt: new Date() },
+      }),
+      prisma.accessCode.create({
+        data: {
+          email: normalizedEmail,
+          type: "GUEST_ACCESS",
+          codeHash,
+          expiresAt,
+        },
+      }),
+    ]);
 
-    auditSecurityEvent({
+    auditAuthEvent({
       action: "GUEST_ACCESS_CODE_REQUESTED",
+      outcome: "success",
       email: normalizedEmail,
       ip,
       route: "/api/auth/guest/request",

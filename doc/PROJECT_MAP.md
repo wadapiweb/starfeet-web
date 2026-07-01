@@ -21,6 +21,7 @@ Componentes puramente visuales y de presentación para la Landing Page:
 | Organisms | `Navbar` | Barra de navegación estática con enlaces absolutos a la tienda. | Activo |
 | Organisms | `Footer` | Pie de página moderno e interactivo con animaciones y firma Sumak. | Activo |
 | Molecules | `ProductCard` | Tarjeta de producto con enlace absoluto de compra rápida. | Activo |
+| Atoms | `UserAvatar` | Avatar de usuario con iniciales y control de carga de imagen fallida. | Activo |
 
 ### 2. Repositorio `starfeet-web` (Plataforma Core / VPS)
 Componentes transaccionales, de control, formularios de registro, checkout y paneles privados:

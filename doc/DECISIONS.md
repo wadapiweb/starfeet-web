@@ -1,5 +1,21 @@
 # DECISIONS
 
+## 2026-07-01 — Gestión global de usuarios separada de Profesionales
+
+### Decisión
+Crear `/admin/users` como módulo global de identidad, acceso, seguridad y auditoría, manteniendo `/admin/professionals` como vista especializada para operación de kinesiólogos.
+
+### Motivo
+- Un usuario no siempre es profesional: puede ser cliente, admin, marketing o kinesiólogo.
+- Las acciones sensibles de seguridad (rol, estado, password, desbloqueo, sesiones) necesitan reglas comunes y auditoría central.
+- Evita duplicar lógica de activación, reset y revocación en módulos de negocio.
+
+### Consecuencia
+- Las APIs nuevas viven en `/api/v1/admin/users/*`.
+- El detalle de usuario muestra actividad contextual por rol.
+- Cambios de rol, password, estado, reset, desbloqueo y revocación de sesiones quedan auditados en `security_audit_events`.
+- `/admin/professionals` puede evolucionar luego para reutilizar el servicio global cuando convenga.
+
 ## 2026-05-13 — Segregación de responsabilidades en componentes Organism (Hero y Manifesto)
 
 ### Decisión
@@ -446,3 +462,34 @@ Implementar un `TranslationProvider` de React Context en `lib/i18n.tsx` que cons
 - El panel de administración puede gestionar dinámicamente textos sin requerir despliegues ni recompilaciones de código.
 - Los cambios realizados en el panel administrativo impactan directamente al refrescar el frontend.
 
+---
+
+## 2026-06-09 — Configuración de flipY y cache-buster para texturizado en visor 3D
+
+### Decisión
+Configurar `atlasTexture.flipY = true` en el cargador de texturas de Three.js y agregar un cache-buster dinámico (`?v=3`) en la URL del asset `/models/textures/UV_Map_Texture.webp`.
+
+### Motivo
+- **Alineación de Coordenadas (flipY):** El modelo `.glb` exportado asume que el origen de las coordenadas UV se alinea con la convención de Three.js / WebGL (donde el eje V se lee de abajo hacia arriba). Al inyectar la textura con `flipY = false`, la textura se cargaba invertida verticalmente, causando que los UVs de las etiquetas de tela (en el espacio V inferior `[0.01, 0.22]`) se proyectaran sobre la región superior del atlas gráfico, la cual es blanca vacía.
+- **Bypass de Cache de Red:** El navegador cacheaba permanentemente respuestas fallidas o versiones anteriores (blancas/vacías) de la textura cargada dinámicamente. El cache-buster fuerza a la red a retornar la textura WebP actualizada.
+
+### Consecuencia
+- Las etiquetas de tela (`Etiqueta_Lado`, `Etiqueta_Marca`) y las correas de velcro ahora muestran correctamente su textura y logotipos ("STARFEET" / "LEFT") en lugar de un color blanco plano.
+- Se mantiene la compatibilidad con materiales físicos de iluminación premium (`THREE.MeshStandardMaterial`), mejorando el realismo y las sombras de la lona en el visor 3D.
+
+---
+
+## 2026-07-01 — Auth/Security como módulo de servicios
+
+### Decisión
+Extraer la lógica de seguridad que estaba concentrada en `auth.ts` hacia servicios pequeños bajo `lib/security`.
+
+### Motivo
+- Reducir acoplamiento entre Auth.js, Prisma, rate limit, lockout y auditoría.
+- Hacer que `auth.ts` sea mayormente declarativo y que las reglas de negocio sean testeables.
+- Preparar futuras mejoras como dashboard de auditoría, MFA o Redis sin reescribir el flujo base.
+
+### Consecuencia
+- `auth.ts` delega credenciales, OAuth y session-version en servicios.
+- Las rutas de auth consumen servicios de rate limit y auditoría por caso de uso.
+- Las políticas de seguridad quedan centralizadas en `auth-policy.ts`.

@@ -9,7 +9,7 @@ import { Suspense } from "react";
 
 export default async function LoginPage() {
   const session = await auth();
-  if (session?.user) {
+  if (session?.user?.isActive && !session.user.sessionRevoked) {
     const headersList = await headers();
     const host = headersList.get("host") || DOMAINS.root;
     redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));

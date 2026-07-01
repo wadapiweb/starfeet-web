@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getAbsoluteDashboardRouteForRole } from "@/lib/role-redirect";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getSafeRedirectUrl } from "@/lib/security/origin";
 
 export default async function PostLoginPage({
   searchParams,
@@ -10,7 +11,7 @@ export default async function PostLoginPage({
 }) {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.isActive || session.user.sessionRevoked) {
     redirect("/login");
   }
 
@@ -19,7 +20,7 @@ export default async function PostLoginPage({
 
   // If user is a CLIENTE and has an origin callback URL, redirect them back to it
   if (session.user.role === "CLIENTE" && originCallbackUrl) {
-    redirect(originCallbackUrl);
+    redirect(getSafeRedirectUrl(originCallbackUrl, "/cliente"));
   }
 
   const headersList = await headers();
@@ -27,4 +28,3 @@ export default async function PostLoginPage({
 
   redirect(getAbsoluteDashboardRouteForRole(session.user.role, host));
 }
-

@@ -4,8 +4,9 @@ import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { generateCode, getAccessCodeExpiry, hashAccessCode } from "@/lib/access-codes";
 import { sendMail } from "@/lib/mailer";
-import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
-import { auditSecurityEvent } from "@/lib/security/audit";
+import { readClientIp } from "@/lib/security/rate-limit";
+import { consumePasswordResetRequestRateLimit } from "@/lib/security/auth-rate-limit.service";
+import { auditAuthEvent } from "@/lib/security/auth-audit.service";
 
 type Body = { email: string };
 
@@ -18,13 +19,11 @@ export async function POST(request: Request) {
       throw new ApiError(400, "Email inválido");
     }
 
-    const rateLimit = consumeRateLimit(`auth:forgot-password:${ip}:${normalizedEmail}`, {
-      windowMs: 15 * 60 * 1000,
-      max: 6,
-    });
+    const rateLimit = await consumePasswordResetRequestRateLimit(ip, normalizedEmail);
     if (!rateLimit.allowed) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "AUTH_RATE_LIMIT_BLOCKED",
+        outcome: "blocked",
         email: normalizedEmail,
         ip,
         route: "/api/auth/forgot-password",
@@ -45,18 +44,32 @@ export async function POST(request: Request) {
     const codeHash = hashAccessCode(normalizedEmail, code, "PASSWORD_RESET");
     const expiresAt = getAccessCodeExpiry();
 
-    await prisma.accessCode.create({
-      data: {
-        email: normalizedEmail,
-        userId: user.id,
-        type: "PASSWORD_RESET",
-        codeHash,
-        expiresAt,
-      },
-    });
+    await prisma.$transaction([
+      prisma.accessCode.updateMany({
+        where: {
+          email: normalizedEmail,
+          type: "PASSWORD_RESET",
+          consumedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { consumedAt: new Date() },
+      }),
+      prisma.accessCode.create({
+        data: {
+          email: normalizedEmail,
+          userId: user.id,
+          type: "PASSWORD_RESET",
+          codeHash,
+          expiresAt,
+        },
+      }),
+    ]);
 
-    auditSecurityEvent({
+    auditAuthEvent({
       action: "PASSWORD_RESET_CODE_REQUESTED",
+      outcome: "success",
+      actorUserId: user.id,
+      actorRole: user.role,
       email: normalizedEmail,
       ip,
       route: "/api/auth/forgot-password",

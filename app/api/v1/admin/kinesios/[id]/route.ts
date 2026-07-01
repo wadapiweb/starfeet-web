@@ -40,6 +40,8 @@ export async function PATCH(request: Request, context: Params) {
       password?: string;
       isActive?: boolean;
       slug?: string;
+      passwordChangedAt?: Date;
+      sessionVersion?: { increment: number };
     } = {};
 
     const nextName = body.name !== undefined ? body.name?.trim() || null : professional.name;
@@ -61,7 +63,10 @@ export async function PATCH(request: Request, context: Params) {
 
     if (body.name !== undefined) data.name = nextName;
     if (body.phone !== undefined) data.phone = body.phone?.trim() || null;
-    if (typeof body.isActive === "boolean") data.isActive = body.isActive;
+    if (typeof body.isActive === "boolean") {
+      data.isActive = body.isActive;
+      data.sessionVersion = { increment: 1 };
+    }
 
     if (body.password !== undefined) {
       const password = body.password.trim();
@@ -72,6 +77,8 @@ export async function PATCH(request: Request, context: Params) {
         );
       }
       data.password = await bcrypt.hash(password, 10);
+      data.passwordChangedAt = new Date();
+      data.sessionVersion = { increment: 1 };
     }
 
     if (body.name !== undefined || body.email !== undefined) {
@@ -118,7 +125,7 @@ export async function DELETE(_: Request, context: Params) {
 
     await prisma.user.update({
       where: { id },
-      data: { isActive: false },
+      data: { isActive: false, sessionVersion: { increment: 1 } },
     });
 
     return NextResponse.json({ ok: true, mode: "deactivated" });

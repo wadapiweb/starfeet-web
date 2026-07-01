@@ -68,7 +68,10 @@ export const Navbar = () => {
   const isBackoffice =
     isPlatformHost ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/kinesio");
+    pathname.startsWith("/kinesio") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/registro") ||
+    pathname.startsWith("/recuperar");
 
   if (isBackoffice) return null;
 

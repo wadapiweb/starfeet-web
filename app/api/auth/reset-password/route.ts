@@ -4,8 +4,9 @@ import bcrypt from "bcryptjs";
 import { parseJson, jsonError } from "@/lib/api";
 import { ApiError } from "@/lib/authz";
 import { hashAccessCode } from "@/lib/access-codes";
-import { consumeRateLimit, readClientIp } from "@/lib/security/rate-limit";
-import { auditSecurityEvent } from "@/lib/security/audit";
+import { readClientIp } from "@/lib/security/rate-limit";
+import { consumePasswordResetVerifyRateLimit } from "@/lib/security/auth-rate-limit.service";
+import { auditAuthEvent } from "@/lib/security/auth-audit.service";
 import { getAdminSecuritySettings } from "@/lib/admin-settings.server";
 
 type Body = {
@@ -30,13 +31,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const rateLimit = consumeRateLimit(`auth:reset-password:${ip}:${email}`, {
-      windowMs: 15 * 60 * 1000,
-      max: 10,
-    });
+    const rateLimit = await consumePasswordResetVerifyRateLimit(ip, email);
     if (!rateLimit.allowed) {
-      auditSecurityEvent({
+      auditAuthEvent({
         action: "AUTH_RATE_LIMIT_BLOCKED",
+        outcome: "blocked",
         email,
         ip,
         route: "/api/auth/reset-password",
@@ -61,14 +60,31 @@ export async function POST(request: Request) {
     });
 
     if (!accessCode) {
-      auditSecurityEvent({
+      await prisma.accessCode.updateMany({
+        where: {
+          email,
+          type: "PASSWORD_RESET",
+          consumedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: {
+          attemptCount: { increment: 1 },
+          lastAttemptAt: new Date(),
+        },
+      });
+      auditAuthEvent({
         action: "PASSWORD_RESET_CODE_REJECTED",
+        outcome: "failed",
         email,
         ip,
         route: "/api/auth/reset-password",
         reason: "invalid_or_expired_code",
       });
       throw new ApiError(400, "Código inválido o expirado.");
+    }
+
+    if (accessCode.attemptCount >= accessCode.maxAttempts) {
+      throw new ApiError(429, "Demasiados intentos para este código. Solicita uno nuevo.");
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
@@ -81,7 +97,14 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
-        data: { password: hashed, isActive: true },
+        data: {
+          password: hashed,
+          isActive: true,
+          passwordChangedAt: new Date(),
+          failedLoginAttempts: 0,
+          lockoutUntil: null,
+          sessionVersion: { increment: 1 },
+        },
       }),
       prisma.accessCode.update({
         where: { id: accessCode.id },
@@ -89,8 +112,11 @@ export async function POST(request: Request) {
       }),
     ]);
 
-    auditSecurityEvent({
+    auditAuthEvent({
       action: "PASSWORD_RESET_SUCCEEDED",
+      outcome: "success",
+      actorUserId: user.id,
+      actorRole: user.role,
       email,
       ip,
       route: "/api/auth/reset-password",

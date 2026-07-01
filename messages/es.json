@@ -1,16 +1,49 @@
 {
+  "Hero": {
+    "title_start": "TU ",
+    "title_word_pisada": "PISADA",
+    "title_word_vida": "VIDA",
+    "title_end": "MEJORA",
+    "description": "Primer complemento para reeducar la pisada •",
+    "buy_button": "QUIERO MIS STARFEET"
+  },
+  "Manifesto": {
+    "line1": "PRIMER COMPLEMENTO",
+    "line2": "PARA REEDUCAR LA PISADA",
+    "line3": "INNOVACIÓN A NIVEL",
+    "line4": "MUNDIAL"
+  },
+  "Testimonials": {
+    "pretitle": "EXPERIENCIAS QUE INSPIRAN",
+    "title_main": "TESTIMONIOS",
+    "title_highlight": "REALES",
+    "subtitle": "Atletas, kinesiólogos y usuarios transforman su pisada y postura corporal con Starfeet."
+  },
+  "Tienda": {
+    "title_main": "TIENDA",
+    "title_highlight": "OFICIAL",
+    "subtitle": "Aprovecha las oportunidades para tener tu Starfeet, el primer reeducador de pisada."
+  },
+  "Garantia": {
+    "title_bold": "RESULTADO",
+    "title_normal": "GARANTIZADO",
+    "desc_line1": "Usá tus Starfeet de forma regular durante 30 días.",
+    "desc_line2": "Si no notas cambios positivos en tu pisada y postura,",
+    "desc_line3": "te devolvemos el dinero.",
+    "terms": "TÉRMINOS Y CONDICIONES"
+  },
   "Stages": {
     "transform_title": "TRANSFORMÁ\nTU PISADA\nEN 3 PASOS",
     "ver_mas": "Ver mas... >",
     "etapa1_title": "ETAPA 1",
     "etapa1_subtitle": "uso pasivo",
-    "etapa1_description": "Liberás las tensiones y\ncompresiones acumuladas",
+    "etapa1_description": "Liberás las tensiones y|||compresiones acumuladas",
     "etapa2_title": "ETAPA 2",
     "etapa2_subtitle": "uso activo",
-    "etapa2_description": "Desarrollás una nueva forma\nde pisar",
+    "etapa2_description": "Desarrollás una nueva forma|||de pisar",
     "etapa3_title": "ETAPA 3",
     "etapa3_subtitle": "fortalecimiento",
-    "etapa3_description": "Tonificás los músculos de tus\npies y mejorás la dinámica de\nla marcha"
+    "etapa3_description": "Tonificás los músculos de tus|||pies y mejorás la marcha"
   },
   "UnerValidation": {
     "title": "COMPROBADO\nCIENTÍFICAMENTE",
@@ -31,7 +64,7 @@
     "marquee": "CUANDO PISAS BIEN"
   },
   "Footer": {
-    "description": "Reeducación biomecánica y calzado premium de última generación para potenciar tu pisada y cuidar tu salud postural.",
+    "description": "Reeducación biomecánica de última generación para potenciar tu pisada y cuidar tu salud postural.",
     "shopTitle": "Tienda",
     "shopCalzado": "Calzado",
     "shopDevices": "Dispositivos",
@@ -46,7 +79,7 @@
     "supportShipping": "Envíos y Devoluciones",
     "supportTerms": "Términos y Condiciones",
     "supportPrivacy": "Políticas de Privacidad",
-    "copyright": "© 2026 Starfeet. Buenos Aires, Argentina.",
+    "copyright": "© 2026 Starfeet. Buenos Aires, Argentina. • DEV",
     "by": "by",
     "brandName": "Starfeet"
   }

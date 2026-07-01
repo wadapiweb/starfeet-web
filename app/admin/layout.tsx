@@ -10,7 +10,7 @@ import { DOMAINS } from "@/lib/domains";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.isActive || session.user.sessionRevoked) {
     redirect("/login");
   }
   if (session.user.role !== "ADMIN") {

@@ -8,12 +8,8 @@ const cleanBase = process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
 const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: [
-    cleanBase,
     `dev.${cleanBase}`,
     `dev1.${cleanBase}`,
-    `tienda.${cleanBase}`,
-    `kine.${cleanBase}`,
-    `dashboard.${cleanBase}`,
     `dev-tienda.${cleanBase}`,
     `dev-kine.${cleanBase}`,
     `dev-dashboard.${cleanBase}`,

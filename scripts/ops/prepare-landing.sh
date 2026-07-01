@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-LANDING_DIR="/opt/docker/starfeet-landing"
-SOURCE_DIR="/opt/docker/starfeet-web"
+LANDING_DIR="/opt/docker/starfeet/starfeet-home"
+SOURCE_DIR="/opt/docker/starfeet/starfeet-core-web"
 
 echo "Creating landing directory..."
 mkdir -p "$LANDING_DIR"

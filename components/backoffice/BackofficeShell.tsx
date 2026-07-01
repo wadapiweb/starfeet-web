@@ -400,6 +400,9 @@ function resolveNavIcon(href: string): IconComponent {
   if (href.includes("/professionals")) {
     return IconUsers;
   }
+  if (href.includes("/users")) {
+    return IconUsers;
+  }
   if (href.includes("/sales")) {
     return IconShoppingCart;
   }

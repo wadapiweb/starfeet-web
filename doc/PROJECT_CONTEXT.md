@@ -7,12 +7,20 @@
   2. **starfeet-landing (Landing / Cloud)**: `git@github.com:wadapiweb/starfeet-landing.git` - Landing page estática exportable a Hostinger Cloud.
 - Stack detectado: Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 + Prisma ORM + next-auth v5 + next-intl + Framer Motion + Zustand + Traefik
 
-## Entornos (Desarrollo actual)
-- **Landing (Main Domain)**: `https://starfeet.ar` -> Hostinger Cloud
-- **Plataforma (Subdominios)** -> Docker/Traefik VPS:
-  - E-commerce: `https://tienda.starfeet.ar`
-  - Portal Kinesiología: `https://kine.starfeet.ar`
-  - Panel Admin: `https://dashboard.starfeet.ar`
+## Entornos
+- **VPS-DEV**: `72.60.141.77`
+  - Core dev objetivo: `https://dev-dashboard.starfeet.ar`, `https://dev-tienda.starfeet.ar`, `https://dev-kine.starfeet.ar`
+  - Landing VPS dev: `https://dev1.starfeet.ar`
+  - Modo esperado: `next dev`
+- **Hostinger Cloud**:
+  - Home/cloud dev: `https://dev.starfeet.ar`
+  - Debe linkear hacia dominios DEV mientras se ordena VPS-DEV.
+- **VPS-PROD futuro**: `76.13.121.160`
+  - Staging y produccion se implementaran despues de ordenar DEV.
+  - Dominios futuros: `staging-*` y `dashboard/tienda/kine`.
+
+Plan activo:
+- Ver `doc/DEV_ENVIRONMENT_REORGANIZATION_PLAN.md`.
 
 ## Comandos base (starfeet-web)
 - Lint: `npm run lint`

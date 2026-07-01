@@ -1,8 +1,8 @@
 import os
 import shutil
 
-source_dir = "/opt/docker/starfeet-web"
-landing_dir = "/opt/docker/starfeet-landing"
+source_dir = "/opt/docker/starfeet/starfeet-core-web"
+landing_dir = "/opt/docker/starfeet/starfeet-home"
 
 def copy_files():
     print("Creating messages folder in landing project...")
@@ -14,12 +14,6 @@ def copy_files():
     shutil.copy2(
         os.path.join(source_dir, "messages/es.json"),
         os.path.join(landing_dir, "messages/es.json")
-    )
-    
-    print("Copying i18n helper...")
-    shutil.copy2(
-        os.path.join(source_dir, "lib/i18n.ts"),
-        os.path.join(landing_dir, "lib/i18n.ts")
     )
     
     print("Copying ProductStages component...")
@@ -81,6 +75,22 @@ def copy_files():
         os.path.join(source_dir, "public/images/cuando_pisas_bien1.webp"),
         os.path.join(landing_dir, "public/images/cuando_pisas_bien1.webp")
     )
+
+    # Copy all 3D models from public/models/ if the directory exists
+    source_models_dir = os.path.join(source_dir, "public/models")
+    target_models_dir = os.path.join(landing_dir, "public/models")
+    if os.path.exists(source_models_dir):
+        print("Copying 3D models directory contents...")
+        os.makedirs(target_models_dir, exist_ok=True)
+        for filename in os.listdir(source_models_dir):
+            file_path = os.path.join(source_models_dir, filename)
+            target_path = os.path.join(target_models_dir, filename)
+            if os.path.isdir(file_path):
+                if os.path.exists(target_path):
+                    shutil.rmtree(target_path)
+                shutil.copytree(file_path, target_path)
+            elif os.path.isfile(file_path):
+                shutil.copy2(file_path, target_path)
 
 def patch_landing_page():
     page_path = os.path.join(landing_dir, "app/page.tsx")

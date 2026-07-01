@@ -49,7 +49,13 @@ export async function PATCH(request: Request) {
     const currentUser = await prisma.user.findUnique({ where: { id: userSession.id } });
     if (!currentUser) throw new ApiError(404, "Usuario no encontrado");
 
-    const data: { name?: string | null; phone?: string | null; password?: string } = {};
+    const data: {
+      name?: string | null;
+      phone?: string | null;
+      password?: string;
+      passwordChangedAt?: Date;
+      sessionVersion?: { increment: number };
+    } = {};
 
     if (body.name !== undefined) data.name = body.name.trim() || null;
     if (body.phone !== undefined) data.phone = body.phone.trim() || null;
@@ -73,6 +79,8 @@ export async function PATCH(request: Request) {
       }
 
       data.password = await bcrypt.hash(body.newPassword, 10);
+      data.passwordChangedAt = new Date();
+      data.sessionVersion = { increment: 1 };
     }
 
     const updated = await prisma.user.update({

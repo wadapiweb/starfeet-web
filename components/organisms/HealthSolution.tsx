@@ -46,44 +46,44 @@ export const HealthSolution = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          className="flex flex-col gap-10 md:gap-12 z-10 pl-0 lg:pl-8 w-full max-w-md lg:ml-auto"
+          className="flex flex-col gap-6 md:gap-8 z-10 pl-0 lg:pl-8 w-full max-w-md lg:ml-auto"
         >
           {/* Item 1 */}
-          <div className="flex flex-col">
-            <h3 className="font-condensed font-black text-3xl sm:text-4xl text-starfeet-blue uppercase leading-none tracking-tight">
+          <div className="flex flex-col p-5 sm:p-6 cursor-pointer transition-all duration-500 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl w-full shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl bg-white/85 hover:bg-white hover:shadow-[0_12px_36px_rgba(9,34,75,0.15)] hover:-translate-y-1">
+            <h3 className="font-condensed font-black text-2xl sm:text-3xl text-starfeet-blue uppercase leading-none tracking-tight">
               {t("item1_title")}
             </h3>
-            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2.5 whitespace-pre-line">
+            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 whitespace-pre-line">
               {t("item1_desc")}
             </p>
           </div>
 
           {/* Item 2 */}
-          <div className="flex flex-col">
-            <h3 className="font-condensed font-black text-3xl sm:text-4xl text-starfeet-blue uppercase leading-none tracking-tight">
+          <div className="flex flex-col p-5 sm:p-6 cursor-pointer transition-all duration-500 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl w-full shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl bg-white/85 hover:bg-white hover:shadow-[0_12px_36px_rgba(9,34,75,0.15)] hover:-translate-y-1">
+            <h3 className="font-condensed font-black text-2xl sm:text-3xl text-starfeet-blue uppercase leading-none tracking-tight">
               {t("item2_title")}
             </h3>
-            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2.5 whitespace-pre-line">
+            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 whitespace-pre-line">
               {t("item2_desc")}
             </p>
           </div>
 
           {/* Item 3 */}
-          <div className="flex flex-col">
-            <h3 className="font-condensed font-black text-3xl sm:text-4xl text-starfeet-blue uppercase leading-none tracking-tight">
+          <div className="flex flex-col p-5 sm:p-6 cursor-pointer transition-all duration-500 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl w-full shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl bg-white/85 hover:bg-white hover:shadow-[0_12px_36px_rgba(9,34,75,0.15)] hover:-translate-y-1">
+            <h3 className="font-condensed font-black text-2xl sm:text-3xl text-starfeet-blue uppercase leading-none tracking-tight">
               {t("item3_title")}
             </h3>
-            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2.5 whitespace-pre-line">
+            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 whitespace-pre-line">
               {t("item3_desc")}
             </p>
           </div>
 
           {/* Item 4 */}
-          <div className="flex flex-col">
-            <h3 className="font-condensed font-black text-3xl sm:text-4xl text-starfeet-blue uppercase leading-none tracking-tight">
+          <div className="flex flex-col p-5 sm:p-6 cursor-pointer transition-all duration-500 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-starfeet-blue focus-visible:ring-offset-4 rounded-2xl w-full shadow-[0_8px_28px_rgba(9,34,75,0.10)] backdrop-blur-xl bg-white/85 hover:bg-white hover:shadow-[0_12px_36px_rgba(9,34,75,0.15)] hover:-translate-y-1">
+            <h3 className="font-condensed font-black text-2xl sm:text-3xl text-starfeet-blue uppercase leading-none tracking-tight">
               {t("item4_title")}
             </h3>
-            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2.5 whitespace-pre-line">
+            <p className="font-sans text-sm sm:text-base font-normal text-starfeet-blue/80 leading-relaxed mt-2 whitespace-pre-line">
               {t("item4_desc")}
             </p>
           </div>

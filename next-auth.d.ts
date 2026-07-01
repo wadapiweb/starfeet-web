@@ -6,6 +6,7 @@ declare module "next-auth" {
             id: string
             role: "CLIENTE" | "KINESIOLOGO" | "ADMIN" | "MARKETING"
             isActive: boolean
+            sessionRevoked?: boolean
         } & DefaultSession["user"]
     }
 
@@ -13,6 +14,7 @@ declare module "next-auth" {
         id?: string
         role?: "CLIENTE" | "KINESIOLOGO" | "ADMIN" | "MARKETING"
         isActive?: boolean
+        sessionVersion?: number
     }
 }
 
@@ -20,5 +22,8 @@ declare module "next-auth/jwt" {
     interface JWT {
         role?: "CLIENTE" | "KINESIOLOGO" | "ADMIN" | "MARKETING"
         isActive?: boolean
+        sessionVersion?: number
+        sessionRevoked?: boolean
+        lastUserSyncAt?: number
     }
 }

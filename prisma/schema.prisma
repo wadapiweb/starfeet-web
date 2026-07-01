@@ -147,6 +147,12 @@ model User {
   documentNumber String?
   role           Role      @default(CLIENTE)
   isActive       Boolean   @default(true)
+  failedLoginAttempts Int   @default(0)
+  lockoutUntil   DateTime?
+  lastFailedLoginAt DateTime?
+  lastLoginAt    DateTime?
+  passwordChangedAt DateTime?
+  sessionVersion Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -170,6 +176,7 @@ model User {
 
   // Cart
   carts Cart[]
+  securityAuditEvents SecurityAuditEvent[] @relation("SecurityAuditActor")
 
   @@map("users")
 }
@@ -394,6 +401,9 @@ model AccessCode {
   userId     String?
   type       String
   codeHash   String
+  attemptCount Int    @default(0)
+  maxAttempts  Int    @default(10)
+  lastAttemptAt DateTime?
   expiresAt  DateTime
   consumedAt DateTime?
   createdAt  DateTime @default(now())
@@ -402,6 +412,42 @@ model AccessCode {
 
   @@index([email, type])
   @@map("access_codes")
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rate_limit_buckets")
+}
+
+model SecurityAuditEvent {
+  id             String   @id @default(cuid())
+  action         String
+  channel        String   @default("security.auth")
+  outcome        String?
+  actorUserId    String?
+  actorRole      Role?
+  emailHash      String?
+  ip             String?
+  route          String?
+  reason         String?
+  provider       String?
+  resourceType   String?
+  resourceId     String?
+  userAgent      String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  actor User? @relation("SecurityAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("security_audit_events")
 }
 
 // ─── System Settings ─────────────────────────────────────────────────────────
