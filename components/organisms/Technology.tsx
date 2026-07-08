@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Reveal } from "../atoms/Reveal";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -105,17 +105,23 @@ export const Technology = () => {
     const scrollTrackerRef = React.useRef<HTMLDivElement>(null);
     const [lines, setLines] = React.useState<{ id: string; path: string; textDot?: {x: number, y: number}; delay: number }[]>([]);
 
-    const { scrollYProgress } = useScroll({
+    const { scrollYProgress: rawScrollYProgress } = useScroll({
         target: scrollTrackerRef,
         offset: ["start start", "end start"]
     });
 
+    const scrollYProgress = useSpring(rawScrollYProgress, {
+        stiffness: 70,
+        damping: 26,
+        restDelta: 0.001
+    });
+
     // Fade out texts & SVG overlays as scroll begins
-    const fadeOutOpacity = useTransform(scrollYProgress, [0.01, 0.06], [1, 0]);
+    const fadeOutOpacity = useTransform(scrollYProgress, [0.01, 0.10], [1, 0]);
     // Force visibility to hidden when blue background starts to rise to ensure they are never seen over the blue background
-    const elementsVisibility = useTransform(scrollYProgress, (pos) => pos >= 0.07 ? "hidden" : "visible");
-    // Slide up blue background layer
-    const blueBgTop = useTransform(scrollYProgress, [0.08, 0.15], ["100%", "0%"]);
+    const elementsVisibility = useTransform(scrollYProgress, (pos) => pos >= 0.11 ? "hidden" : "visible");
+    // Slide up blue background layer slowly
+    const blueBgTop = useTransform(scrollYProgress, [0.08, 0.30], ["100%", "0%"]);
     // Translate text horizontally starting with 'RE' peeking out, and ending with final 'A' visible during exit overlap
     const textTranslateX = useTransform(scrollYProgress, [0.08, 0.95], ["75%", "-65%"]);
 
@@ -240,21 +246,13 @@ export const Technology = () => {
         <section
             ref={scrollTrackerRef}
             aria-labelledby="technology-heading"
-            className="relative bg-white border-t border-gray-100 select-none"
+            className="relative bg-white border-t border-gray-100 select-none mt-16 lg:mt-24"
         >
             {/* ── MOBILE VIEW ── */}
             <div className="lg:hidden py-24 bg-white space-y-12 max-w-md mx-auto px-6">
                 {/* Header */}
                 <Reveal>
                     <div className="text-center mb-16">
-                        <div className="mb-5 flex justify-center">
-                            <span 
-                                className="inline-flex items-center justify-center font-sans font-bold text-[11px] text-starfeet-lime uppercase tracking-[0.35em] pt-[7px] pb-[5px] rounded-full border-[2.5px] border-starfeet-blue bg-starfeet-blue/75 backdrop-blur-md shadow-md select-none leading-none"
-                                style={{ paddingLeft: 'calc(1rem + 0.35em)', paddingRight: '1rem' }}
-                            >
-                                Tecnología
-                            </span>
-                        </div>
                         <h2 className="font-condensed font-black text-5xl md:text-7xl text-starfeet-blue uppercase tracking-tighter leading-none">
                             ¿QUÉ LO HACE{" "}
                             <span className="text-starfeet-lime">DIFERENTE?</span>
@@ -300,17 +298,9 @@ export const Technology = () => {
                     <div className="relative z-20 max-w-7xl mx-auto px-6 w-full flex flex-col justify-center h-full py-12">
                         
                         {/* FADING HEADER & DESCRIPTIONS LAYER */}
-                        <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="absolute inset-x-6 top-12 left-0 right-0 z-30 pointer-events-none">
+                        <motion.div style={{ opacity: fadeOutOpacity, visibility: elementsVisibility }} className="absolute inset-x-6 top-24 left-0 right-0 z-30 pointer-events-none">
                             {/* Header */}
                             <div className="text-center">
-                                <div className="mb-5 flex justify-center">
-                                    <span 
-                                        className="inline-flex items-center justify-center font-sans font-bold text-[11px] text-starfeet-lime uppercase tracking-[0.35em] pt-[7px] pb-[5px] rounded-full border-[2.5px] border-starfeet-blue bg-starfeet-blue/75 backdrop-blur-md shadow-md select-none leading-none"
-                                        style={{ paddingLeft: 'calc(1rem + 0.35em)', paddingRight: '1rem' }}
-                                    >
-                                        Tecnología
-                                    </span>
-                                </div>
                                 <h2 className="font-condensed font-black text-6xl xl:text-8xl text-starfeet-blue uppercase tracking-tighter leading-none">
                                     ¿QUÉ LO HACE{" "}
                                     <span className="text-starfeet-lime">DIFERENTE?</span>
@@ -321,7 +311,7 @@ export const Technology = () => {
                         {/* DESKTOP GRID */}
                         <div 
                             ref={containerRef}
-                            className="grid grid-cols-[1fr_500px_1fr] xl:grid-cols-[1fr_620px_1fr] gap-8 items-stretch relative min-h-[500px] w-full mt-24"
+                            className="grid grid-cols-[1fr_500px_1fr] xl:grid-cols-[1fr_620px_1fr] gap-8 items-stretch relative min-h-[500px] w-full mt-36"
                         >
                             {/* FADING SVG CANVAS OVERLAY */}
                             <motion.svg style={{ opacity: fadeOutOpacity, visibility: elementsVisibility, overflow: 'visible' }} className="absolute inset-0 w-full h-full pointer-events-none z-30">
